@@ -2,7 +2,18 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
+      },
+      colors: {
+        authPrimary: "#FF8000",
+        brown: "#624637",
+      },
+      backgroundImage: {
+        authGradient: "linear-gradient(to bottom, #FFAC71, #FF6929)",
+      },
+    },
   },
   plugins: [],
 };
