@@ -6,8 +6,8 @@ import { emailRegex } from "../constants/RegEx";
 import { login } from "../core/services/AuthService";
 import { useNavigate } from "react-router-dom";
 import { SnackBarContext } from "../store/SnackBarContext";
-import { showSnackBar } from "../utils/snackbar";
 import { ThemeColors } from "../resources/colors";
+import { showSnackBar } from "../utils/Snackbar";
 
 function LoginPage() {
   const [_, dispatch] = useContext(SnackBarContext);
@@ -100,14 +100,14 @@ function LoginPage() {
             </span>
           </div>
           <AuthButton text="Login" />
-          <section className="my-2 flex justify-center gap-2">
+          {/* <section className="my-2 flex justify-center gap-2">
             <p className="text-brown font-semibold md:text-base text-sm">
               Don't have an account?
             </p>
             <p className="text-authPrimary md:text-base text-sm font-semibold cursor-pointer">
               Register now
             </p>
-          </section>
+          </section> */}
         </form>
       </div>
     </div>
