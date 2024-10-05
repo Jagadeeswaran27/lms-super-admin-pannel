@@ -67,37 +67,49 @@ function LoginPage() {
 
   return (
     <div className="flex bg-authGradient justify-center items-center w-full h-[100vh]">
-      <form
-        className="w-[90%] md:w-[70%] lg:w-[35%] py-10 px-6 bg-white rounded-3xl"
-        onSubmit={handleLogin}
-      >
-        <div className="mb-4">
-          <InputField
-            placeholder="Enter your email / Phone no"
-            type="email"
-            name="email"
-          />
-        </div>
-        <div className="mb-4">
-          <InputField
-            placeholder="Enter your password"
-            type="password"
-            name="password"
-          />
-        </div>
-        <div className="mb-2 text-right">
-          <span className="cursor-pointer text-authPrimary hover:underline">
-            Forgot your password?
-          </span>
-        </div>
-        <AuthButton text="Login" />
-        <section className="my-2 flex justify-center gap-2">
-          <p className="text-brown font-semibold">Don't have an account?</p>
-          <p className="text-authPrimary font-semibold cursor-pointer">
-            Register now
+      <div className="w-full">
+        <section className="mb-20">
+          <h1 className="text-center text-brown text-3xl font-extrabold">
+            Sign In
+          </h1>
+          <p className="text-center text-white text-lg my-2">
+            Enter your email and password to login into admin pannel
           </p>
         </section>
-      </form>
+        <form
+          className="w-[90%] md:w-[70%] lg:w-[35%] mx-auto py-10 px-6 bg-white rounded-3xl"
+          onSubmit={handleLogin}
+        >
+          <div className="mb-4">
+            <InputField
+              placeholder="Enter your email"
+              type="email"
+              name="email"
+            />
+          </div>
+          <div className="mb-4">
+            <InputField
+              placeholder="Enter your password"
+              type="password"
+              name="password"
+            />
+          </div>
+          <div className="mb-2 text-right">
+            <span className="cursor-pointer md:text-base text-sm text-authPrimary hover:underline">
+              Forgot your password?
+            </span>
+          </div>
+          <AuthButton text="Login" />
+          <section className="my-2 flex justify-center gap-2">
+            <p className="text-brown font-semibold md:text-base text-sm">
+              Don't have an account?
+            </p>
+            <p className="text-authPrimary md:text-base text-sm font-semibold cursor-pointer">
+              Register now
+            </p>
+          </section>
+        </form>
+      </div>
     </div>
   );
 }
