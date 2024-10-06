@@ -1,13 +1,22 @@
 import Header from "../common/Header";
-import SuggestionCard from "./SuggestionCard";
 import { useState } from "react";
 import SuggestionSidebar from "./SuggestionSidebar";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import SuggestionLargeList from "../common/LazyLoadingList";
 
 interface SuggestionPageComponentProps {
   logout: () => void;
+  suggestions: SuggestionModel[] | [];
+  approveSuggestion: (id: string) => void;
+  rejectSuggestion: (id: string) => void;
 }
 
-function SuggestionPageComponent({ logout }: SuggestionPageComponentProps) {
+function SuggestionPageComponent({
+  logout,
+  suggestions,
+  approveSuggestion,
+  rejectSuggestion,
+}: SuggestionPageComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
   function openDrawer() {
     setShowDrawer(true);
@@ -36,16 +45,19 @@ function SuggestionPageComponent({ logout }: SuggestionPageComponentProps) {
         </div>
         <div className="flex-1 flex justify-center overflow-y-auto">
           <div className="w-[90%] ">
-            <SuggestionCard />
-            <SuggestionCard />
-            <SuggestionCard />
-            <SuggestionCard />
-            <SuggestionCard />
-            <SuggestionCard />
-            <SuggestionCard />
-            <SuggestionCard />
-            <SuggestionCard />
-            <SuggestionCard />
+            {suggestions.length > 0 ? (
+              <div className="h-full">
+                <SuggestionLargeList
+                  approveSuggestion={approveSuggestion}
+                  rejectSuggestion={rejectSuggestion}
+                  items={suggestions}
+                />
+              </div>
+            ) : (
+              <p className="flex flex-1 text-brown font-semibold md:text-xl text-base h-full items-center justify-center">
+                No Suggestions Found
+              </p>
+            )}
           </div>
         </div>
       </section>
