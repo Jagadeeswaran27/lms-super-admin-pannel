@@ -8,10 +8,11 @@ import {
 import LoginPage from "./pages/LoginPage";
 import AuthProvider from "./store/AuthContext";
 import AuthRedirect from "./components/protection/AuthRedirect";
-import HomePage from "./pages/HomePage";
 import ProtectedRoute from "./components/protection/ProtectedRoute";
 import { SnackBarProvider } from "./store/SnackBarContext";
 import { ThemeProvider, createTheme } from "@mui/material";
+import SuggestionPage from "./pages/SuggestionPage";
+import { routes } from "./utils/Routes";
 
 function App() {
   const theme = createTheme({
@@ -29,14 +30,17 @@ function App() {
               <Routes>
                 {/* <Route path="/" element={<RootPage />} /> */}
                 <Route
-                  path="/"
+                  path={routes.login}
                   element={<AuthRedirect element={<LoginPage />} />}
                 />
                 <Route
-                  path="/home"
-                  element={<ProtectedRoute element={<HomePage />} />}
+                  path={routes.suggestions}
+                  element={<ProtectedRoute element={<SuggestionPage />} />}
                 />
-                <Route path="*" element={<Navigate to="/home" replace />} />
+                <Route
+                  path="*"
+                  element={<Navigate to="/suggestions" replace />}
+                />
               </Routes>
             </div>
           </Router>

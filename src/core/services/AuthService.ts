@@ -13,9 +13,7 @@ import { AuthUserModel } from "../../models/auth/AuthUserModel";
 export async function logout() {
   try {
     await signOut(auth);
-  } catch (e) {
-    console.log(e);
-  }
+  } catch (e) {}
 }
 
 // export async function changePassword(
@@ -96,14 +94,16 @@ export async function signup(
 
 export async function getUser(uid: string): Promise<AuthUserModel | null> {
   try {
-    const userDoc = await getDoc(doc(db, "users", uid));
+    const userDoc = await getDoc(doc(db, "lms-users", uid));
 
     if (userDoc.exists()) {
       const userData = userDoc.data();
+
       const authUser: AuthUserModel = {
         email: userData.email,
         id: uid,
-        userName: userData.userName,
+        userName: userData.name,
+        phone: userData.phone,
       };
       return authUser;
     }
