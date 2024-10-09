@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 import { AuthContext } from "../../store/AuthContext";
 import { ThemeColors } from "../../resources/colors";
+import { routes } from "../../utils/Routes";
 
 interface authRedireactProps {
   element: React.ReactElement;
@@ -27,7 +28,7 @@ export default function AuthRedirect({ element }: authRedireactProps) {
   }
 
   if (user && user.emailVerified) {
-    return <Navigate to="/home" />;
+    return <Navigate to={routes.suggestions} />;
   }
 
   return element;

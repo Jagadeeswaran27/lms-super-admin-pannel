@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 import { AuthContext } from "../../store/AuthContext";
 import { ThemeColors } from "../../resources/colors";
+import { routes } from "../../utils/Routes";
 
 interface ProtectedRouteProps {
   element: React.ReactElement;
@@ -27,7 +28,7 @@ export default function ProtectedRoute({ element }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    return <Navigate to="/" />;
+    return <Navigate to={routes.login} />;
   }
 
   return element;
