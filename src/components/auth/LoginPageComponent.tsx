@@ -36,11 +36,11 @@ function LoginPageComponent({ login, isLoading }: LoginFormComponentProps) {
               name="password"
             />
           </div>
-          <div className="mb-2 text-right">
+          {/* <div className="mb-2 text-right">
             <span className="cursor-pointer md:text-base text-sm text-authPrimary hover:underline">
               Forgot your password?
             </span>
-          </div>
+          </div> */}
           <AuthButton isLoading={isLoading} text="Login" />
         </form>
       </div>
