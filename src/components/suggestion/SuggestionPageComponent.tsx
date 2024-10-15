@@ -1,15 +1,15 @@
-import Header from '../common/Header';
-import { SetStateAction, useContext, useRef, useState } from 'react';
-import SuggestionSidebar from './SuggestionSidebar';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
-import SuggestionLargeList from '../common/LazyLoadingList';
-import InputField from '../common/InputField';
-import AuthButton from '../common/AuthButton';
-import { addAdminSuggestion } from '../../core/services/SuggestionService';
-import UploadField from '../common/UploadField';
-import { showSnackBar } from '../../utils/Snackbar';
-import { ThemeColors } from '../../resources/colors';
-import { SnackBarContext } from '../../store/SnackBarContext';
+import Header from "../common/Header";
+import { useContext, useRef, useState } from "react";
+import SuggestionSidebar from "./SuggestionSidebar";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import SuggestionLargeList from "../common/LazyLoadingList";
+import InputField from "../common/InputField";
+import AuthButton from "../common/AuthButton";
+import { addAdminSuggestion } from "../../core/services/SuggestionService";
+import UploadField from "../common/UploadField";
+import { showSnackBar } from "../../utils/Snackbar";
+import { ThemeColors } from "../../resources/colors";
+import { SnackBarContext } from "../../store/SnackBarContext";
 
 interface SuggestionPageComponentProps {
   logout: () => void;
@@ -41,22 +41,22 @@ function SuggestionPageComponent({
   async function addSuggestion() {
     setIsLoading(true);
     const suggestionText = suggestionRef.current?.value.toUpperCase();
-    const response = await addAdminSuggestion(suggestionText ?? '', image);
+    const response = await addAdminSuggestion(suggestionText ?? "", image);
     if (response) {
-      suggestionRef.current!.value = '';
+      suggestionRef.current!.value = "";
       setImage(null);
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
-        message: 'Suggestion added successfully',
+        message: "Suggestion added successfully",
       });
     } else {
-      suggestionRef.current!.value = '';
+      suggestionRef.current!.value = "";
       setImage(null);
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.error,
-        message: 'Failed to add suggestion',
+        message: "Failed to add suggestion",
       });
     }
     setIsLoading(false);
@@ -71,7 +71,7 @@ function SuggestionPageComponent({
       <div
         onClick={closeDrawer}
         className={`sm:hidden fixed z-20 w-full h-full bg-[rgba(255,255,255,0.7)] transform transition-transform duration-300 ease-in-out ${
-          showDrawer ? 'translate-x-0' : '-translate-x-full'
+          showDrawer ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="w-[80%]" onClick={(e) => e.stopPropagation()}>
@@ -96,7 +96,7 @@ function SuggestionPageComponent({
               <UploadField
                 placeholder="Choose image"
                 name="image"
-                value={image ? image.name : ''}
+                value={image ? image.name : ""}
                 onChange={handleImageChange}
               />
               <div className="w-[5%]"></div>

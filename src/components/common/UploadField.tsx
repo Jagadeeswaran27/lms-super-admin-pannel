@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { TextField, Button, InputAdornment } from '@mui/material';
-import { CloudUpload } from '@mui/icons-material';
-import { ThemeColors } from '../../resources/colors';
+import React from "react";
+import { TextField, Button, InputAdornment } from "@mui/material";
+import { CloudUpload } from "@mui/icons-material";
+import { ThemeColors } from "../../resources/colors";
 
 interface UploadFieldProps {
   placeholder: string;
@@ -32,25 +32,25 @@ function UploadField({
       label={placeholder}
       value={value}
       sx={{
-        '& .MuiOutlinedInput-root': {
-          borderRadius: '9999px',
-          '& fieldset': {
+        "& .MuiOutlinedInput-root": {
+          borderRadius: "9999px",
+          "& fieldset": {
             borderColor: ThemeColors.authPrimary,
           },
-          '&:hover fieldset': {
+          "&:hover fieldset": {
             borderColor: ThemeColors.authPrimary,
           },
-          '&.Mui-focused fieldset': {
+          "&.Mui-focused fieldset": {
             borderColor: ThemeColors.authPrimary,
           },
         },
-        '& .MuiInputLabel-root': {
+        "& .MuiInputLabel-root": {
           color: ThemeColors.brown,
-          fontSize: '0.875rem',
+          fontSize: "0.875rem",
         },
-        '& .MuiInputLabel-root.Mui-focused': {
+        "& .MuiInputLabel-root.Mui-focused": {
           color: ThemeColors.brown,
-          fontSize: '0.875rem',
+          fontSize: "0.875rem",
         },
       }}
       InputProps={{
@@ -63,9 +63,9 @@ function UploadField({
               startIcon={<CloudUpload />}
               sx={{
                 backgroundColor: ThemeColors.authPrimary,
-                color: '#ffffff',
-                borderRadius: '9999px',
-                '&:hover': {
+                color: "#ffffff",
+                borderRadius: "9999px",
+                "&:hover": {
                   backgroundColor: ThemeColors.authPrimary,
                   opacity: 0.9,
                 },
