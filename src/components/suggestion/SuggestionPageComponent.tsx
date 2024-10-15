@@ -1,8 +1,15 @@
 import Header from "../common/Header";
-import { useState } from "react";
+import { useContext, useRef, useState } from "react";
 import SuggestionSidebar from "./SuggestionSidebar";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import SuggestionLargeList from "../common/LazyLoadingList";
+import InputField from "../common/InputField";
+import AuthButton from "../common/AuthButton";
+import { addAdminSuggestion } from "../../core/services/SuggestionService";
+import UploadField from "../common/UploadField";
+import { showSnackBar } from "../../utils/Snackbar";
+import { ThemeColors } from "../../resources/colors";
+import { SnackBarContext } from "../../store/SnackBarContext";
 
 interface SuggestionPageComponentProps {
   logout: () => void;
@@ -17,13 +24,46 @@ function SuggestionPageComponent({
   approveSuggestion,
   rejectSuggestion,
 }: SuggestionPageComponentProps) {
+  const [_, dispatch] = useContext(SnackBarContext);
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
+  const suggestionRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [image, setImage] = useState<File | null>(null);
+
   function openDrawer() {
     setShowDrawer(true);
   }
 
   function closeDrawer() {
     setShowDrawer(false);
+  }
+
+  async function addSuggestion() {
+    setIsLoading(true);
+    const suggestionText = suggestionRef.current?.value.toUpperCase();
+    const response = await addAdminSuggestion(suggestionText ?? "", image);
+    if (response) {
+      suggestionRef.current!.value = "";
+      setImage(null);
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.success,
+        message: "Suggestion added successfully",
+      });
+    } else {
+      suggestionRef.current!.value = "";
+      setImage(null);
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: "Failed to add suggestion",
+      });
+    }
+    setIsLoading(false);
+  }
+
+  function handleImageChange(file: File | null) {
+    setImage(file);
   }
 
   return (
@@ -45,6 +85,29 @@ function SuggestionPageComponent({
         </div>
         <div className="flex-1 flex justify-center overflow-y-auto">
           <div className="w-[90%] ">
+            <div className="flex-1 flex justify-between items-center pt-10">
+              <InputField
+                placeholder="Enter suggestions"
+                type="text"
+                name="text"
+                inputRef={suggestionRef}
+              />
+              <div className="w-[5%]"></div>
+              <UploadField
+                placeholder="Choose image"
+                name="image"
+                value={image ? image.name : ""}
+                onChange={handleImageChange}
+              />
+              <div className="w-[5%]"></div>
+              <div className="w-[40%]">
+                <AuthButton
+                  text="Add Suggestion"
+                  isLoading={isLoading}
+                  onClick={addSuggestion}
+                />
+              </div>
+            </div>
             {suggestions.length > 0 ? (
               <div className="h-full">
                 <SuggestionLargeList

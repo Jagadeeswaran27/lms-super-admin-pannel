@@ -7,9 +7,10 @@ interface InputFieldProps {
   placeholder: string;
   type: string;
   name: string;
+  inputRef?: React.RefObject<HTMLInputElement> | null;
 }
 
-function InputField({ placeholder, type, name }: InputFieldProps) {
+function InputField({ placeholder, type, name, inputRef }: InputFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleTogglePasswordVisibility = () => {
@@ -45,7 +46,11 @@ function InputField({ placeholder, type, name }: InputFieldProps) {
         },
       }}
       slotProps={{
+        htmlInput: {
+          ref: inputRef,
+        },
         input: {
+          // ref: inputRef,
           endAdornment: type === "password" && (
             <InputAdornment position="end">
               <IconButton
