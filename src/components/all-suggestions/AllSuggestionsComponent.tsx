@@ -1,34 +1,20 @@
-import Header from "../common/Header";
 import { useState } from "react";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import Drawer from "./Drawer";
-import AddedSuggestions from "./AddedSuggestions";
-import NewSuggestions from "./NewSuggestions";
-// import InputField from "../common/InputField";
-// import AuthButton from "../common/AuthButton";
-// import { addAdminSuggestion } from "../../core/services/SuggestionService";
-// import UploadField from "../common/UploadField";
-// import { showSnackBar } from "../../utils/Snackbar";
-// import { ThemeColors } from "../../resources/colors";
-// import { SnackBarContext } from "../../store/SnackBarContext";
+import Drawer from "../suggestion/Drawer";
+import Header from "../common/Header";
+import AddedSuggestions from "../suggestion/AddedSuggestions";
 
-interface SuggestionPageComponentProps {
+interface AllSuggestionsComponentProps {
   logout: () => void;
   suggestions: SuggestionModel[] | [];
-  addSuggestion: (
-    suggestion: string,
-    tag: string,
-    image: File | null
-  ) => Promise<boolean>;
   deleteSuggestion: (id: string) => void;
 }
 
-function SuggestionPageComponent({
+function AllSuggestionsComponent({
+  deleteSuggestion,
   logout,
   suggestions,
-  addSuggestion,
-  deleteSuggestion,
-}: SuggestionPageComponentProps) {
+}: AllSuggestionsComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
 
   function openDrawer() {
@@ -38,7 +24,6 @@ function SuggestionPageComponent({
   function closeDrawer() {
     setShowDrawer(false);
   }
-
   return (
     <div>
       <Drawer
@@ -53,6 +38,7 @@ function SuggestionPageComponent({
         <div className=" mx-auto">
           {suggestions.length > 0 ? (
             <AddedSuggestions
+              all={true}
               deleteSuggestion={deleteSuggestion}
               suggestions={suggestions}
             />
@@ -62,11 +48,9 @@ function SuggestionPageComponent({
             </p>
           )}
         </div>
-
-        <NewSuggestions addSuggestion={addSuggestion} />
       </section>
     </div>
   );
 }
 
-export default SuggestionPageComponent;
+export default AllSuggestionsComponent;

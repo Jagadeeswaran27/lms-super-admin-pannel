@@ -8,10 +8,9 @@ interface HeaderProps {
 
 function Header({ logout, openDrawer }: HeaderProps) {
   return (
-    <header className="border-b-[0.2px] lg:px-10 md:px-5 px-3  h-[90px] flex items-center border-borderColor">
-      <div className="flex-1 max-sm:hidden sm:block"></div>
-      <div className=" sm:hidden flex-1 flex justify-start">
-        <div className="cursor-pointer" onClick={openDrawer}>
+    <header className="border-b-[0.2px] lg:px-10 md:px-5 px-3 sticky top-0 left-0 z-10 shadow-custom bg-white  h-[90px] flex items-center ">
+      <div className="flex-1">
+        <div className="inline-block cursor-pointer" onClick={openDrawer}>
           <Menu
             sx={{
               color: ThemeColors.authPrimary,

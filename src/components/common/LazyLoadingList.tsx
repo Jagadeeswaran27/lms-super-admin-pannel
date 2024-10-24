@@ -38,7 +38,7 @@ function SuggestionLargeList({
 
   return (
     <InfiniteScroll
-      className="h-full"
+      className="h-full flex flex-wrap justify-center"
       dataLength={displayItems.length}
       next={fetchMoreData}
       hasMore={hasMore}
