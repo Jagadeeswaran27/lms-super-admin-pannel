@@ -1,8 +1,14 @@
+import bot from "../assets/icons/bot.svg";
+import book from "../assets/icons/book.svg";
+import send from "../assets/icons/send.svg";
+import plus from "../assets/icons/plus.svg";
+import dropdown from "../assets/icons/dropdown.svg";
+import success from "../assets/icons/success.svg";
 export const icons = {
-  bot: "/assets/icons/bot.svg",
-  book: "/assets/icons/book.svg",
-  send: "assets/icons/send.svg",
-  plus: "assets/icons/plus.svg",
-  dropdown: "assets/icons/dropdown.svg",
-  success: "/assets/icons/success.svg",
+  bot,
+  book,
+  send,
+  plus,
+  dropdown,
+  success,
 };

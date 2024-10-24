@@ -10,11 +10,7 @@ interface SuggestionLargeListListProps {
   rejectSuggestion: (id: string) => void;
 }
 
-function SuggestionLargeList({
-  items,
-  approveSuggestion,
-  rejectSuggestion,
-}: SuggestionLargeListListProps) {
+function SuggestionLargeList({ items }: SuggestionLargeListListProps) {
   const [displayItems, setDisplayItems] = useState<SuggestionModel[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [startIndex, setStartIndex] = useState(0);
@@ -52,8 +48,7 @@ function SuggestionLargeList({
         <div key={item.id}>
           <SuggestionCard
             index={index}
-            rejectSuggestion={rejectSuggestion}
-            approveSuggestion={approveSuggestion}
+            deleteSuggestion={() => {}}
             suggestion={item}
           />
         </div>

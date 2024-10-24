@@ -12,7 +12,7 @@ interface SuggestionImagesProps {
 }
 interface ImageGenerationResponse {
   prompt: string;
-  imageUrls: string[];
+  images: string[];
   summary: string;
 }
 function SuggestionImages({
@@ -34,10 +34,14 @@ function SuggestionImages({
     const imageSuggestion = httpsCallable(functions, "generateImages");
     try {
       const response = await imageSuggestion({
-        prompt: `Create a vibrant and engaging thumbnail for a ${value} online course. Include elements like a laptop displaying code, HTML/CSS symbols, and bright colors to attract learners. The design should be modern and appealing, with a clean layout. The background should be subtle to enhance the main elements.`,
+        // prompt: `A professional, high-quality digital illustration representing a course on ${value}. The image should feature iconic symbols or tools associated with ${value}, arranged in a clean, modern layout suitable for an educational platform. Use a color scheme that reflects the mood and theme of ${value}. The style should be flat design with subtle shadows for depth. Include abstract background elements that suggest learning and growth. The image should be easily recognizable as a course thumbnail at smaller sizes.`,
+        prompt: `Create a professional, high-quality digital illustration for an online course thumbnail. The image should feature abstract symbols or simplified icons representing education, learning, and growth, such as stylized books, lightbulbs, graduation caps, or gears. Include subtle visual elements that hint at the course subject ${value} without being too specific. Arrange these elements in a clean, modern layout on a solid color or gradient background. Use a style of flat design with subtle shadows for depth. The overall composition should be visually appealing and easily recognizable at smaller sizes. Color scheme should be harmonious and appropriate for an educational context. Important: Do not include any text, letters, or numbers in the image.`,
       });
       const data = response.data as ImageGenerationResponse;
-      setGeneratedImages(data.imageUrls);
+      const prependedImages = data.images.map(
+        (image) => `data:image/png;base64,${image}`
+      );
+      setGeneratedImages(prependedImages);
     } catch (error) {
       console.error("Error fetching image suggestions:", error);
     }

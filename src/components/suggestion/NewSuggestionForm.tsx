@@ -9,8 +9,8 @@ import { icons } from "../../resources/icons";
 import SuggestionNamePrompt from "./SuggestionNamePrompt";
 import SuggestionImages from "./SuggestionImages";
 import Success from "./Success";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "../../core/config/firebase";
+// import { httpsCallable } from "firebase/functions";
+// import { functions } from "../../core/config/firebase";
 import { SnackBarContext } from "../../store/SnackBarContext";
 import { showSnackBar } from "../../utils/Snackbar";
 import { ThemeColors } from "../../resources/colors";
@@ -110,13 +110,13 @@ function NewSuggestionForm({
   const handleDownloadSelectedImage = async (url: string) => {
     setIsImageDownloading(true);
     setShowImageSuggestions(false);
-    const fetchImage = httpsCallable(functions, "fetchImage");
+    // const fetchImage = httpsCallable(functions, "fetchImage");
 
     try {
-      const result = await fetchImage({ imageUrl: url });
+      // const result = await fetchImage({ imageUrl: url });
 
-      const base64String = (result.data as { image: string }).image;
-      const response = await fetch(base64String);
+      // const base64String = (result.data as { image: string }).image;
+      const response = await fetch(url);
       const blob = await response.blob();
 
       const fileName = `${inputValue}.jpg`;
