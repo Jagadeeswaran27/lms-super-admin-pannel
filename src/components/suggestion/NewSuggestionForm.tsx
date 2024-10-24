@@ -14,9 +14,9 @@ import Success from "./Success";
 import { SnackBarContext } from "../../store/SnackBarContext";
 import { showSnackBar } from "../../utils/Snackbar";
 import { ThemeColors } from "../../resources/colors";
+import { Delete } from "@mui/icons-material";
 
 interface NewSuggestionFormProps {
-  prefilled: boolean;
   name?: string;
   index?: number;
   addNewPromptItem?: (name: string) => void;
@@ -26,15 +26,18 @@ interface NewSuggestionFormProps {
     image: File | null
   ) => Promise<boolean>;
   closeSuccessModal: (name: string) => void;
+  deleteForm: () => void;
+  showDeleteButton: boolean;
 }
 
 function NewSuggestionForm({
-  prefilled,
   name,
   index,
   addNewPromptItem,
   addSuggestion,
   closeSuccessModal,
+  deleteForm,
+  showDeleteButton,
 }: NewSuggestionFormProps) {
   const [showNamePrompt, setShowNamePrompt] = useState<boolean>(false);
   const [showImageSuggestions, setShowImageSuggestions] =
@@ -52,10 +55,10 @@ function NewSuggestionForm({
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (prefilled) {
-      setInputValue(name!);
+    if (name) {
+      setInputValue(name);
     }
-  }, []);
+  }, [name]);
 
   const disabled = inputValue.length === 0 || file === null || tag.length === 0;
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,7 +162,6 @@ function NewSuggestionForm({
             </h2>
             <div className=" xl:w-[80%] w-[70%] ">
               <InputField
-                disabled={prefilled}
                 value={inputValue}
                 onChange={handleInputChange}
                 name="name"
@@ -174,7 +176,7 @@ function NewSuggestionForm({
                   : "opacity-0"
               }`}
             >
-              <div className={`${prefilled && "scale-0"} w-[220px]`}>
+              <div className={` w-[220px]`}>
                 <div className="relative">
                   <AIButton
                     showButton={showNameSuggestionButton}
@@ -250,7 +252,23 @@ function NewSuggestionForm({
             />
           </section>
         </form>
-        <div className="w-[10%]">
+        <div className="w-[10%] h-full my-5 flex flex-col gap-12">
+          {showDeleteButton && (
+            <button
+              disabled={isLoading}
+              onClick={deleteForm}
+              className="bg-primary flex items-center justify-center gap-3 rounded-md text-white font-semibold p-3"
+            >
+              Delete
+              <div className="bg-cardColor p-2 rounded-full">
+                <Delete
+                  sx={{
+                    color: ThemeColors.primary,
+                  }}
+                />
+              </div>
+            </button>
+          )}
           <button
             onClick={handleAddNewSuggestion}
             disabled={disabled || isLoading}

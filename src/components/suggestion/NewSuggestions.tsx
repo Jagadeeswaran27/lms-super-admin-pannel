@@ -14,6 +14,7 @@ interface NewSuggestionsProps {
 
 function NewSuggestions({ addSuggestion }: NewSuggestionsProps) {
   const [promptItems, setPromptItems] = useState<string[]>([]);
+
   const [_, dispatch] = useContext(SnackBarContext);
 
   function handleAddNewPromptItem(name: string) {
@@ -30,6 +31,12 @@ function NewSuggestions({ addSuggestion }: NewSuggestionsProps) {
     });
   }
 
+  function handleDeleteForm(index: number) {
+    setPromptItems((pre) => {
+      return pre.filter((_, i) => i !== index);
+    });
+  }
+
   function handleCloseSuccessModal(name: string) {
     setPromptItems((pre) => {
       return pre.filter((item) => item !== name);
@@ -39,17 +46,20 @@ function NewSuggestions({ addSuggestion }: NewSuggestionsProps) {
   return (
     <div className="bg-cardColor my-5 w-[95%] mx-auto rounded-xl shadow-custom">
       <NewSuggestionForm
+        showDeleteButton={promptItems.length > 1 ? true : false}
+        deleteForm={() => handleDeleteForm(0)}
         closeSuccessModal={handleCloseSuccessModal}
         addSuggestion={addSuggestion}
-        prefilled={false}
+        name={promptItems.length > 0 ? promptItems[0] : ""}
         addNewPromptItem={handleAddNewPromptItem}
       />
-      {promptItems.length > 0 &&
-        promptItems.map((item, index) => (
+      {promptItems.length > 1 &&
+        promptItems.slice(1).map((item, index) => (
           <div key={index}>
             <NewSuggestionForm
+              showDeleteButton={promptItems.length > 1 ? true : false}
+              deleteForm={() => handleDeleteForm(index + 1)}
               closeSuccessModal={handleCloseSuccessModal}
-              prefilled={true}
               addNewPromptItem={handleAddNewPromptItem}
               addSuggestion={addSuggestion}
               index={index + 2}

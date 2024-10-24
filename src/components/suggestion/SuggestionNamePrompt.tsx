@@ -1,4 +1,4 @@
-import { Close } from "@mui/icons-material";
+import { Check, Close } from "@mui/icons-material";
 import AIButton from "./AIButton";
 import { icons } from "../../resources/icons";
 import { httpsCallable } from "firebase/functions";
@@ -25,16 +25,16 @@ function SuggestionNamePrompt({
   closePrompt,
   addNewPromptItem,
 }: SuggestionNamePromptProps) {
-  function handleAddNewPromptItem(name: string) {
-    addNewPromptItem(name);
-    closePrompt();
-  }
-
   const [prompt, setPrompt] = useState<string>(defaultPrompt);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [response, setResponse] = useState<SuggestionResponse | null>(null);
   const [_, dispatch] = useContext(SnackBarContext);
+  const [addedSuggestions, setAddedSuggestions] = useState<string[]>([]);
 
+  function handleAddNewPromptItem(name: string) {
+    setAddedSuggestions((pre) => [...pre, name]);
+    addNewPromptItem(name);
+  }
   const getSuggestions = async (prompt: string) => {
     if (prompt.trim().length === 0) {
       showSnackBar({
@@ -125,9 +125,10 @@ function SuggestionNamePrompt({
 
                     <button
                       onClick={() => handleAddNewPromptItem(name)}
-                      className="bg-primary text-xs cursor-pointer xl:text-base text-white mx-[0.9px] px-7 rounded-md"
+                      disabled={addedSuggestions.includes(name)}
+                      className="bg-primary text-xs xl:text-base text-white mx-[0.9px] px-7 rounded-md"
                     >
-                      Add
+                      {addedSuggestions.includes(name) ? <Check /> : "Add"}
                     </button>
                   </div>
                 ))}

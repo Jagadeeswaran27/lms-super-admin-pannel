@@ -94,7 +94,7 @@ function AddedSuggestions({
           </Menu>
         </p>
       </section>
-      <div className="max-md:hidden flex flex-wrap justify-center">
+      <div className="max-md:hidden flex flex-wrap justify-start mx-1">
         {all &&
           filteredSuggestions.length > 0 &&
           filteredSuggestions.map((suggestion, index) => (
@@ -112,7 +112,7 @@ function AddedSuggestions({
           </p>
         )}
         {filteredSuggestions.length > 0 ? (
-          filteredSuggestions.slice(0, 20).map((suggestion, index) => (
+          filteredSuggestions.slice(0, 30).map((suggestion, index) => (
             <div key={suggestion.id}>
               <SuggestionCard
                 deleteSuggestion={deleteSuggestion}
@@ -127,7 +127,7 @@ function AddedSuggestions({
           </p>
         )}
       </div>
-      {filteredSuggestions.length > 20 && !all && (
+      {filteredSuggestions.length > 30 && !all && (
         <section className="text-end p-3 px-6">
           <button className="bg-primary text-white text font-semibold px-5 py-1 rounded-full">
             <Link to={routes.allSuggestions}>More</Link>
