@@ -13,7 +13,7 @@ import { SnackBarProvider } from "./store/SnackBarContext";
 import { ThemeProvider, createTheme } from "@mui/material";
 import SuggestionPage from "./pages/suggestions/SuggestionPage";
 import { routes } from "./utils/Routes";
-import AllSuggestionsPage from "./pages/suggestions/AllSuggestionsPage";
+// import AllSuggestionsPage from "./pages/suggestions/AllSuggestionsPage";
 
 function App() {
   const theme = createTheme({
@@ -38,10 +38,10 @@ function App() {
                   path={routes.suggestions}
                   element={<ProtectedRoute element={<SuggestionPage />} />}
                 />
-                <Route
+                {/* <Route
                   path={routes.allSuggestions}
                   element={<ProtectedRoute element={<AllSuggestionsPage />} />}
-                />
+                /> */}
                 <Route
                   path="*"
                   element={<Navigate to="/suggestions" replace />}

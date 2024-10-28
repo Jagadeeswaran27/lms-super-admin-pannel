@@ -17,18 +17,25 @@ function SuggestionCard({
     <div
       className={` ${
         index % 2 == 0 ? "bg-white" : "bg-cardColor"
-      }  lg:mx-3 md:mx-5 mx-2 rounded-md flex relative gap-2 items-center  shadow-custom px-2 h-[45px] my-2 lg:pl-5 max-lg:px-7 max-sm:px-2`}
+      }   rounded-md w-[80%] mx-auto my-3 flex relative gap-2 items-center shadow-custom px-2 py-5 lg:pl-5 max-lg:px-7 max-sm:px-2`}
     >
-      <div className="w-[30px] h-[30px] rounded-full">
-        <img className="w-full h-full rounded-full" src={suggestion.image} />
+      <div className="flex gap-3 max-w-[40%] min-w-[40%] items-center">
+        <div className="w-[30px] h-[30px] rounded-full">
+          <img className="w-full h-full rounded-full" src={suggestion.image} />
+        </div>
+        <p className="text-lg pt-1">{suggestion.name}</p>
       </div>
-      <div className="flex flex-col items-center gap-1 justify-around">
-        <p className="text-xs pt-1">{suggestion.name}</p>
-        <p className=" bg-authPrimary inline-block text-xs rounded-full px-1  text-white">
-          {suggestion.tag}
-        </p>
-      </div>
-      <div className="flex flex-col justify-center items-center">
+      <div className="flex justify-between w-[60%] items-start gap-5">
+        <ul className="flex items-start flex-wrap gap-3">
+          {suggestion.tag.map((cat, _) => (
+            <li
+              key={_}
+              className=" bg-authPrimary text-sm rounded-full px-2 py-[1px] text-white left-0 bottom-1"
+            >
+              {cat}
+            </li>
+          ))}
+        </ul>
         <Delete
           onClick={() => deleteSuggestion(suggestion.id)}
           className="cursor-pointer"
@@ -37,9 +44,6 @@ function SuggestionCard({
           }}
         />
       </div>
-      {/* <p className="absolute bg-authPrimary text-[10px] rounded-r-full px-1 py-[1px] text-white left-0 bottom-1">
-        {suggestion.tag}
-      </p> */}
     </div>
   );
 }

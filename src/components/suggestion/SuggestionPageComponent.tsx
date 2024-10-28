@@ -1,35 +1,54 @@
 import Header from "../common/Header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import Drawer from "./Drawer";
 import AddedSuggestions from "./AddedSuggestions";
-import NewSuggestions from "./NewSuggestions";
-// import InputField from "../common/InputField";
-// import AuthButton from "../common/AuthButton";
-// import { addAdminSuggestion } from "../../core/services/SuggestionService";
-// import UploadField from "../common/UploadField";
-// import { showSnackBar } from "../../utils/Snackbar";
-// import { ThemeColors } from "../../resources/colors";
-// import { SnackBarContext } from "../../store/SnackBarContext";
+import { icons } from "../../resources/icons";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import AISuggestions from "./AISuggestions";
 
 interface SuggestionPageComponentProps {
   logout: () => void;
   suggestions: SuggestionModel[] | [];
   addSuggestion: (
     suggestion: string,
-    tag: string,
+    tag: string[],
     image: File | null
   ) => Promise<boolean>;
   deleteSuggestion: (id: string) => void;
+  addNewCategory: (category: string) => Promise<boolean>;
+  suggestionCategories: SuggestionCategoriesModel[];
+  modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
+}
+function getScrollbarWidth() {
+  return window.innerWidth - document.documentElement.clientWidth;
 }
 
 function SuggestionPageComponent({
   logout,
   suggestions,
-  addSuggestion,
+  addNewCategory,
   deleteSuggestion,
+  addSuggestion,
+  modifySuggestion,
+  suggestionCategories,
 }: SuggestionPageComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
+  const [showNamePrompt, setShowNamePrompt] = useState<boolean>(false);
+  useEffect(() => {
+    if (showNamePrompt) {
+      const scrollbarWidth = getScrollbarWidth();
+      document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    } else {
+      document.body.style.overflow = "auto";
+      document.body.style.paddingRight = "0px";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+      document.body.style.paddingRight = "0px";
+    };
+  }, [showNamePrompt]);
 
   function openDrawer() {
     setShowDrawer(true);
@@ -41,6 +60,17 @@ function SuggestionPageComponent({
 
   return (
     <div>
+      {showNamePrompt && (
+        <AISuggestions
+          addSuggestion={addSuggestion}
+          modifySuggestion={modifySuggestion}
+          suggestions={suggestions}
+          suggestionCategories={suggestionCategories}
+          addNewCategory={addNewCategory}
+          addNewPromptItem={() => {}}
+          closePrompt={() => setShowNamePrompt(false)}
+        />
+      )}
       <Drawer
         closeDrawer={closeDrawer}
         logout={logout}
@@ -53,6 +83,7 @@ function SuggestionPageComponent({
         <div className=" mx-auto">
           {suggestions.length > 0 ? (
             <AddedSuggestions
+              suggestionCategories={suggestionCategories}
               deleteSuggestion={deleteSuggestion}
               suggestions={suggestions}
             />
@@ -62,8 +93,14 @@ function SuggestionPageComponent({
             </p>
           )}
         </div>
-
-        <NewSuggestions addSuggestion={addSuggestion} />
+        <div className="fixed right-0 bottom-0 p-5">
+          <img
+            onClick={() => setShowNamePrompt(true)}
+            className="cursor-pointer w-[80px] h-[80px]"
+            src={icons.bot}
+          />
+        </div>
+        {/* <NewSuggestions addSuggestion={addSuggestion} /> */}
       </section>
     </div>
   );

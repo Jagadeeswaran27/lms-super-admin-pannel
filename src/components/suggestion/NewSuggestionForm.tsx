@@ -6,7 +6,7 @@ import { images } from "../../resources/images";
 import CustomDropDown from "../common/CustomDropDown";
 import { options } from "../../utils/options";
 import { icons } from "../../resources/icons";
-import SuggestionNamePrompt from "./SuggestionNamePrompt";
+import SuggestionNamePrompt from "./AISuggestions";
 import SuggestionImages from "./SuggestionImages";
 import Success from "./Success";
 // import { httpsCallable } from "firebase/functions";

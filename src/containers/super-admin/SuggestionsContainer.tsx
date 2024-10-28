@@ -7,58 +7,48 @@ import { ThemeColors } from "../../resources/colors";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import {
   addAdminSuggestion,
-  // approveSuggestion,
+  addSuggestionCategory,
   deleteAdminSuggestion,
+  getSuggestionCategories,
   getSuggestions,
-  // rejectSuggestion,
+  modifySuggestion,
 } from "../../core/services/SuggestionService";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 
 function SuggestionsContainer() {
   const [suggestions, setSuggestions] = useState<SuggestionModel[] | []>([]);
+  const [suggestionCategories, setSuggestionCategories] = useState<
+    SuggestionCategoriesModel[] | []
+  >([]);
   const [_, dispatch] = useContext(SnackBarContext);
 
   useEffect(() => {
     handleGetSuggestions();
+    handleGetSuggestionCategories();
   }, []);
-
-  // async function handleApproveSuggestion(id: string) {
-  //   const response = await approveSuggestion(id);
-
-  //   if (response) {
-  //     setSuggestions((prev) => {
-  //       const updatedSuggestions = prev.filter(
-  //         (suggestion) => suggestion.id !== id
-  //       );
-  //       return updatedSuggestions;
-  //     });
-  //     showSnackBar({
-  //       dispatch: dispatch,
-  //       color: ThemeColors.success,
-  //       message: "Suggestion approved successfully",
-  //     });
-  //   }
-  // }
-  // async function handleRejectSuggestion(id: string) {
-  //   const response = await rejectSuggestion(id);
-
-  //   if (response) {
-  //     setSuggestions((prev) => {
-  //       const updatedSuggestions = prev.filter(
-  //         (suggestion) => suggestion.id !== id
-  //       );
-  //       return updatedSuggestions;
-  //     });
-  //     showSnackBar({
-  //       dispatch: dispatch,
-  //       color: ThemeColors.success,
-  //       message: "Suggestion rejected successfully",
-  //     });
-  //   }
-  // }
 
   async function handleGetSuggestions() {
     const suggestions = await getSuggestions();
+
     setSuggestions(suggestions);
+  }
+
+  async function handleModifySuggestion(
+    suggestion: SuggestionModel
+  ): Promise<boolean> {
+    const response = await modifySuggestion(suggestion);
+    if (response) {
+      setSuggestions((prev) => {
+        const updatedSuggestions = prev.map((suggestionItem) => {
+          if (suggestionItem.id === suggestion.id) {
+            return suggestion;
+          }
+          return suggestionItem;
+        });
+        return updatedSuggestions;
+      });
+    }
+    return response;
   }
 
   async function handleLogout() {
@@ -68,6 +58,17 @@ function SuggestionsContainer() {
       color: ThemeColors.success,
       message: "Logout successfull",
     });
+  }
+
+  async function handleGetSuggestionCategories() {
+    const response = await getSuggestionCategories();
+    setSuggestionCategories(response);
+  }
+
+  async function handleAddNewCategory(category: string): Promise<boolean> {
+    const response = await addSuggestionCategory(category);
+    setSuggestionCategories((prev) => [...prev, { name: category }]);
+    return response;
   }
 
   async function deleteSuggestion(id: string) {
@@ -87,9 +88,9 @@ function SuggestionsContainer() {
     }
   }
 
-  async function addSuggestion(
+  async function handleAddSuggestion(
     suggestionText: string,
-    tag: string,
+    tag: string[],
     image: File | null
   ): Promise<boolean> {
     const response = await addAdminSuggestion(suggestionText ?? "", tag, image);
@@ -103,10 +104,13 @@ function SuggestionsContainer() {
 
   return (
     <SuggestionPageComponent
+      modifySuggestion={handleModifySuggestion}
+      suggestionCategories={suggestionCategories}
       deleteSuggestion={deleteSuggestion}
-      addSuggestion={addSuggestion}
+      addSuggestion={handleAddSuggestion}
       suggestions={suggestions}
       logout={handleLogout}
+      addNewCategory={handleAddNewCategory}
     />
   );
 }

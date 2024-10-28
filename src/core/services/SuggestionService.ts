@@ -13,6 +13,62 @@ import {
 import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import { app, db } from "../config/firebase";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+
+export async function getSuggestionCategories(): Promise<
+  SuggestionCategoriesModel[] | []
+> {
+  try {
+    const suggestionCategoriesRef = collection(db, "suggestion-categories");
+    const querySnapshot = await getDocs(suggestionCategoriesRef);
+    if (querySnapshot.empty) {
+      return [];
+    }
+
+    const suggestionCategories: SuggestionCategoriesModel[] =
+      querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          name: data.name,
+        };
+      });
+    return suggestionCategories;
+  } catch (e) {
+    console.error("Error fetching suggestion categories:", e);
+    return [];
+  }
+}
+
+export async function modifySuggestion(
+  suggestion: SuggestionModel
+): Promise<boolean> {
+  try {
+    const suggestionRef = doc(db, "suggestions", suggestion.id);
+    await updateDoc(suggestionRef, {
+      tag: suggestion.tag,
+    });
+    return true;
+  } catch (e) {
+    console.error("Error modifying suggestion:", e);
+    return false;
+  }
+}
+
+export async function addSuggestionCategory(
+  newCategory: string
+): Promise<boolean> {
+  try {
+    const suggestionCategoriesRef = collection(db, "suggestion-categories");
+    const newSuggestionCategory: SuggestionCategoriesModel = {
+      name: newCategory,
+    };
+    await addDoc(suggestionCategoriesRef, newSuggestionCategory);
+    return true;
+  } catch (e) {
+    console.error("Error adding suggestion category:", e);
+    return false;
+  }
+}
 
 export async function getSuggestions(): Promise<SuggestionModel[] | []> {
   try {
@@ -27,7 +83,7 @@ export async function getSuggestions(): Promise<SuggestionModel[] | []> {
       return {
         id: doc.id,
         name: data.name,
-        tag: data.tag || "Technology",
+        tag: data.tag || ["Technology"],
         isApproved: data.isApproved,
         image: data.image || "",
         isRejected: data.isRejected,
@@ -76,7 +132,7 @@ export async function deleteAdminSuggestion(id: string): Promise<boolean> {
 
 export async function addAdminSuggestion(
   suggestion: string,
-  tag: string,
+  tag: string[],
   image?: File | null
 ): Promise<SuggestionModel | null> {
   if (suggestion === "" || image === null || image === undefined) {

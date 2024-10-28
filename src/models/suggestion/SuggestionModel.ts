@@ -4,5 +4,5 @@ export interface SuggestionModel {
   isApproved: boolean;
   image: string;
   isRejected: boolean;
-  tag: string;
+  tag: string[];
 }
