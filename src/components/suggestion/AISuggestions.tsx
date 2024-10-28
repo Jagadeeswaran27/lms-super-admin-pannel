@@ -90,7 +90,7 @@ function AISuggestions({
       setNewCategories([]);
       setModifiedSuggestions([]);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
     setIsLoading(false);
   };
@@ -176,7 +176,6 @@ function AISuggestions({
         image: string;
         summary: string;
       };
-      // console.log(`data:image/png;base64,${data.image}`);
       const downloadResponse = await handleDownloadSelectedImage(
         value,
         `data:image/png;base64,${data.image}`

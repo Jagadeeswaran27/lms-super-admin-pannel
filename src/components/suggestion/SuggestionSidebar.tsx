@@ -3,6 +3,8 @@ import CustomIconButton from "../common/CustomIconButton";
 import SuperAdminContactInfoCard from "./SuperAdminContactInfoCard";
 import SuperAdminDetailCard from "./SuperAdminDetailCard";
 import { ThemeColors } from "../../resources/colors";
+import { Link, useLocation } from "react-router-dom";
+import { routes } from "../../utils/Routes";
 
 interface SuggestionSidebarProps {
   logout: () => void;
@@ -10,6 +12,8 @@ interface SuggestionSidebarProps {
 }
 
 function SuggestionSidebar({ logout, closeDrawer }: SuggestionSidebarProps) {
+  const location = useLocation();
+  const isManual = location.pathname === routes.suggestionManual;
   return (
     <div className="w-full py-3 sm:py-5 h-[100vh]  bg-displayGradient">
       <div className="text-right pr-5 ">
@@ -26,6 +30,14 @@ function SuggestionSidebar({ logout, closeDrawer }: SuggestionSidebarProps) {
           <SuperAdminDetailCard />
           <div className="h-6"></div>
           <SuperAdminContactInfoCard />
+          <p className="mt-3">
+            <Link
+              to={isManual ? routes.suggestions : routes.suggestionManual}
+              className="text-textBrown bg-cardColor px-2 py-2 font-medium rounded-lg text-lg block w-full text-center"
+            >
+              {isManual ? "AI Suggestions" : "Manual"}
+            </Link>
+          </p>
         </section>
         <CustomIconButton
           onClick={logout}

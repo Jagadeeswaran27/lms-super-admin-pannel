@@ -10,8 +10,8 @@ import { ThemeColors } from "../../resources/colors";
 
 interface CustomDropDownProps {
   items: string[];
-  onChange?: (e: SelectChangeEvent<string>) => void;
-  value?: string;
+  onChange?: (e: SelectChangeEvent<string[]>) => void; // Change the event type to handle array
+  value?: string[]; // Use string array for multiple selection
 }
 
 function CustomDropDown({ items, onChange, value }: CustomDropDownProps) {
@@ -29,24 +29,24 @@ function CustomDropDown({ items, onChange, value }: CustomDropDownProps) {
         Select an option
       </InputLabel>
       <Select
-        value={value}
+        multiple
+        value={value || []}
         onChange={onChange}
         label="Select an option"
-        defaultValue=""
         input={
           <OutlinedInput
             label="Select an option"
             sx={{
               borderRadius: "9999px",
               "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: ThemeColors.authPrimary, // Default border color
-                borderRadius: "9999px", // Apply rounded corners
+                borderColor: ThemeColors.authPrimary,
+                borderRadius: "9999px",
               },
               "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: ThemeColors.authPrimary, // Hover border color
+                borderColor: ThemeColors.authPrimary,
               },
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: ThemeColors.authPrimary, // Focus border color
+                borderColor: ThemeColors.authPrimary,
               },
             }}
           />

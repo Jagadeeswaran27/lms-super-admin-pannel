@@ -4,7 +4,6 @@ import {
   BrowserRouter as Router,
   Routes,
 } from "react-router-dom";
-// import RootPage from "./pages/RootPage";
 import LoginPage from "./pages/auth/LoginPage";
 import AuthProvider from "./store/AuthContext";
 import AuthRedirect from "./components/protection/AuthRedirect";
@@ -13,7 +12,7 @@ import { SnackBarProvider } from "./store/SnackBarContext";
 import { ThemeProvider, createTheme } from "@mui/material";
 import SuggestionPage from "./pages/suggestions/SuggestionPage";
 import { routes } from "./utils/Routes";
-// import AllSuggestionsPage from "./pages/suggestions/AllSuggestionsPage";
+import ManualSuggestionPage from "./pages/suggestions/ManualSuggestionPage";
 
 function App() {
   const theme = createTheme({
@@ -29,7 +28,6 @@ function App() {
           <Router>
             <div className="font-poppins">
               <Routes>
-                {/* <Route path="/" element={<RootPage />} /> */}
                 <Route
                   path={routes.login}
                   element={<AuthRedirect element={<LoginPage />} />}
@@ -38,10 +36,12 @@ function App() {
                   path={routes.suggestions}
                   element={<ProtectedRoute element={<SuggestionPage />} />}
                 />
-                {/* <Route
-                  path={routes.allSuggestions}
-                  element={<ProtectedRoute element={<AllSuggestionsPage />} />}
-                /> */}
+                <Route
+                  path={routes.suggestionManual}
+                  element={
+                    <ProtectedRoute element={<ManualSuggestionPage />} />
+                  }
+                />
                 <Route
                   path="*"
                   element={<Navigate to="/suggestions" replace />}
