@@ -46,6 +46,7 @@ export async function modifySuggestion(
     const suggestionRef = doc(db, "suggestions", suggestion.id);
     await updateDoc(suggestionRef, {
       tag: suggestion.tag,
+      name: suggestion.name,
     });
     return true;
   } catch (e) {

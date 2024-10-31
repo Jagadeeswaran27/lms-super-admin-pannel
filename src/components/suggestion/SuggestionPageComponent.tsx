@@ -83,9 +83,12 @@ function SuggestionPageComponent({
         <div className=" mx-auto">
           {suggestions.length > 0 ? (
             <AddedSuggestions
+              modifySuggestion={modifySuggestion}
               suggestionCategories={suggestionCategories}
               deleteSuggestion={deleteSuggestion}
-              suggestions={suggestions}
+              suggestions={suggestions.sort((a, b) =>
+                a.name.localeCompare(b.name)
+              )}
             />
           ) : (
             <p className="flex flex-1 text-brown font-semibold md:text-xl text-base h-full items-center justify-center">

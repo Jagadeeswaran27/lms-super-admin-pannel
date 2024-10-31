@@ -17,9 +17,20 @@ export function filterSuggestion(
 
         // If tags do not match, include it with response tags
         if (!hasMatchingTags) {
+          // Identify new tags that are in the response but not in the suggestion
+          const newTags = responseItem.tag.filter(
+            (tag) => !suggestion.tag.includes(tag)
+          );
+
+          // Exclude new tags from responseItem.tag
+          const updatedTags = responseItem.tag.filter(
+            (tag) => !newTags.includes(tag)
+          );
+
           acc.push({
             ...suggestion,
-            tag: responseItem.tag, // Replace suggestion's tags with response tags
+            tag: updatedTags, // Replace suggestion's tags with updated response tags
+            newTags, // Add the new tags to the suggestion
           });
         }
       } else {

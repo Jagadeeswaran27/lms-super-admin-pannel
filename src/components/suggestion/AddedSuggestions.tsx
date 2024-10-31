@@ -10,17 +10,20 @@ interface AddedSuggestionsProps {
   suggestions: SuggestionModel[];
   deleteSuggestion: (id: string) => void;
   suggestionCategories: SuggestionCategoriesModel[];
+  modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
 }
 
 function AddedSuggestions({
   suggestions,
   deleteSuggestion,
   suggestionCategories,
+  modifySuggestion,
 }: AddedSuggestionsProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTag, setSelectedTag] = useState<string[]>(["All"]);
   const [filteredSuggestions, setFilteredSuggestions] =
     useState<SuggestionModel[]>(suggestions);
+
   useEffect(() => {
     if (selectedTag.includes("All")) {
       setFilteredSuggestions(suggestions);
@@ -34,8 +37,9 @@ function AddedSuggestions({
   }, [suggestions, selectedTag]);
 
   const sortedSuggestions = suggestionCategories.sort((a, b) =>
-    a.name.localeCompare(b.name)
+    a.name.replace(/\s+/g, "").localeCompare(b.name.replace(/\s+/g, ""))
   );
+
   const handleMouseEnter = (event: MouseEvent<HTMLImageElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -73,7 +77,11 @@ function AddedSuggestions({
           Sort by:{" "}
           <span className="font-medium gap-2 flex">
             {selectedTag.includes("All") ? "All" : "Multiple"}
-            <img onMouseEnter={handleMouseEnter} src={icons.dropdown} />
+            <img
+              onClick={handleMouseEnter}
+              className="cursor-pointer"
+              src={icons.dropdown}
+            />
           </span>
           <Menu
             id="simple-menu"
@@ -81,9 +89,6 @@ function AddedSuggestions({
             open={Boolean(anchorEl)}
             onClose={handleMouseLeave}
             className="max-h-[600px]"
-            MenuListProps={{
-              onMouseLeave: handleMouseLeave,
-            }}
           >
             <MenuItem onClick={() => handleSetSelectedTag("All")}>All</MenuItem>
             {sortedSuggestions.map((category) => (
@@ -104,6 +109,8 @@ function AddedSuggestions({
           filteredSuggestions.map((suggestion, index) => (
             <div key={suggestion.id}>
               <SuggestionCard
+                modifySuggestion={modifySuggestion}
+                suggestionCategories={suggestionCategories}
                 deleteSuggestion={deleteSuggestion}
                 index={index}
                 suggestion={suggestion}

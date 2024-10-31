@@ -10,6 +10,7 @@ import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import { filterSuggestion } from "../../utils/helper";
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
+import ModifiedSuggestions from "./ModifiedSuggestions";
 
 interface AISuggestionsProps {
   closePrompt: () => void;
@@ -102,7 +103,10 @@ function AISuggestions({
       const response = await suggestCategories({
         existingCategories: suggestionCategories,
       });
-      const data = response.data as NewCategoriesResponse;
+      let data = response.data as NewCategoriesResponse;
+      if (data.suggestedCategories.length === 1) {
+        data.suggestedCategories = data.suggestedCategories[0].split(",");
+      }
       const stateData: NewCategoriesState[] = data.suggestedCategories.map(
         (category) => {
           return {
@@ -189,7 +193,7 @@ function AISuggestions({
 
   const handleAddNewCategory = async (category: string) => {
     setIsAddingLoading(true);
-    const sanitizedCategory = category.split(" ")[1];
+    const sanitizedCategory = category.split(".")[1];
     const response = await addNewCategory(sanitizedCategory);
     if (response) {
       setNewCategories((prev) =>
@@ -263,8 +267,7 @@ function AISuggestions({
                   onClick={isLoading ? () => {} : handleGetModifiedSuggestion}
                   className="cursor-pointer"
                 >
-                  2. Ask AI to suggest new or modify categories for the existing
-                  subjects
+                  2. Ask AI to suggest new categories for the existing subjects
                 </span>
               </p>
               <p className="text-primary text-lg my-3">
@@ -314,38 +317,44 @@ function AISuggestions({
               )}
               {!isLoading && modifiedSuggestions.length > 0 && (
                 <div>
-                  <h1 className="text-textBrown font-semibold mt-5">
-                    Here are the Modifications!
-                  </h1>
-                  {modifiedSuggestions.map((suggestion) => (
-                    <div
-                      key={suggestion.name}
-                      className="flex gap-5 items-center my-5 w-[90%] mx-auto"
-                    >
-                      <p className="w-[40%] text-base text-textBrown">
-                        {suggestion.name}
-                      </p>
-                      <div className="flex w-[60%] justify-between items-center gap-5">
-                        <div className="flex gap-2 flex-wrap">
-                          {suggestion.tag.map((tag) => (
-                            <p
-                              className="bg-authPrimary text-xs rounded-full px-2 py-[1px] text-white"
-                              key={tag}
-                            >
-                              {tag}
-                            </p>
-                          ))}
+                  {modifiedSuggestions.some(
+                    (sugg) => sugg.newTags && sugg.newTags.length > 0
+                  ) ? (
+                    <div className="flex justify-between items-center mb-7">
+                      <h1 className="text-textBrown font-semibold">
+                        Here are the New Suggestions!
+                      </h1>
+                      <div>
+                        <div className="flex items-center space-x-1">
+                          <span className="w-3 h-3 rounded-full bg-primary inline-block"></span>
+                          <span className="text-sm text-textBrown font-medium">
+                            Existing Categories
+                          </span>
                         </div>
-                        <button
-                          disabled={isAddingLoading}
-                          onClick={() => handleModifySuggestion(suggestion)}
-                          className="bg-primary text-sm text-white mx-[0.9px] px-2 py-1 rounded-md"
-                        >
-                          Modify
-                        </button>
+                        <div className="flex items-center space-x-1">
+                          <span className="w-3 h-3 rounded-full bg-green-600 inline-block"></span>
+                          <span className="text-sm text-textBrown font-medium">
+                            New Categories
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    <p className="text-textBrown font-semibold">
+                      No New Suggestions
+                    </p>
+                  )}
+
+                  {modifiedSuggestions.map(
+                    (suggestion) =>
+                      suggestion.newTags && (
+                        <ModifiedSuggestions
+                          modifySuggestion={handleModifySuggestion}
+                          isAddingLoading={isAddingLoading}
+                          suggestion={suggestion}
+                        />
+                      )
+                  )}
                 </div>
               )}
               {!isLoading && nameSuggestions.length > 0 && (
