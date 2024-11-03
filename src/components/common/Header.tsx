@@ -1,5 +1,7 @@
 import { Logout, Menu } from "@mui/icons-material";
 import { ThemeColors } from "../../resources/colors";
+import { Link, useLocation } from "react-router-dom";
+import { routes } from "../../utils/Routes";
 
 interface HeaderProps {
   logout: () => void;
@@ -7,6 +9,8 @@ interface HeaderProps {
 }
 
 function Header({ logout, openDrawer }: HeaderProps) {
+  const location = useLocation();
+  const isManual = location.pathname === routes.suggestionManual;
   return (
     <header className="border-b-[0.2px] lg:px-10 md:px-5 px-3 sticky top-0 left-0 z-10 shadow-custom bg-white  h-[90px] flex items-center ">
       <div className="flex-1">
@@ -23,7 +27,15 @@ function Header({ logout, openDrawer }: HeaderProps) {
         Suggestion
       </h1>
       <div className="flex-1 sm:hidden"></div>
-      <div className="text-center max-sm:hidden flex-1 flex justify-end">
+      <div className="text-center max-sm:hidden flex-1 flex gap-4 justify-end">
+        <p className="mt-3">
+          <Link
+            to={isManual ? routes.suggestions : routes.suggestionManual}
+            className="text-white bg-primary  px-2 py-1 font-semibold rounded-lg text-lg block w-full text-center"
+          >
+            {isManual ? "AI Suggestions" : "Custom"}
+          </Link>
+        </p>
         <div onClick={logout} className="cursor-pointer">
           <Logout
             sx={{

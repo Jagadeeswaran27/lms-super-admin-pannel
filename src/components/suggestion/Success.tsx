@@ -2,9 +2,10 @@ import { icons } from "../../resources/icons";
 
 interface SuccessProps {
   closeModal: () => void;
+  message: string;
 }
 
-function Success({ closeModal }: SuccessProps) {
+function Success({ closeModal, message }: SuccessProps) {
   return (
     <div className="fixed z-10  w-screen fade-in h-screen top-0 left-0 bg-[rgba(255,255,255,0.7)] flex justify-center items-center">
       <div className="flex w-full h-full justify-center items-center">
@@ -16,10 +17,7 @@ function Success({ closeModal }: SuccessProps) {
             Successfully
           </div>
           <div className="p-3 my-3 text-center ">
-            <p className="text-brown font-medium">
-              The Course Suggestion has
-              <br /> been added
-            </p>
+            <p className="text-brown font-medium">{message}</p>
             <img src={icons.success} className="mx-auto my-5" />
             <button
               onClick={closeModal}

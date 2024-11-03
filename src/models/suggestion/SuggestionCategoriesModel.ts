@@ -1,3 +1,6 @@
 export interface SuggestionCategoriesModel {
-  name: string;
+  superCategory: {
+    name: string;
+    secondLevelCategories: string[];
+  };
 }

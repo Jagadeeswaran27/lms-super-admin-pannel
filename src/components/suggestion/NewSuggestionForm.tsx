@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import InputField from "../common/InputField";
 import { SelectChangeEvent } from "@mui/material";
-import CustomDropDown from "../common/CustomDropDown";
 import Success from "./Success";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 import { icons } from "../../resources/icons";
+import MultipleCustomDropDown from "../common/MultipleCustomDropDown";
 
 interface NewSuggestionFormProps {
   addSuggestion: (
@@ -60,7 +60,12 @@ function NewSuggestionForm({
 
   return (
     <div>
-      {showSuccess && <Success closeModal={handleCloseSuccessModal} />}
+      {showSuccess && (
+        <Success
+          message="Suggestion Added"
+          closeModal={handleCloseSuccessModal}
+        />
+      )}
 
       <div className="flex items-end justify-evenly p-5">
         <form
@@ -112,10 +117,12 @@ function NewSuggestionForm({
             <h2 className="text-textBrown md:text-xl text-lg max-sm:text-center pt-5 pb-3 font-medium">
               Tag <span className="text-primary text-[10px]">(categories)</span>{" "}
             </h2>
-            <CustomDropDown
+            <MultipleCustomDropDown
               value={tag}
               onChange={handleTagChange}
-              items={suggestionCategories.map((category) => category.name)}
+              items={suggestionCategories
+                .map((category) => category.superCategory.secondLevelCategories)
+                .flat()}
             />
           </section>
         </form>

@@ -21,14 +21,15 @@ function SuggestionCard({
   deleteSuggestion,
   suggestionCategories,
   modifySuggestion,
-}: SuggestionCardProps) {
+}: // isViewMapping,
+SuggestionCardProps) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [newTags, setNewTags] = useState<string[]>(suggestion.tag);
   const isEven = index % 2 === 0;
   const sortedSuggestions = suggestionCategories
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .filter((category) => !newTags.includes(category.name));
+    .sort((a, b) => a.superCategory.name.localeCompare(b.superCategory.name))
+    .filter((category) => !newTags.includes(category.superCategory.name));
   const [_, dispatch] = useContext(SnackBarContext);
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -128,14 +129,17 @@ function SuggestionCard({
                   />
                 </li>
               ))
-            : suggestion.tag.map((cat, _) => (
-                <li
-                  key={_}
-                  className="bg-authPrimary text-sm rounded-full px-2 py-[1px] text-white"
-                >
-                  {cat}
-                </li>
-              ))}
+            : suggestion.tag.map((cat, _) => {
+                // const catString = findSuperCategory(suggestionCategories, cat).split(':')
+                return (
+                  <li
+                    key={_}
+                    className="bg-authPrimary text-sm rounded-full px-2 py-[1px] text-white"
+                  >
+                    {cat}
+                  </li>
+                );
+              })}
           {isEdit && (
             <Add onClick={handleOpenMenu} className="cursor-pointer" />
           )}
@@ -146,15 +150,20 @@ function SuggestionCard({
             onClose={handleCloseMenu}
             className="max-h-[600px]"
           >
-            {sortedSuggestions.map((category) => (
-              <MenuItem
-                key={category.name}
-                onClick={() => setNewTags((pre) => [...pre, category.name])}
-                className="flex justify-between"
-              >
-                <p>{category.name}</p>
-              </MenuItem>
-            ))}
+            {sortedSuggestions.map((category) =>
+              category.superCategory.secondLevelCategories.map((cat) => (
+                <MenuItem
+                  key={cat}
+                  className="flex justify-between"
+                  onClick={() => {
+                    handleCloseMenu();
+                    setNewTags((pre) => [...pre, cat]);
+                  }}
+                >
+                  <p>{cat}</p>
+                </MenuItem>
+              ))
+            )}
           </Menu>
         </ul>
         <div className="flex gap-2 items-center">

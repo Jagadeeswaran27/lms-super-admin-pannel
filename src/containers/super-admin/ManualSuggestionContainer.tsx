@@ -3,6 +3,8 @@ import ManualSuggestion from "../../components/all-suggestions/ManualSuggestion"
 import { logout } from "../../core/services/AuthService";
 import {
   addAdminSuggestion,
+  addSuggestionCategory,
+  addSuperCategory,
   getSuggestionCategories,
 } from "../../core/services/SuggestionService";
 import { showSnackBar } from "../../utils/Snackbar";
@@ -25,6 +27,31 @@ function ManualSuggestionContainer() {
     setSuggestionCategories(response);
   }
 
+  async function handleAddNewCategory(
+    superCategory: string,
+    category: string
+  ): Promise<boolean> {
+    const response = await addSuggestionCategory(superCategory, category);
+    setSuggestionCategories((prev) => {
+      const updatedCategories = prev.map((categoryItem) => {
+        if (categoryItem.superCategory.name === superCategory) {
+          return {
+            ...categoryItem,
+            superCategory: {
+              ...categoryItem.superCategory,
+              secondLevelCategories: [
+                ...categoryItem.superCategory.secondLevelCategories,
+                category,
+              ],
+            },
+          };
+        }
+        return categoryItem;
+      });
+      return updatedCategories;
+    });
+    return response;
+  }
   async function handleAddSuggestion(
     suggestionText: string,
     tag: string[],
@@ -38,6 +65,17 @@ function ManualSuggestionContainer() {
     }
     return false;
   }
+
+  async function handleAddNewSuperCategory(
+    superCategory: string
+  ): Promise<boolean> {
+    const response = await addSuperCategory(superCategory);
+    setSuggestionCategories((prev) => [
+      ...prev,
+      { superCategory: { name: superCategory, secondLevelCategories: [] } },
+    ]);
+    return response;
+  }
   async function handleLogout() {
     await logout();
     showSnackBar({
@@ -48,6 +86,8 @@ function ManualSuggestionContainer() {
   }
   return (
     <ManualSuggestion
+      addNewCategory={handleAddNewCategory}
+      addNewSuperCategory={handleAddNewSuperCategory}
       suggestionCategories={suggestionCategories}
       logout={handleLogout}
       addSuggestion={handleAddSuggestion}

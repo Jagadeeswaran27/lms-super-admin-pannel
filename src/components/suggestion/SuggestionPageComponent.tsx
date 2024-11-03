@@ -1,11 +1,9 @@
 import Header from "../common/Header";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import Drawer from "./Drawer";
 import AddedSuggestions from "./AddedSuggestions";
-import { icons } from "../../resources/icons";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import AISuggestions from "./AISuggestions";
 
 interface SuggestionPageComponentProps {
   logout: () => void;
@@ -16,12 +14,10 @@ interface SuggestionPageComponentProps {
     image: File | null
   ) => Promise<boolean>;
   deleteSuggestion: (id: string) => void;
-  addNewCategory: (category: string) => Promise<boolean>;
+  addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
+  addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
-}
-function getScrollbarWidth() {
-  return window.innerWidth - document.documentElement.clientWidth;
 }
 
 function SuggestionPageComponent({
@@ -30,25 +26,11 @@ function SuggestionPageComponent({
   addNewCategory,
   deleteSuggestion,
   addSuggestion,
+  addNewSuperCategory,
   modifySuggestion,
   suggestionCategories,
 }: SuggestionPageComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
-  const [showNamePrompt, setShowNamePrompt] = useState<boolean>(false);
-  useEffect(() => {
-    if (showNamePrompt) {
-      const scrollbarWidth = getScrollbarWidth();
-      document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    } else {
-      document.body.style.overflow = "auto";
-      document.body.style.paddingRight = "0px";
-    }
-    return () => {
-      document.body.style.overflow = "auto";
-      document.body.style.paddingRight = "0px";
-    };
-  }, [showNamePrompt]);
 
   function openDrawer() {
     setShowDrawer(true);
@@ -60,17 +42,6 @@ function SuggestionPageComponent({
 
   return (
     <div>
-      {showNamePrompt && (
-        <AISuggestions
-          addSuggestion={addSuggestion}
-          modifySuggestion={modifySuggestion}
-          suggestions={suggestions}
-          suggestionCategories={suggestionCategories}
-          addNewCategory={addNewCategory}
-          addNewPromptItem={() => {}}
-          closePrompt={() => setShowNamePrompt(false)}
-        />
-      )}
       <Drawer
         closeDrawer={closeDrawer}
         logout={logout}
@@ -83,6 +54,9 @@ function SuggestionPageComponent({
         <div className=" mx-auto">
           {suggestions.length > 0 ? (
             <AddedSuggestions
+              addNewCategory={addNewCategory}
+              addNewSuperCategory={addNewSuperCategory}
+              addSuggestion={addSuggestion}
               modifySuggestion={modifySuggestion}
               suggestionCategories={suggestionCategories}
               deleteSuggestion={deleteSuggestion}
@@ -96,14 +70,6 @@ function SuggestionPageComponent({
             </p>
           )}
         </div>
-        <div className="fixed right-0 bottom-0 p-5">
-          <img
-            onClick={() => setShowNamePrompt(true)}
-            className="cursor-pointer w-[80px] h-[80px]"
-            src={icons.bot}
-          />
-        </div>
-        {/* <NewSuggestions addSuggestion={addSuggestion} /> */}
       </section>
     </div>
   );

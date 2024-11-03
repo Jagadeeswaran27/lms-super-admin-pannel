@@ -1,3 +1,4 @@
+import { SuggestionCategoriesModel } from "../models/suggestion/SuggestionCategoriesModel";
 import { SuggestionModel } from "../models/suggestion/SuggestionModel";
 
 export function filterSuggestion(
@@ -44,4 +45,28 @@ export function filterSuggestion(
   );
 
   return filteredSuggestions;
+}
+
+export function filterCategories(
+  existingCategories: SuggestionCategoriesModel[],
+  newCategories: { superCategory: string }[]
+): { superCategory: string }[] {
+  return newCategories.filter(
+    (category) =>
+      !existingCategories.some(
+        (existing) => existing.superCategory.name === category.superCategory
+      )
+  );
+}
+
+export function findSuperCategory(
+  categories: SuggestionCategoriesModel[],
+  secondLevelCategory: string
+): string {
+  const res = categories.find((category) => {
+    return category.superCategory.secondLevelCategories
+      .map((cat) => cat.trim())
+      .includes(secondLevelCategory.trim());
+  });
+  return res ? `${res.superCategory.name} : ${secondLevelCategory}` : "";
 }

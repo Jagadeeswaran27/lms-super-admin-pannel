@@ -9,6 +9,7 @@ import {
   or,
   and,
   deleteDoc,
+  setDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
@@ -19,19 +20,34 @@ export async function getSuggestionCategories(): Promise<
   SuggestionCategoriesModel[] | []
 > {
   try {
-    const suggestionCategoriesRef = collection(db, "suggestion-categories");
+    const suggestionCategoriesRef = collection(db, "suggestion-hierarchy");
     const querySnapshot = await getDocs(suggestionCategoriesRef);
+
     if (querySnapshot.empty) {
       return [];
     }
 
-    const suggestionCategories: SuggestionCategoriesModel[] =
-      querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          name: data.name,
-        };
+    const suggestionCategories: SuggestionCategoriesModel[] = [];
+
+    for (const docSnapshot of querySnapshot.docs) {
+      const secondLevelCollectionRef = collection(
+        db,
+        `suggestion-hierarchy/${docSnapshot.id}/2nd Level`
+      );
+      const secondLevelCategories: string[] = [];
+      const secondLevelSnapshot = await getDocs(secondLevelCollectionRef);
+
+      secondLevelSnapshot.forEach((secondLevelDoc) => {
+        secondLevelCategories.push(secondLevelDoc.id);
       });
+      suggestionCategories.push({
+        superCategory: {
+          name: docSnapshot.id,
+          secondLevelCategories: secondLevelCategories,
+        },
+      });
+    }
+
     return suggestionCategories;
   } catch (e) {
     console.error("Error fetching suggestion categories:", e);
@@ -56,14 +72,33 @@ export async function modifySuggestion(
 }
 
 export async function addSuggestionCategory(
+  superCategory: string,
   newCategory: string
 ): Promise<boolean> {
   try {
-    const suggestionCategoriesRef = collection(db, "suggestion-categories");
-    const newSuggestionCategory: SuggestionCategoriesModel = {
-      name: newCategory,
-    };
-    await addDoc(suggestionCategoriesRef, newSuggestionCategory);
+    const secondLevelCollectionRef = collection(
+      db,
+      `suggestion-hierarchy/${superCategory}/2nd Level`
+    );
+    const newCategoryDocRef = doc(secondLevelCollectionRef, newCategory);
+
+    await setDoc(newCategoryDocRef, { name: newCategory });
+
+    return true;
+  } catch (e) {
+    console.error("Error adding suggestion category:", e);
+    return false;
+  }
+}
+export async function addSuperCategory(
+  superCategory: string
+): Promise<boolean> {
+  try {
+    const suggestionCategoriesRef = collection(db, "suggestion-hierarchy");
+    const newCategoryDocRef = doc(suggestionCategoriesRef, superCategory);
+
+    await setDoc(newCategoryDocRef, { name: superCategory });
+
     return true;
   } catch (e) {
     console.error("Error adding suggestion category:", e);
@@ -84,7 +119,7 @@ export async function getSuggestions(): Promise<SuggestionModel[] | []> {
       return {
         id: doc.id,
         name: data.name,
-        tag: data.tag || ["Technology"],
+        tag: data.tag,
         isApproved: data.isApproved,
         image: data.image || "",
         isRejected: data.isRejected,

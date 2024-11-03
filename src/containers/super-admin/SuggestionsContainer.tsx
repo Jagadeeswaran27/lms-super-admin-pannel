@@ -8,6 +8,7 @@ import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import {
   addAdminSuggestion,
   addSuggestionCategory,
+  addSuperCategory,
   deleteAdminSuggestion,
   getSuggestionCategories,
   getSuggestions,
@@ -65,9 +66,39 @@ function SuggestionsContainer() {
     setSuggestionCategories(response);
   }
 
-  async function handleAddNewCategory(category: string): Promise<boolean> {
-    const response = await addSuggestionCategory(category);
-    setSuggestionCategories((prev) => [...prev, { name: category }]);
+  async function handleAddNewCategory(
+    superCategory: string,
+    category: string
+  ): Promise<boolean> {
+    const response = await addSuggestionCategory(superCategory, category);
+    setSuggestionCategories((prev) => {
+      const updatedCategories = prev.map((categoryItem) => {
+        if (categoryItem.superCategory.name === superCategory) {
+          return {
+            ...categoryItem,
+            superCategory: {
+              ...categoryItem.superCategory,
+              secondLevelCategories: [
+                ...categoryItem.superCategory.secondLevelCategories,
+                category,
+              ],
+            },
+          };
+        }
+        return categoryItem;
+      });
+      return updatedCategories;
+    });
+    return response;
+  }
+  async function handleAddNewSuperCategory(
+    superCategory: string
+  ): Promise<boolean> {
+    const response = await addSuperCategory(superCategory);
+    setSuggestionCategories((prev) => [
+      ...prev,
+      { superCategory: { name: superCategory, secondLevelCategories: [] } },
+    ]);
     return response;
   }
 
@@ -104,6 +135,7 @@ function SuggestionsContainer() {
 
   return (
     <SuggestionPageComponent
+      addNewSuperCategory={handleAddNewSuperCategory}
       modifySuggestion={handleModifySuggestion}
       suggestionCategories={suggestionCategories}
       deleteSuggestion={deleteSuggestion}

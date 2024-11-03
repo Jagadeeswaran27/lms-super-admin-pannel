@@ -8,13 +8,17 @@ import {
 } from "@mui/material";
 import { ThemeColors } from "../../resources/colors";
 
-interface CustomDropDownProps {
+interface MultipleCustomDropDownProps {
   items: string[];
-  onChange?: (e: SelectChangeEvent<string>) => void; // Change the event type to handle array
-  value: string; // Use string array for multiple selection
+  onChange?: (e: SelectChangeEvent<string[]>) => void; // Change the event type to handle array
+  value?: string[]; // Use string array for multiple selection
 }
 
-function CustomDropDown({ items, onChange, value }: CustomDropDownProps) {
+function MultipleCustomDropDown({
+  items,
+  onChange,
+  value,
+}: MultipleCustomDropDownProps) {
   return (
     <FormControl fullWidth>
       <InputLabel
@@ -26,18 +30,18 @@ function CustomDropDown({ items, onChange, value }: CustomDropDownProps) {
           },
         }}
       >
-        Select an Super Category
+        Select an option
       </InputLabel>
       <Select
-        value={value}
+        multiple
+        value={value || []}
         onChange={onChange}
-        label="Select an Super Category"
+        label="Select an option"
         input={
           <OutlinedInput
-            label="Select an Super Category"
+            label="Select an option"
             sx={{
               borderRadius: "9999px",
-              padding: "0px",
               "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: ThemeColors.authPrimary,
                 borderRadius: "9999px",
@@ -62,4 +66,4 @@ function CustomDropDown({ items, onChange, value }: CustomDropDownProps) {
   );
 }
 
-export default CustomDropDown;
+export default MultipleCustomDropDown;

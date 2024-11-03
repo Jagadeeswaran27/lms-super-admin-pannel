@@ -3,8 +3,6 @@ import NewSuggestions from "../suggestion/NewSuggestions";
 import Header from "../common/Header";
 import Drawer from "../suggestion/Drawer";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import { routes } from "../../utils/Routes";
-import { Link } from "react-router-dom";
 
 interface ManualSuggestionProps {
   addSuggestion: (
@@ -13,12 +11,16 @@ interface ManualSuggestionProps {
     image: File | null
   ) => Promise<boolean>;
   logout: () => void;
+  addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
+  addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
 }
 
 function ManualSuggestion({
   addSuggestion,
   suggestionCategories,
+  addNewCategory,
+  addNewSuperCategory,
   logout,
 }: ManualSuggestionProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
@@ -39,12 +41,9 @@ function ManualSuggestion({
       />
 
       <Header openDrawer={openDrawer} logout={logout} />
-      <h1 className="text-right my-2 mt-4 text-textBrown text-lg font-semibold px-3 lg:px-10">
-        <Link to={routes.suggestions} className="hover:underline">
-          View Suggestions
-        </Link>
-      </h1>
       <NewSuggestions
+        addNewCategory={addNewCategory}
+        addNewSuperCategory={addNewSuperCategory}
         suggestionCategories={suggestionCategories}
         addSuggestion={addSuggestion}
       />
