@@ -33,19 +33,19 @@ function NewSuggestions({
       />
       <p className="pt-3">
         <span className="bg-primary text-white p-2 rounded-r-full">
-          2. Add New Super Category
+          2. Add New Category
+        </span>
+        <NewCategory
+          addNewCategory={addNewCategory}
+          suggestionCategories={suggestionCategories}
+        />
+      </p>
+      <p className="pt-3">
+        <span className="bg-primary text-white p-2 rounded-r-full">
+          3. Add New Super Category
         </span>
       </p>
       <NewSuperCateoryForm addNewSuperCategory={addNewSuperCategory} />
-      <p className="pt-3">
-        <span className="bg-primary text-white p-2 rounded-r-full">
-          3. Add New Category
-        </span>
-      </p>
-      <NewCategory
-        addNewCategory={addNewCategory}
-        suggestionCategories={suggestionCategories}
-      />
     </div>
   );
 }

@@ -6,4 +6,5 @@ export interface SuggestionModel {
   isRejected: boolean;
   tag: string[];
   newTags?: string[];
+  isVerified: boolean;
 }

@@ -4,6 +4,7 @@ import send from "../assets/icons/send.svg";
 import plus from "../assets/icons/plus.svg";
 import dropdown from "../assets/icons/dropdown.svg";
 import success from "../assets/icons/success.svg";
+import verified from "../assets/icons/verified.svg";
 export const icons = {
   bot,
   book,
@@ -11,4 +12,5 @@ export const icons = {
   plus,
   dropdown,
   success,
+  verified,
 };

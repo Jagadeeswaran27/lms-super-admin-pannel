@@ -70,3 +70,35 @@ export function findSuperCategory(
   });
   return res ? `${res.superCategory.name} : ${secondLevelCategory}` : "";
 }
+
+export default function refactorSuggestionCategories(
+  suggestionCategories: SuggestionCategoriesModel[]
+): { category: string; superCategories: string[] }[] {
+  const secondLevelCategories = suggestionCategories
+    .map((cat) =>
+      cat.superCategory.secondLevelCategories.map((cat) => cat.trim())
+    )
+    .flat();
+  const uniqueSecondLevelCategories = Array.from(
+    new Set(secondLevelCategories)
+  );
+  const refactoredCategories: {
+    category: string;
+    superCategories: string[];
+  }[] = [];
+
+  uniqueSecondLevelCategories.map((sec) => {
+    const foundSuperCategories: string[] = [];
+    suggestionCategories.map(
+      (cat) =>
+        cat.superCategory.secondLevelCategories
+          .map((cat) => cat.trim())
+          .includes(sec) && foundSuperCategories.push(cat.superCategory.name)
+    );
+    refactoredCategories.push({
+      category: sec,
+      superCategories: foundSuperCategories,
+    });
+  });
+  return refactoredCategories;
+}

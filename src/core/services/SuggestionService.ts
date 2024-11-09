@@ -106,6 +106,115 @@ export async function addSuperCategory(
   }
 }
 
+export async function modifySuggestionCategory(
+  isNameModified: boolean,
+  newSuperCategories: string[],
+  oldSuperCategories: string[],
+  oldCategory: string,
+  newCategory: string
+): Promise<boolean> {
+  if (isNameModified) {
+    try {
+      for (const superCategory of newSuperCategories) {
+        const oldCategoryRef = doc(
+          db,
+          "suggestion-hierarchy",
+          superCategory,
+          "2nd Level",
+          oldCategory
+        );
+
+        await deleteDoc(oldCategoryRef);
+
+        const newCategoryRef = doc(
+          db,
+          "suggestion-hierarchy",
+          superCategory,
+          "2nd Level",
+          newCategory
+        );
+
+        await setDoc(newCategoryRef, { name: newCategory });
+        console.log(
+          `Added new category: ${newCategory} in superCategory: ${superCategory}`
+        );
+      }
+      for (const superCategory of oldSuperCategories) {
+        const categoryRef = doc(
+          db,
+          "suggestion-hierarchy",
+          superCategory,
+          "2nd Level",
+          oldCategory
+        );
+        await deleteDoc(categoryRef);
+      }
+
+      return true;
+    } catch (e) {
+      console.error("Error modifying suggestion category:", e);
+      return false;
+    }
+  }
+  if (!isNameModified) {
+    try {
+      for (const superCategory of newSuperCategories) {
+        const newCategoryRef = doc(
+          db,
+          "suggestion-hierarchy",
+          superCategory,
+          "2nd Level",
+          newCategory
+        );
+
+        await setDoc(newCategoryRef, { name: newCategory });
+        console.log(
+          `Added new category: ${newCategory} in superCategory: ${superCategory}`
+        );
+      }
+      for (const superCategory of oldSuperCategories) {
+        const categoryRef = doc(
+          db,
+          "suggestion-hierarchy",
+          superCategory,
+          "2nd Level",
+          oldCategory
+        );
+        await deleteDoc(categoryRef);
+      }
+
+      return true;
+    } catch (e) {
+      console.error("Error modifying suggestion category:", e);
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+export async function deleteCategory(
+  category: string,
+  superCategories: string[]
+): Promise<boolean> {
+  try {
+    for (const superCategory of superCategories) {
+      const categoryRef = doc(
+        db,
+        "suggestion-hierarchy",
+        superCategory,
+        "2nd Level",
+        category
+      );
+      await deleteDoc(categoryRef);
+    }
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
 export async function getSuggestions(): Promise<SuggestionModel[] | []> {
   try {
     const suggestionsRef = collection(db, "suggestions");
@@ -123,6 +232,7 @@ export async function getSuggestions(): Promise<SuggestionModel[] | []> {
         isApproved: data.isApproved,
         image: data.image || "",
         isRejected: data.isRejected,
+        isVerified: data.isVerified || false,
       };
     });
     // .filter((suggestion) => !suggestion.isApproved && !suggestion.isRejected);
@@ -211,6 +321,7 @@ export async function addAdminSuggestion(
       isRejected: false,
       tag: tag,
       image: imageUrl,
+      isVerified: false,
     };
 
     await addDoc(suggestionsRef, newSuggestion);

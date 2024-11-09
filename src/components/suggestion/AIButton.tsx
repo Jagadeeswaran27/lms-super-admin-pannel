@@ -13,7 +13,7 @@ function AIButton({ isLoading, text, onClick, showButton }: AIButtonProps) {
       className="w-full relative flex cursor-pointer items-center justify-center my-2 py-2 rounded-[37.4px] sm:text-lg text-sm text-white font-semibold bg-authGradient"
       type="button"
       onClick={onClick}
-      disabled={!showButton}
+      disabled={!showButton || isLoading}
     >
       {isLoading ? (
         <div className="flex items-center justify-center">

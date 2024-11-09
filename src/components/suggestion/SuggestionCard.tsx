@@ -1,4 +1,4 @@
-import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
+import { Add, Check, Close, Delete, Edit, Verified } from "@mui/icons-material";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import { ThemeColors } from "../../resources/colors";
 import { MouseEvent, useContext, useRef, useState } from "react";
@@ -167,6 +167,14 @@ SuggestionCardProps) {
           </Menu>
         </ul>
         <div className="flex gap-2 items-center">
+          {suggestion.isVerified && (
+            <Verified
+              fontSize="large"
+              sx={{
+                color: ThemeColors.success,
+              }}
+            />
+          )}
           {isEdit ? (
             <Check
               onClick={handleModifySuggestion}
