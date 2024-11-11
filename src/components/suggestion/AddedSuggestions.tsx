@@ -36,6 +36,11 @@ function getScrollbarWidth() {
 }
 
 let backupSuggestions: SuggestionModel[] = [];
+let backupRefactoredSuggestionCategories: {
+  category: string;
+  isVerified: boolean;
+  superCategories: string[];
+}[] = [];
 
 function AddedSuggestions({
   suggestions,
@@ -89,8 +94,13 @@ function AddedSuggestions({
         backupSuggestions = pre;
         return pre.filter((sugg) => sugg.isVerified);
       });
+      setRefactoredSuggestionCategories((pre) => {
+        backupRefactoredSuggestionCategories = pre;
+        return pre.filter((cat) => cat.isVerified);
+      });
     } else {
       setFilteredSuggestions(backupSuggestions);
+      setRefactoredSuggestionCategories(backupRefactoredSuggestionCategories);
     }
   }, [checked]);
 
@@ -154,12 +164,12 @@ function AddedSuggestions({
     return response;
   };
 
-  // const handleToggleChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>,
-  //   newChecked: boolean
-  // ) => {
-  //   setChecked(newChecked);
-  // };
+  const handleToggleChange = (
+    _: React.ChangeEvent<HTMLInputElement>,
+    newChecked: boolean
+  ) => {
+    setChecked(newChecked);
+  };
 
   const handleMouseLeave1 = () => {
     setAnchorEl1(null);
@@ -214,29 +224,24 @@ function AddedSuggestions({
     category: string,
     superCategory: string[]
   ) => {
-    // Update state to remove category
-    setRefactoredSuggestionCategories((prevCategories) =>
-      prevCategories.filter((cat) => cat.category !== category)
-    );
-
-    // Add async logic to interact with the backend
-    // const response = await deleteCategory(category, superCategory);
-    // if (response) {
-    //   showSnackBar({
-    //     dispatch,
-    //     color: ThemeColors.success,
-    //     message: "Category Deleted Successfully!",
-    //   });
-    // } else {
-    //   showSnackBar({
-    //     dispatch,
-    //     color: ThemeColors.error,
-    //     message: "Failed to Delete Category",
-    //   });
-    // }
+    const response = await deleteCategory(category, superCategory);
+    if (response) {
+      showSnackBar({
+        dispatch,
+        color: ThemeColors.success,
+        message: "Category Deleted Successfully!",
+      });
+      setRefactoredSuggestionCategories((prevCategories) =>
+        prevCategories.filter((cat) => cat.category !== category)
+      );
+    } else {
+      showSnackBar({
+        dispatch,
+        color: ThemeColors.error,
+        message: "Failed to Delete Category",
+      });
+    }
   };
-
-  console.log(refactoredSuggestionCategories);
 
   return (
     <div className="shadow-custom py-3">
@@ -254,6 +259,7 @@ function AddedSuggestions({
       )}
       {showSuperCategoryBasedSuggestions && (
         <AISuperCategorySuggestions
+          suggestions={suggestions}
           addNewSuperCategory={addNewSuperCategory}
           addNewCategory={addNewCategory}
           suggestionCategories={suggestionCategories}
@@ -360,12 +366,12 @@ function AddedSuggestions({
             : "View Super Category Mapping"}
         </p>
 
-        {/* <div className="mr-20">
+        <div className="mr-20">
           <IOSSwitch checked={checked} onChange={handleToggleChange} />
           <span className="text-textBrown text-lg font-semibold ml-2">
             Verified
           </span>
-        </div> */}
+        </div>
       </div>
       <div className="max-md:hidden mx-1">
         {!isViewMapping &&
@@ -388,15 +394,14 @@ function AddedSuggestions({
           </p>
         )}
         {isViewMapping &&
-          refactoredSuggestionCategories.map((cat, index) => {
+          refactoredSuggestionCategories.map((cat) => {
             return (
-              <div key={index}>
+              <div key={cat.category}>
                 <MappingCard
                   modifySuperCategory={handleModifySuperCategory}
                   isVerified={cat.isVerified}
-                  deleteCategory={
-                    () => {}
-                    // handleDeleteCategory(cat.category, cat.superCategories)
+                  deleteCategory={() =>
+                    handleDeleteCategory(cat.category, cat.superCategories)
                   }
                   superCategories={suggestionCategories.map(
                     (cat) => cat.superCategory.name

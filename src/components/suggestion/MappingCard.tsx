@@ -247,19 +247,21 @@ function MappingCard({
           {isEdit ? (
             <Check
               onClick={handleModifyCategory}
-              className="cursor-pointer mx-2 transition-all transform hover:scale-110"
+              className=" mx-2 transition-all transform hover:scale-110"
               sx={{
                 color: ThemeColors.brown,
+                cursor: "pointer",
               }}
             />
           ) : (
             <Edit
               onClick={checked ? () => {} : () => setIsEdit(true)}
               className={`${
-                checked && "opacity-80 cursor-default"
-              }cursor-pointer mx-2 transition-all transform hover:scale-110`}
+                checked && "opacity-80"
+              } mx-2 transition-all transform hover:scale-110`}
               sx={{
                 color: ThemeColors.brown,
+                cursor: checked ? "default" : "pointer",
               }}
             />
           )}
@@ -267,9 +269,10 @@ function MappingCard({
             onClick={checked ? () => {} : deleteCategory}
             className={`${
               checked && "opacity-80 cursor-default"
-            }cursor-pointer transition-all transform hover:scale-110`}
+            } transition-all transform hover:scale-110`}
             sx={{
               color: ThemeColors.brown,
+              cursor: checked ? "default" : "pointer",
             }}
           />
         </div>

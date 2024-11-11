@@ -7,7 +7,7 @@ import { ThreeDot } from "react-loading-indicators";
 import { ThemeColors } from "../../resources/colors";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import { filterSuggestion } from "../../utils/helper";
+// import { filterSuggestion } from "../../utils/helper";
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
 import ModifiedSuggestions from "./ModifiedSuggestions";
@@ -116,6 +116,7 @@ function AISuggestions({
   const handleAskNewCategories = async () => {
     setIsLoading(true);
     const suggestCategories = httpsCallable(functions, "suggestCategories");
+
     try {
       const response = await suggestCategories({
         superCategory: selectedSuperCategory,
@@ -124,8 +125,9 @@ function AISuggestions({
             (category) => category.superCategory.name === selectedSuperCategory
           )
           .map((category) =>
-            category.superCategory.secondLevelCategories.map((cat) => cat)
+            category.superCategory.secondLevelCategories.map((cat) => cat.name)
           ),
+        suggestions: suggestions.map((suggestion) => suggestion.name),
       });
       let data = response.data as NewCategoriesResponse;
       if (data.suggestedCategories.length === 1) {
@@ -176,46 +178,46 @@ function AISuggestions({
   //   setIsLoading(false);
   // };
 
-  const handleGetModifiedSuggestion = async () => {
-    setModifiedSuggestions([]);
-    const categories: string[] = [];
-    suggestionCategories.map((category) =>
-      category.superCategory.secondLevelCategories.map((cat) =>
-        categories.push(cat.name)
-      )
-    );
-    setIsLoading(true);
-    const modifyTags = httpsCallable(functions, "modifyTags");
-    try {
-      const response = await modifyTags({
-        suggestions: suggestions,
-        referenceTags: categories,
-      });
-      const data = response.data as {
-        modifiedSuggestions: { name: string; tag: string[] }[];
-      };
-      const sortedSuggestions = suggestions.sort((a, b) =>
-        a.name.localeCompare(b.name)
-      );
+  // const handleGetModifiedSuggestion = async () => {
+  //   setModifiedSuggestions([]);
+  //   const categories: string[] = [];
+  //   suggestionCategories.map((category) =>
+  //     category.superCategory.secondLevelCategories.map((cat) =>
+  //       categories.push(cat.name)
+  //     )
+  //   );
+  //   setIsLoading(true);
+  //   const modifyTags = httpsCallable(functions, "modifyTags");
+  //   try {
+  //     const response = await modifyTags({
+  //       suggestions: suggestions,
+  //       referenceTags: categories,
+  //     });
+  //     const data = response.data as {
+  //       modifiedSuggestions: { name: string; tag: string[] }[];
+  //     };
+  //     const sortedSuggestions = suggestions.sort((a, b) =>
+  //       a.name.localeCompare(b.name)
+  //     );
 
-      setNameSuggestions([]);
-      setNewCategories([]);
-      setNewSuperCategoriesSuggestions([]);
-      const filteredSuggestions = filterSuggestion(
-        sortedSuggestions,
-        data.modifiedSuggestions
-      );
+  //     setNameSuggestions([]);
+  //     setNewCategories([]);
+  //     setNewSuperCategoriesSuggestions([]);
+  //     const filteredSuggestions = filterSuggestion(
+  //       sortedSuggestions,
+  //       data.modifiedSuggestions
+  //     );
 
-      if (filteredSuggestions.length === 0) {
-        setModifiedSuggestions(null);
-      } else {
-        setModifiedSuggestions(filteredSuggestions);
-      }
-    } catch (error) {
-      console.error("Error fetching name suggestions:", error);
-    }
-    setIsLoading(false);
-  };
+  //     if (filteredSuggestions.length === 0) {
+  //       setModifiedSuggestions(null);
+  //     } else {
+  //       setModifiedSuggestions(filteredSuggestions);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching name suggestions:", error);
+  //   }
+  //   setIsLoading(false);
+  // };
 
   const handleDownloadSelectedImage = async (
     name: string,

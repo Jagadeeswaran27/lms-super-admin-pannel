@@ -9,12 +9,14 @@ import { SelectChangeEvent } from "@mui/material";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../../core/config/firebase";
 import { filterCategories } from "../../utils/helper";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 
 interface AISuperCategorySuggestionsProps {
   closePrompt: () => void;
   suggestionCategories: SuggestionCategoriesModel[];
   addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
+  suggestions: SuggestionModel[];
 }
 
 interface NewCategoriesResponse {
@@ -31,6 +33,7 @@ function AISuperCategorySuggestions({
   suggestionCategories,
   addNewCategory,
   addNewSuperCategory,
+  suggestions,
 }: AISuperCategorySuggestionsProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
@@ -56,8 +59,9 @@ function AISuperCategorySuggestions({
             (category) => category.superCategory.name === selectedSuperCategory
           )
           .map((category) =>
-            category.superCategory.secondLevelCategories.map((cat) => cat)
+            category.superCategory.secondLevelCategories.map((cat) => cat.name)
           ),
+        suggestions: suggestions.map((s) => s.name),
       });
       let data = response.data as NewCategoriesResponse;
       if (data.suggestedCategories.length === 1) {
