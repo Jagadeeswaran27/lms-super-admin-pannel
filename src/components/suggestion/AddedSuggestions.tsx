@@ -16,7 +16,6 @@ import {
 import { showSnackBar } from "../../utils/Snackbar";
 import { ThemeColors } from "../../resources/colors";
 import { SnackBarContext } from "../../store/SnackBarContext";
-import IOSSwitch from "../common/IOSSwitch";
 
 interface AddedSuggestionsProps {
   suggestions: SuggestionModel[];

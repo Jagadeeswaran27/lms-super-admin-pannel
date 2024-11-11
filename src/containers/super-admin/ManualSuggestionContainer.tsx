@@ -41,7 +41,7 @@ function ManualSuggestionContainer() {
               ...categoryItem.superCategory,
               secondLevelCategories: [
                 ...categoryItem.superCategory.secondLevelCategories,
-                category,
+                { name: category, isVerified: false },
               ],
             },
           };

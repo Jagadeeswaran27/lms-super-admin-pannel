@@ -80,7 +80,7 @@ function SuggestionsContainer() {
               ...categoryItem.superCategory,
               secondLevelCategories: [
                 ...categoryItem.superCategory.secondLevelCategories,
-                category,
+                { name: category, isVerified: false },
               ],
             },
           };
