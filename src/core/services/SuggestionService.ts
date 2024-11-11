@@ -34,11 +34,14 @@ export async function getSuggestionCategories(): Promise<
         db,
         `suggestion-hierarchy/${docSnapshot.id}/2nd Level`
       );
-      const secondLevelCategories: string[] = [];
+      const secondLevelCategories: { name: string; isVerified: boolean }[] = [];
       const secondLevelSnapshot = await getDocs(secondLevelCollectionRef);
 
       secondLevelSnapshot.forEach((secondLevelDoc) => {
-        secondLevelCategories.push(secondLevelDoc.id);
+        secondLevelCategories.push({
+          name: secondLevelDoc.id,
+          isVerified: secondLevelDoc.data().isVerified,
+        });
       });
       suggestionCategories.push({
         superCategory: {
@@ -134,10 +137,7 @@ export async function modifySuggestionCategory(
           newCategory
         );
 
-        await setDoc(newCategoryRef, { name: newCategory });
-        console.log(
-          `Added new category: ${newCategory} in superCategory: ${superCategory}`
-        );
+        await setDoc(newCategoryRef, { name: newCategory, isVerified: false });
       }
       for (const superCategory of oldSuperCategories) {
         const categoryRef = doc(
@@ -167,10 +167,7 @@ export async function modifySuggestionCategory(
           newCategory
         );
 
-        await setDoc(newCategoryRef, { name: newCategory });
-        console.log(
-          `Added new category: ${newCategory} in superCategory: ${superCategory}`
-        );
+        await setDoc(newCategoryRef, { name: newCategory, isVerified: false });
       }
       for (const superCategory of oldSuperCategories) {
         const categoryRef = doc(
@@ -329,5 +326,42 @@ export async function addAdminSuggestion(
   } catch (e) {
     console.error("Error adding suggestion:", e);
     return null;
+  }
+}
+
+export async function toggleIsVerified(
+  id: string,
+  isVerified: boolean
+): Promise<boolean> {
+  try {
+    const suggestionRef = doc(db, "suggestions", id);
+    await updateDoc(suggestionRef, { isVerified: isVerified });
+    return true;
+  } catch (e) {
+    console.error("Error verifying suggestion:", e);
+    return false;
+  }
+}
+
+export async function toggleCategoryIsVerified(
+  isVerified: boolean,
+  superCategories: string[],
+  category: string
+): Promise<boolean> {
+  try {
+    for (const superCategory of superCategories) {
+      const categoryRef = doc(
+        db,
+        "suggestion-hierarchy",
+        superCategory,
+        "2nd Level",
+        category
+      );
+      await updateDoc(categoryRef, { isVerified: isVerified });
+    }
+    return true;
+  } catch (e) {
+    console.error("Error verifying category:", e);
+    return false;
   }
 }

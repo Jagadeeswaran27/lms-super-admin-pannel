@@ -1,4 +1,4 @@
-import { Add, Check, Close, Delete, Edit, Verified } from "@mui/icons-material";
+import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import { ThemeColors } from "../../resources/colors";
 import { MouseEvent, useContext, useRef, useState } from "react";
@@ -6,6 +6,12 @@ import { Menu, MenuItem } from "@mui/material";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
+import IOSSwitch from "../common/IOSSwitch";
+import { toggleIsVerified } from "../../core/services/SuggestionService";
+import AIButton from "./AIButton";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../../core/config/firebase";
+import NewCategoriesPopUp from "./NewCategoriesPopUp";
 
 interface SuggestionCardProps {
   suggestion: SuggestionModel;
@@ -13,6 +19,7 @@ interface SuggestionCardProps {
   deleteSuggestion: (id: string) => void;
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
+  suggestions: SuggestionModel[];
 }
 
 function SuggestionCard({
@@ -26,11 +33,15 @@ SuggestionCardProps) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [newTags, setNewTags] = useState<string[]>(suggestion.tag);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPopUp, setShowPopUp] = useState<boolean>(false);
+  const [newCategories, setNewCategories] = useState<string[]>([]);
   const isEven = index % 2 === 0;
   const sortedSuggestions = suggestionCategories
     .sort((a, b) => a.superCategory.name.localeCompare(b.superCategory.name))
     .filter((category) => !newTags.includes(category.superCategory.name));
   const [_, dispatch] = useContext(SnackBarContext);
+  const [isVerified, setIsVerified] = useState<boolean>(suggestion.isVerified);
 
   const nameRef = useRef<HTMLInputElement>(null);
 
@@ -81,6 +92,48 @@ SuggestionCardProps) {
     }
   };
 
+  const handleToggleChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    newChecked: boolean
+  ) => {
+    event.preventDefault();
+    const response = await toggleIsVerified(suggestion.id, newChecked);
+    if (response) {
+      setIsVerified(newChecked);
+    }
+  };
+  const handleGetModifiedSuggestion = async () => {
+    setIsLoading(true);
+    const categories: string[] = [];
+    suggestionCategories.map((category) =>
+      category.superCategory.secondLevelCategories.map((cat) =>
+        categories.push(cat.name)
+      )
+    );
+    const modifyTags = httpsCallable(functions, "modifyTags");
+    try {
+      const response = await modifyTags({
+        subjectData: {
+          name: suggestion.name,
+          tags: suggestion.tag,
+        },
+        referenceTags: categories,
+      });
+      const data = response.data as {
+        newCategories: string[];
+      };
+      if (data.newCategories.length > 0) {
+        setNewCategories(
+          data.newCategories.map((cat) => cat.split(".")[1].trim())
+        );
+        setShowPopUp(true);
+      }
+    } catch (error) {
+      console.error("Error fetching name suggestions:", error);
+    }
+    setIsLoading(false);
+  };
+
   return (
     <div
       className={`${
@@ -111,70 +164,87 @@ SuggestionCardProps) {
           <p className="text-lg pt-1 text-textBrown">{suggestion.name}</p>
         )}
       </div>
-      <div className="flex justify-between w-[60%] items-start gap-5">
-        <ul className="flex items-start flex-wrap gap-3">
-          {isEdit
-            ? newTags.map((cat, _) => (
-                <li
-                  key={_}
-                  className="bg-authPrimary text-sm text-center rounded-full px-2 py-[1px] text-white"
-                >
-                  {cat}
-                  <Close
-                    fontSize="small"
-                    onClick={() =>
-                      setNewTags((pre) => pre.filter((p) => p !== cat))
-                    }
-                    className="cursor-pointer"
-                  />
-                </li>
-              ))
-            : suggestion.tag.map((cat, _) => {
-                // const catString = findSuperCategory(suggestionCategories, cat).split(':')
-                return (
+      <div className="flex justify-between w-[60%] items-center gap-5">
+        <div>
+          <ul className="flex items-center flex-wrap gap-3">
+            {isEdit
+              ? newTags.map((cat, _) => (
                   <li
                     key={_}
-                    className="bg-authPrimary text-sm rounded-full px-2 py-[1px] text-white"
+                    className="bg-authPrimary text-sm text-center rounded-full px-2 py-[1px] text-white"
                   >
                     {cat}
+                    <Close
+                      fontSize="small"
+                      onClick={() =>
+                        setNewTags((pre) => pre.filter((p) => p !== cat))
+                      }
+                      className="cursor-pointer"
+                    />
                   </li>
-                );
-              })}
-          {isEdit && (
-            <Add onClick={handleOpenMenu} className="cursor-pointer" />
-          )}
-          <Menu
-            id="simple-menu"
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleCloseMenu}
-            className="max-h-[600px]"
-          >
-            {sortedSuggestions.map((category) =>
-              category.superCategory.secondLevelCategories.map((cat) => (
-                <MenuItem
-                  key={cat}
-                  className="flex justify-between"
-                  onClick={() => {
-                    handleCloseMenu();
-                    setNewTags((pre) => [...pre, cat]);
-                  }}
-                >
-                  <p>{cat}</p>
-                </MenuItem>
-              ))
+                ))
+              : suggestion.tag.map((cat, _) => {
+                  // const catString = findSuperCategory(suggestionCategories, cat).split(':')
+                  return (
+                    <li
+                      key={_}
+                      className="bg-authPrimary text-sm rounded-full px-2 py-[1px] text-white"
+                    >
+                      {cat}
+                    </li>
+                  );
+                })}
+            {isEdit && (
+              <Add onClick={handleOpenMenu} className="cursor-pointer" />
             )}
-          </Menu>
-        </ul>
-        <div className="flex gap-2 items-center">
-          {suggestion.isVerified && (
-            <Verified
-              fontSize="large"
-              sx={{
-                color: ThemeColors.success,
-              }}
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleCloseMenu}
+              className="max-h-[600px]"
+            >
+              {sortedSuggestions.map((category) =>
+                category.superCategory.secondLevelCategories.map((cat) => (
+                  <MenuItem
+                    key={cat.name}
+                    className="flex justify-between"
+                    onClick={() => {
+                      handleCloseMenu();
+                      setNewTags((pre) => [...pre, cat.name]);
+                    }}
+                  >
+                    <p>{cat.name}</p>
+                  </MenuItem>
+                ))
+              )}
+            </Menu>
+          </ul>
+          {showPopUp && (
+            <NewCategoriesPopUp
+              modifySuggestion={modifySuggestion}
+              suggestion={suggestion}
+              existingCategories={suggestionCategories
+                .map((cat) =>
+                  cat.superCategory.secondLevelCategories.map((cat) => cat.name)
+                )
+                .flat()}
+              newCategories={newCategories}
+              closePrompt={() => setShowPopUp(false)}
             />
           )}
+          {!isEdit && (
+            <div className="w-[180px] mt-7">
+              <AIButton
+                isLoading={isLoading}
+                text="AI"
+                onClick={handleGetModifiedSuggestion}
+              />
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2 items-center">
+          <IOSSwitch checked={isVerified} onChange={handleToggleChange} />
           {isEdit ? (
             <Check
               onClick={handleModifySuggestion}
@@ -185,16 +255,22 @@ SuggestionCardProps) {
             />
           ) : (
             <Edit
-              onClick={() => setIsEdit(true)}
-              className="cursor-pointer mx-2 transition-all transform hover:scale-110"
+              onClick={isVerified ? () => {} : () => setIsEdit(true)}
+              className={`${
+                isVerified && "opacity-80 cursor-default"
+              } cursor-pointer mx-2 transition-all transform hover:scale-110`}
               sx={{
                 color: ThemeColors.brown,
               }}
             />
           )}
           <Delete
-            onClick={() => deleteSuggestion(suggestion.id)}
-            className="cursor-pointer transition-all transform hover:scale-110"
+            onClick={
+              isVerified ? () => {} : () => deleteSuggestion(suggestion.id)
+            }
+            className={`${
+              isVerified && "opacity-80 cursor-default"
+            } cursor-pointer transition-all transform hover:scale-110`}
             sx={{
               color: ThemeColors.brown,
             }}

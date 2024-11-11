@@ -9,33 +9,27 @@ export function filterSuggestion(
     (acc, suggestion) => {
       const responseItem = response.find((res) => res.name === suggestion.name);
 
-      // If there is a corresponding response item
       if (responseItem) {
-        // Check if the suggestion's tags include all response tags
         const hasMatchingTags = responseItem.tag.every((tag) =>
           suggestion.tag.includes(tag)
         );
 
-        // If tags do not match, include it with response tags
         if (!hasMatchingTags) {
-          // Identify new tags that are in the response but not in the suggestion
           const newTags = responseItem.tag.filter(
             (tag) => !suggestion.tag.includes(tag)
           );
 
-          // Exclude new tags from responseItem.tag
           const updatedTags = responseItem.tag.filter(
             (tag) => !newTags.includes(tag)
           );
 
           acc.push({
             ...suggestion,
-            tag: updatedTags, // Replace suggestion's tags with updated response tags
-            newTags, // Add the new tags to the suggestion
+            tag: updatedTags,
+            newTags,
           });
         }
       } else {
-        // If no corresponding response item, include the suggestion without changes
         acc.push(suggestion);
       }
 
@@ -65,7 +59,7 @@ export function findSuperCategory(
 ): string {
   const res = categories.find((category) => {
     return category.superCategory.secondLevelCategories
-      .map((cat) => cat.trim())
+      .map((cat) => cat.name.trim())
       .includes(secondLevelCategory.trim());
   });
   return res ? `${res.superCategory.name} : ${secondLevelCategory}` : "";
@@ -73,32 +67,41 @@ export function findSuperCategory(
 
 export default function refactorSuggestionCategories(
   suggestionCategories: SuggestionCategoriesModel[]
-): { category: string; superCategories: string[] }[] {
-  const secondLevelCategories = suggestionCategories
-    .map((cat) =>
-      cat.superCategory.secondLevelCategories.map((cat) => cat.trim())
-    )
-    .flat();
-  const uniqueSecondLevelCategories = Array.from(
-    new Set(secondLevelCategories)
+): { category: string; isVerified: boolean; superCategories: string[] }[] {
+  const secondLevelCategories: { name: string; isVerified: boolean }[] = [];
+  suggestionCategories.forEach((cat) =>
+    cat.superCategory.secondLevelCategories.forEach((secondCat) => {
+      secondLevelCategories.push({
+        name: secondCat.name.trim(),
+        isVerified: secondCat.isVerified,
+      });
+    })
   );
-  const refactoredCategories: {
-    category: string;
-    superCategories: string[];
-  }[] = [];
 
-  uniqueSecondLevelCategories.map((sec) => {
-    const foundSuperCategories: string[] = [];
-    suggestionCategories.map(
-      (cat) =>
-        cat.superCategory.secondLevelCategories
-          .map((cat) => cat.trim())
-          .includes(sec) && foundSuperCategories.push(cat.superCategory.name)
-    );
-    refactoredCategories.push({
-      category: sec,
+  const uniqueSecondLevelCategories = secondLevelCategories.filter(
+    (category, index, self) =>
+      index ===
+      self.findIndex(
+        (cat) =>
+          cat.name === category.name && cat.isVerified === category.isVerified
+      )
+  );
+
+  const refactoredCategories = uniqueSecondLevelCategories.map((sec) => {
+    const foundSuperCategories = suggestionCategories
+      .filter((cat) =>
+        cat.superCategory.secondLevelCategories.some(
+          (secondCat) => secondCat.name.trim() === sec.name
+        )
+      )
+      .map((cat) => cat.superCategory.name);
+
+    return {
+      category: sec.name,
+      isVerified: sec.isVerified,
       superCategories: foundSuperCategories,
-    });
+    };
   });
+
   return refactoredCategories;
 }

@@ -4,13 +4,26 @@ import { MouseEvent, useContext, useRef, useState } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
-import { modifySuggestionCategory } from "../../core/services/SuggestionService";
+import {
+  modifySuggestionCategory,
+  toggleCategoryIsVerified,
+} from "../../core/services/SuggestionService";
+import IOSSwitch from "../common/IOSSwitch";
+import AIButton from "./AIButton";
+import NewSuperCategoriesPopUp from "./NewSuperCategoriesPopUp";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../../core/config/firebase";
 
 interface MappingCardProps {
   category: string;
   superCategory: string[];
   superCategories: string[];
   deleteCategory: () => void;
+  isVerified: boolean;
+  modifySuperCategory: (
+    category: string,
+    superCategory: string
+  ) => Promise<boolean>;
 }
 
 function MappingCard({
@@ -18,11 +31,17 @@ function MappingCard({
   superCategory,
   superCategories,
   deleteCategory,
+  isVerified,
+  modifySuperCategory,
 }: MappingCardProps) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [superCat, setSuperCat] = useState<string[]>(superCategory);
+  const [checked, setChecked] = useState<boolean>(isVerified);
   const [categoryName, setCategoryName] = useState<string>(category);
+  const [showPopUp, setShowPopUp] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [newSuperCategories, setNewSuperCategories] = useState<string[]>([]);
   const nameRef = useRef<HTMLInputElement>(null);
   const [_, dispatch] = useContext(SnackBarContext);
 
@@ -92,6 +111,47 @@ function MappingCard({
     }
   };
 
+  const handleToggleChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    newChecked: boolean
+  ) => {
+    event.preventDefault();
+    const response = await toggleCategoryIsVerified(
+      newChecked,
+      superCat,
+      categoryName
+    );
+    if (response) {
+      setChecked(newChecked);
+    }
+  };
+
+  const handleGetModifiedSuperCategories = async () => {
+    setIsLoading(true);
+    const suggestSuperCategoryIndividual = httpsCallable(
+      functions,
+      "suggestSuperCategoryIndividual"
+    );
+    try {
+      const response = await suggestSuperCategoryIndividual({
+        category: categoryName,
+        superCategories: superCategories.filter(
+          (cat) => !superCat.includes(cat)
+        ),
+      });
+      const data = response.data as { suggestedSuperCategories: string[] };
+      if (data.suggestedSuperCategories.length > 0) {
+        setNewSuperCategories(
+          data.suggestedSuperCategories.map((cat) => cat.split(".")[1].trim())
+        );
+        setShowPopUp(true);
+      }
+    } catch (e) {
+      console.error("Error getting modified super categories:", e);
+    }
+    setIsLoading(false);
+  };
+
   return (
     <div
       className={`bg-white ${
@@ -115,55 +175,75 @@ function MappingCard({
           </div>
         )}
       </div>
-      <div className="flex justify-between w-[60%] items-start gap-5">
-        <ul className="flex items-start flex-wrap gap-3">
-          {superCat.map((cat, _) => (
-            <li
-              key={_}
-              className="bg-authPrimary text-sm text-center rounded-full px-2 py-[1px] text-white"
-            >
-              {cat}
-              {isEdit && (
-                <Close
-                  fontSize="small"
-                  onClick={() =>
-                    setSuperCat((pre) => pre.filter((p) => p !== cat))
-                  }
-                  className="cursor-pointer"
-                />
-              )}
-            </li>
-          ))}
-          {isEdit && (
-            <Add onClick={handleOpenMenu} className="cursor-pointer" />
-          )}
-          <Menu
-            id="simple-menu"
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleCloseMenu}
-            className="max-h-[600px]"
-          >
-            {sortedSuperCategories.map((category) => (
-              <MenuItem
-                key={category}
-                className="flex justify-between"
-                onClick={() => {
-                  handleCloseMenu();
-                  setSuperCat((pre) => {
-                    if (pre.includes(category)) {
-                      return pre;
-                    }
-                    return [...pre, category];
-                  });
-                }}
+      <div className="flex justify-between w-[60%] items-center gap-5">
+        <div>
+          <ul className="flex items-start flex-wrap gap-3">
+            {superCat.map((cat, _) => (
+              <li
+                key={_}
+                className="bg-authPrimary text-sm text-center rounded-full px-2 py-[1px] text-white"
               >
-                <p>{category}</p>
-              </MenuItem>
+                {cat}
+                {isEdit && (
+                  <Close
+                    fontSize="small"
+                    onClick={() =>
+                      setSuperCat((pre) => pre.filter((p) => p !== cat))
+                    }
+                    className="cursor-pointer"
+                  />
+                )}
+              </li>
             ))}
-          </Menu>
-        </ul>
+            {isEdit && (
+              <Add onClick={handleOpenMenu} className="cursor-pointer" />
+            )}
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleCloseMenu}
+              className="max-h-[600px]"
+            >
+              {sortedSuperCategories.map((category) => (
+                <MenuItem
+                  key={category}
+                  className="flex justify-between"
+                  onClick={() => {
+                    handleCloseMenu();
+                    setSuperCat((pre) => {
+                      if (pre.includes(category)) {
+                        return pre;
+                      }
+                      return [...pre, category];
+                    });
+                  }}
+                >
+                  <p>{category}</p>
+                </MenuItem>
+              ))}
+            </Menu>
+          </ul>
+          {showPopUp && (
+            <NewSuperCategoriesPopUp
+              category={categoryName}
+              modifySuperCategory={modifySuperCategory}
+              closePrompt={() => setShowPopUp(false)}
+              newSuperCategories={newSuperCategories}
+            />
+          )}
+          {!isEdit && (
+            <div className="w-[180px] mt-7">
+              <AIButton
+                isLoading={isLoading}
+                text="AI"
+                onClick={handleGetModifiedSuperCategories}
+              />
+            </div>
+          )}
+        </div>
         <div className="flex gap-2 items-center">
+          <IOSSwitch checked={checked} onChange={handleToggleChange} />
           {isEdit ? (
             <Check
               onClick={handleModifyCategory}
@@ -174,16 +254,20 @@ function MappingCard({
             />
           ) : (
             <Edit
-              onClick={() => setIsEdit(true)}
-              className="cursor-pointer mx-2 transition-all transform hover:scale-110"
+              onClick={checked ? () => {} : () => setIsEdit(true)}
+              className={`${
+                checked && "opacity-80 cursor-default"
+              }cursor-pointer mx-2 transition-all transform hover:scale-110`}
               sx={{
                 color: ThemeColors.brown,
               }}
             />
           )}
           <Delete
-            onClick={deleteCategory}
-            className="cursor-pointer transition-all transform hover:scale-110"
+            onClick={checked ? () => {} : deleteCategory}
+            className={`${
+              checked && "opacity-80 cursor-default"
+            }cursor-pointer transition-all transform hover:scale-110`}
             sx={{
               color: ThemeColors.brown,
             }}

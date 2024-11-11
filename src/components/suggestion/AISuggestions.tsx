@@ -181,7 +181,7 @@ function AISuggestions({
     const categories: string[] = [];
     suggestionCategories.map((category) =>
       category.superCategory.secondLevelCategories.map((cat) =>
-        categories.push(cat)
+        categories.push(cat.name)
       )
     );
     setIsLoading(true);
@@ -378,20 +378,20 @@ function AISuggestions({
                   </div>
                 )}
               </div>
-              <div className="text-primary text-lg  my-3">
+              {/* <div className="text-primary text-lg  my-3">
                 <span
                   onClick={isLoading ? () => {} : handleGetModifiedSuggestion}
                   className="cursor-pointer"
                 >
                   2. Ask AI to suggest new categories for the existing subjects
                 </span>
-              </div>
+              </div> */}
               <div className="text-primary text-lg my-3">
                 <span
                   onClick={isLoading ? () => {} : handleNameSuggestion}
                   className="cursor-pointer"
                 >
-                  3. Ask AI to suggest new subjects for existing categories
+                  2. Ask AI to suggest new subjects for existing categories
                 </span>
               </div>
             </div>

@@ -9,7 +9,10 @@ import MappingCard from "./MappingCard";
 import AISuggestions from "./AISuggestions";
 import AISuperCategorySuggestions from "./AISuperCategorySuggestions";
 import refactorSuggestionCategories from "../../utils/helper";
-import { deleteCategory } from "../../core/services/SuggestionService";
+import {
+  deleteCategory,
+  modifySuggestionCategory,
+} from "../../core/services/SuggestionService";
 import { showSnackBar } from "../../utils/Snackbar";
 import { ThemeColors } from "../../resources/colors";
 import { SnackBarContext } from "../../store/SnackBarContext";
@@ -59,7 +62,9 @@ function AddedSuggestions({
     setShowSuperCategoryBasedSuggestions,
   ] = useState<boolean>(false);
   const [refactoredSuggestionCategories, setRefactoredSuggestionCategories] =
-    useState<{ category: string; superCategories: string[] }[]>([]);
+    useState<
+      { category: string; isVerified: boolean; superCategories: string[] }[]
+    >([]);
   const [checked, setChecked] = useState<boolean>(false);
   const [_, dispatch] = useContext(SnackBarContext);
 
@@ -117,12 +122,44 @@ function AddedSuggestions({
     setAnchorEl1(event.currentTarget);
   };
 
-  const handleToggleChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    newChecked: boolean
+  const handleModifySuperCategory = async (
+    category: string,
+    superCategory: string
   ) => {
-    setChecked(newChecked);
+    const response = await modifySuggestionCategory(
+      true,
+      [superCategory],
+      [],
+      category,
+      category
+    );
+    if (response) {
+      setRefactoredSuggestionCategories((pre) =>
+        pre.map((cat) =>
+          cat.category === category
+            ? {
+                ...cat,
+                superCategories: [...cat.superCategories, ...[superCategory]],
+              }
+            : cat
+        )
+      );
+
+      showSnackBar({
+        dispatch,
+        color: ThemeColors.success,
+        message: "Category modified successfully",
+      });
+    }
+    return response;
   };
+
+  // const handleToggleChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>,
+  //   newChecked: boolean
+  // ) => {
+  //   setChecked(newChecked);
+  // };
 
   const handleMouseLeave1 = () => {
     setAnchorEl1(null);
@@ -199,7 +236,8 @@ function AddedSuggestions({
     // }
   };
 
-  console.log("Refact", refactoredSuggestionCategories);
+  console.log(refactoredSuggestionCategories);
+
   return (
     <div className="shadow-custom py-3">
       {showNormalSuggestions && (
@@ -294,7 +332,7 @@ function AddedSuggestions({
                 </MenuItem>
                 {suggestionCat.map((category) =>
                   category.superCategory.secondLevelCategories.map((cat) => {
-                    const catName = cat.trim();
+                    const catName = cat.name.trim();
                     return (
                       <MenuItem
                         key={catName}
@@ -322,12 +360,12 @@ function AddedSuggestions({
             : "View Super Category Mapping"}
         </p>
 
-        <div className="mr-20">
+        {/* <div className="mr-20">
           <IOSSwitch checked={checked} onChange={handleToggleChange} />
           <span className="text-textBrown text-lg font-semibold ml-2">
             Verified
           </span>
-        </div>
+        </div> */}
       </div>
       <div className="max-md:hidden mx-1">
         {!isViewMapping &&
@@ -335,6 +373,7 @@ function AddedSuggestions({
           filteredSuggestions.map((suggestion, index) => (
             <div key={suggestion.id}>
               <SuggestionCard
+                suggestions={suggestions}
                 modifySuggestion={modifySuggestion}
                 suggestionCategories={suggestionCategories}
                 deleteSuggestion={deleteSuggestion}
@@ -349,20 +388,25 @@ function AddedSuggestions({
           </p>
         )}
         {isViewMapping &&
-          refactoredSuggestionCategories.map((cat, index) => (
-            <div key={index}>
-              <MappingCard
-                deleteCategory={() =>
-                  handleDeleteCategory(cat.category, cat.superCategories)
-                }
-                superCategories={suggestionCategories.map(
-                  (cat) => cat.superCategory.name
-                )}
-                category={cat.category}
-                superCategory={cat.superCategories}
-              />
-            </div>
-          ))}
+          refactoredSuggestionCategories.map((cat, index) => {
+            return (
+              <div key={index}>
+                <MappingCard
+                  modifySuperCategory={handleModifySuperCategory}
+                  isVerified={cat.isVerified}
+                  deleteCategory={
+                    () => {}
+                    // handleDeleteCategory(cat.category, cat.superCategories)
+                  }
+                  superCategories={suggestionCategories.map(
+                    (cat) => cat.superCategory.name
+                  )}
+                  category={cat.category}
+                  superCategory={cat.superCategories}
+                />
+              </div>
+            );
+          })}
         <div className="fixed right-0 bottom-0 p-5">
           <img
             onClick={
