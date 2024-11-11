@@ -301,7 +301,7 @@ export async function addAdminSuggestion(
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-      console.log("Suggestion already exists");
+      console.error("Suggestion already exists");
       return null;
     }
 

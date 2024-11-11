@@ -140,8 +140,8 @@ function NewSuggestionForm({
               Upload Icon{" "}
               <span className="text-primary text-[10px]">(required)</span>{" "}
             </h2>
-            <div className="text-textBrown flex flex-col gap-2">
-              <div className="text-textBrown flex  justify-center  items-center gap-2">
+            <div className="text-textBrown items-center flex flex-col gap-2">
+              <div className="text-textBrown flex justify-center  items-center gap-2">
                 <h1 className="font-medium text-sm xl:text-base">File</h1>
                 <div className="border-primary border-2 rounded-lg">
                   <input
@@ -162,6 +162,7 @@ function NewSuggestionForm({
                   {file ? "1 File Chosen" : "0 File"}
                 </h1>
               </div>
+              <p>Or</p>
               <div className="w-[60%] mx-auto">
                 <AIButton
                   showButton={true}
@@ -181,7 +182,8 @@ function NewSuggestionForm({
               onChange={handleTagChange}
               items={suggestionCategories
                 .map((category) => category.superCategory.secondLevelCategories)
-                .flat()}
+                .flat()
+                .map((cat) => cat.name)}
             />
           </section>
         </form>

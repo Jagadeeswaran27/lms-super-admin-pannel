@@ -1,4 +1,4 @@
-import { Menu, MenuItem } from "@mui/material";
+import { Checkbox, Menu, MenuItem } from "@mui/material";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import { icons } from "../../resources/icons";
 import SuggestionCard from "./SuggestionCard";
@@ -366,10 +366,14 @@ function AddedSuggestions({
             : "View Super Category Mapping"}
         </p>
 
-        <div className="mr-20">
-          <IOSSwitch checked={checked} onChange={handleToggleChange} />
+        <div className="mr-20 flex items-center">
+          <Checkbox
+            checked={checked}
+            onChange={handleToggleChange}
+            style={{ color: ThemeColors.primary }}
+          />
           <span className="text-textBrown text-lg font-semibold ml-2">
-            Verified
+            Show Verified
           </span>
         </div>
       </div>
