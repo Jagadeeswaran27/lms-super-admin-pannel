@@ -31,6 +31,8 @@ function LoginPageContainer() {
         color: ThemeColors.error,
         message: "Please fill in all details",
       });
+      setIsLoading(false);
+
       return;
     }
 
@@ -40,10 +42,23 @@ function LoginPageContainer() {
         color: ThemeColors.error,
         message: "Invalid email",
       });
+      setIsLoading(false);
+
+      return;
+    }
+
+    if (trimmedEmail !== "jagadeeswaran.work@gmail.com") {
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: "Invalid Super Admin Email!",
+      });
+      setIsLoading(false);
       return;
     }
 
     const response = await login(trimmedEmail, trimmedPassword);
+
     if (response) {
       if (!response.user.emailVerified) {
         showSnackBar({

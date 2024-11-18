@@ -1,4 +1,4 @@
-import SuggestionsContainer from "../containers/super-admin/SuggestionsContainer";
+import SuggestionsContainer from "../../containers/super-admin/SuggestionsContainer";
 
 function SuggestionPage() {
   return <SuggestionsContainer />;

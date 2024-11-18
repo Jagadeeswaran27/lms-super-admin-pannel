@@ -1,4 +1,9 @@
+import loginBackground from "../assets/images/login-background.svg";
+import backupPerson from "../assets/images/backup-person.svg";
+import quote from "../assets/images/quote.svg";
+
 export const images = {
-  loginBackground: "/assets/images/login-background.svg",
-  backupPerson: "/assets/images/backup-person.svg",
+  loginBackground,
+  backupPerson,
+  quote,
 };

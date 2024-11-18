@@ -8,9 +8,20 @@ interface InputFieldProps {
   type: string;
   name: string;
   inputRef?: React.RefObject<HTMLInputElement> | null;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value?: string;
+  disabled?: boolean;
 }
 
-function InputField({ placeholder, type, name, inputRef }: InputFieldProps) {
+function InputField({
+  placeholder,
+  type,
+  name,
+  inputRef,
+  onChange,
+  value,
+  disabled,
+}: InputFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleTogglePasswordVisibility = () => {
@@ -19,7 +30,10 @@ function InputField({ placeholder, type, name, inputRef }: InputFieldProps) {
 
   return (
     <TextField
+      disabled={disabled}
       className="w-full"
+      onChange={onChange}
+      value={value}
       label={placeholder}
       type={type === "password" && !showPassword ? "password" : "text"}
       name={name}
@@ -35,6 +49,12 @@ function InputField({ placeholder, type, name, inputRef }: InputFieldProps) {
           "&.Mui-focused fieldset": {
             borderColor: ThemeColors.authPrimary,
           },
+          "&.Mui-disabled": {
+            "& fieldset": {
+              borderColor: ThemeColors.authPrimary,
+            },
+            color: ThemeColors.brown,
+          },
         },
         "& .MuiInputLabel-root": {
           color: ThemeColors.brown,
@@ -44,13 +64,20 @@ function InputField({ placeholder, type, name, inputRef }: InputFieldProps) {
           color: ThemeColors.brown,
           fontSize: "0.875rem",
         },
+        "& .MuiInputLabel-root.Mui-disabled": {
+          color: ThemeColors.brown,
+        },
+        // Override input text color when disabled
+        "& .MuiInputBase-input.Mui-disabled": {
+          color: ThemeColors.brown, // Text color when disabled
+          "-webkit-text-fill-color": ThemeColors.brown, // WebKit browser compatibility
+        },
       }}
       slotProps={{
         htmlInput: {
           ref: inputRef,
         },
         input: {
-          // ref: inputRef,
           endAdornment: type === "password" && (
             <InputAdornment position="end">
               <IconButton
