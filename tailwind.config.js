@@ -8,10 +8,12 @@ export default {
       },
       boxShadow: {
         custom: "0 2px 5px 0 rgba(0, 0, 0, 0.1)",
+        primary: "0 1px 10.1px 0 rgba(255, 217, 198, 0.4)",
       },
       colors: {
         authPrimary: "#FF8000",
         primary: "#FF7233",
+        secondary: "#FF6929",
         brown: "#624637",
         textBrown: "#57453C",
         borderColor: "#B0B0B0",
