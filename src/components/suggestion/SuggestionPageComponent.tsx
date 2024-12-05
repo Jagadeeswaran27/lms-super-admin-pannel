@@ -14,7 +14,11 @@ interface SuggestionPageComponentProps {
     image: File | null
   ) => Promise<boolean>;
   deleteSuggestion: (id: string) => void;
-  addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
+  addNewCategory: (
+    superCategory: string,
+    secondLevelCategory: string,
+    thirdLevelCategory: string
+  ) => Promise<boolean>;
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;

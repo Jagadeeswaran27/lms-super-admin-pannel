@@ -4,6 +4,10 @@ export interface SuggestionCategoriesModel {
     secondLevelCategories: {
       name: string;
       isVerified: boolean;
+      thirdLevelCategories: {
+        name: string;
+        isVerified: boolean;
+      }[];
     }[];
   };
 }

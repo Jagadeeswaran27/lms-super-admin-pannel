@@ -68,9 +68,14 @@ function SuggestionsContainer() {
 
   async function handleAddNewCategory(
     superCategory: string,
-    category: string
+    secondLevelCategory: string,
+    thirdLevelCategory: string
   ): Promise<boolean> {
-    const response = await addSuggestionCategory(superCategory, category);
+    const response = await addSuggestionCategory(
+      superCategory,
+      secondLevelCategory,
+      thirdLevelCategory
+    );
     setSuggestionCategories((prev) => {
       const updatedCategories = prev.map((categoryItem) => {
         if (categoryItem.superCategory.name === superCategory) {
@@ -78,10 +83,19 @@ function SuggestionsContainer() {
             ...categoryItem,
             superCategory: {
               ...categoryItem.superCategory,
-              secondLevelCategories: [
-                ...categoryItem.superCategory.secondLevelCategories,
-                { name: category, isVerified: false },
-              ],
+              secondLevelCategories:
+                categoryItem.superCategory.secondLevelCategories.map((sec) => {
+                  if (sec.name === secondLevelCategory) {
+                    return {
+                      ...sec,
+                      thirdLevelCategories: [
+                        ...sec.thirdLevelCategories,
+                        { name: thirdLevelCategory, isVerified: false },
+                      ],
+                    };
+                  }
+                  return sec;
+                }),
             },
           };
         }
@@ -89,6 +103,7 @@ function SuggestionsContainer() {
       });
       return updatedCategories;
     });
+
     return response;
   }
   async function handleAddNewSuperCategory(

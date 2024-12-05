@@ -1,6 +1,6 @@
 import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
 import { ThemeColors } from "../../resources/colors";
-import { MouseEvent, useContext, useRef, useState } from "react";
+import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
@@ -17,7 +17,7 @@ import { functions } from "../../core/config/firebase";
 interface MappingCardProps {
   category: string;
   superCategory: string[];
-  superCategories: string[];
+  allSuperCategories: string[];
   deleteCategory: () => void;
   isVerified: boolean;
   modifySuperCategory: (
@@ -29,7 +29,7 @@ interface MappingCardProps {
 function MappingCard({
   category,
   superCategory,
-  superCategories,
+  allSuperCategories,
   deleteCategory,
   isVerified,
   modifySuperCategory,
@@ -45,7 +45,7 @@ function MappingCard({
   const nameRef = useRef<HTMLInputElement>(null);
   const [_, dispatch] = useContext(SnackBarContext);
 
-  const sortedSuperCategories = superCategories.sort((a, b) =>
+  const sortedSuperCategories = allSuperCategories.sort((a, b) =>
     a.localeCompare(b)
   );
 
@@ -56,6 +56,10 @@ function MappingCard({
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
+
+  useEffect(() => {
+    setSuperCat(superCategory);
+  }, [superCategory]);
 
   const handleModifyCategory = async () => {
     const isNameModified = nameRef.current?.value.trim() !== categoryName;
@@ -135,7 +139,7 @@ function MappingCard({
     try {
       const response = await suggestSuperCategoryIndividual({
         category: categoryName,
-        superCategories: superCategories.filter(
+        superCategories: allSuperCategories.filter(
           (cat) => !superCat.includes(cat)
         ),
       });

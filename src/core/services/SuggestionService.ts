@@ -34,19 +34,43 @@ export async function getSuggestionCategories(): Promise<
         db,
         `suggestion-hierarchy/${docSnapshot.id}/2nd Level`
       );
-      const secondLevelCategories: { name: string; isVerified: boolean }[] = [];
+
+      const secondLevelCategories: {
+        name: string;
+        isVerified: boolean;
+        thirdLevelCategories: { name: string; isVerified: boolean }[];
+      }[] = [];
+
       const secondLevelSnapshot = await getDocs(secondLevelCollectionRef);
 
-      secondLevelSnapshot.forEach((secondLevelDoc) => {
+      for (const secondLevelDoc of secondLevelSnapshot.docs) {
+        const thirdLevelCollectionRef = collection(
+          db,
+          `suggestion-hierarchy/${docSnapshot.id}/2nd Level/${secondLevelDoc.id}/3rd Level`
+        );
+
+        const thirdLevelCategories: { name: string; isVerified: boolean }[] =
+          [];
+        const thirdLevelSnapshot = await getDocs(thirdLevelCollectionRef);
+
+        thirdLevelSnapshot.forEach((thirdLevelDoc) => {
+          thirdLevelCategories.push({
+            name: thirdLevelDoc.id,
+            isVerified: thirdLevelDoc.data().isVerified,
+          });
+        });
+
         secondLevelCategories.push({
           name: secondLevelDoc.id,
           isVerified: secondLevelDoc.data().isVerified,
+          thirdLevelCategories,
         });
-      });
+      }
+
       suggestionCategories.push({
         superCategory: {
           name: docSnapshot.id,
-          secondLevelCategories: secondLevelCategories,
+          secondLevelCategories,
         },
       });
     }
@@ -76,16 +100,20 @@ export async function modifySuggestion(
 
 export async function addSuggestionCategory(
   superCategory: string,
+  secondLevelCategory: string,
   newCategory: string
 ): Promise<boolean> {
   try {
-    const secondLevelCollectionRef = collection(
+    const thirdLevelCollectionRef = collection(
       db,
-      `suggestion-hierarchy/${superCategory}/2nd Level`
+      `suggestion-hierarchy/${superCategory}/2nd Level/${secondLevelCategory}/3rd Level`
     );
-    const newCategoryDocRef = doc(secondLevelCollectionRef, newCategory);
+    const newCategoryDocRef = doc(thirdLevelCollectionRef, newCategory);
 
-    await setDoc(newCategoryDocRef, { name: newCategory });
+    await setDoc(newCategoryDocRef, {
+      name: newCategory,
+      isVerified: false,
+    });
 
     return true;
   } catch (e) {
@@ -93,6 +121,7 @@ export async function addSuggestionCategory(
     return false;
   }
 }
+
 export async function addSuperCategory(
   superCategory: string
 ): Promise<boolean> {

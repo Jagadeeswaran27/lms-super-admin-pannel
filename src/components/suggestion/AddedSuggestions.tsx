@@ -15,7 +15,11 @@ interface AddedSuggestionsProps {
   deleteSuggestion: (id: string) => void;
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
-  addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
+  addNewCategory: (
+    superCategory: string,
+    secondLevelCategory: string,
+    thirdLevelCategory: string
+  ) => Promise<boolean>;
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   addSuggestion: (
     suggestion: string,
@@ -189,6 +193,8 @@ function AddedSuggestions({
   //     });
   //   }
   // };
+
+  console.log(suggestionCategories);
 
   return (
     <div className="shadow-custom py-3">

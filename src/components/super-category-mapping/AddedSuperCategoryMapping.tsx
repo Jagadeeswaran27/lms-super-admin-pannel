@@ -183,6 +183,8 @@ function AddedSuperCategorySuggestions({
     }
   };
 
+  console.log(refactoredSuggestionCategories);
+
   return (
     <div className="shadow-custom py-3">
       {showNormalSuggestions && (
@@ -290,7 +292,7 @@ function AddedSuperCategorySuggestions({
                 deleteCategory={() =>
                   handleDeleteCategory(cat.category, cat.superCategories)
                 }
-                superCategories={suggestionCategories.map(
+                allSuperCategories={suggestionCategories.map(
                   (cat) => cat.superCategory.name
                 )}
                 category={cat.category}

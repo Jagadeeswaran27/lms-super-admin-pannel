@@ -37,7 +37,10 @@ function AISuperCategorySuggestions({
 }: AISuperCategorySuggestionsProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
+  const [showDropDown2, setShowDropDown2] = useState<boolean>(false);
   const [selectedSuperCategory, setSelectedSuperCategory] =
+    useState<string>("");
+  const [selected2ndLevelCategory, setSelected2ndLevelCategory] =
     useState<string>("");
   const [newCategories, setNewCategories] = useState<NewCategoriesState[]>([]);
   const [isAddingLoading, setIsAddingLoading] = useState<boolean>(false);
@@ -46,6 +49,9 @@ function AISuperCategorySuggestions({
 
   const handleTagChange = (e: SelectChangeEvent<string>) => {
     setSelectedSuperCategory(e.target.value);
+  };
+  const handleTagChange2 = (e: SelectChangeEvent<string>) => {
+    setSelected2ndLevelCategory(e.target.value);
   };
 
   const handleAskNewCategories = async () => {
@@ -104,6 +110,7 @@ function AISuperCategorySuggestions({
       functions,
       "superCategorySuggestion"
     );
+    console.log(suggestionCategories);
     try {
       const response = await superCategorySuggestion({
         data: suggestionCategories,
@@ -170,11 +177,62 @@ function AISuperCategorySuggestions({
               <div className="text-primary text-lg  my-3">
                 <span
                   onClick={
+                    isLoading
+                      ? () => {}
+                      : () => setShowDropDown2(!showDropDown2)
+                  }
+                  className="cursor-pointer"
+                >
+                  1. Ask AI to suggest new 3rd Level Categories for the Super
+                  Category
+                </span>
+                {showDropDown2 && (
+                  <div className="flex items-center my-5 mb-7 justify-between">
+                    <div className="h-[120px] w-[50%]">
+                      <CustomDropDown
+                        value={selectedSuperCategory}
+                        onChange={handleTagChange}
+                        items={suggestionCategories.map(
+                          (category) => category.superCategory.name
+                        )}
+                      />
+                      <div className="h-[20px]"></div>
+
+                      <CustomDropDown
+                        text="Select 2nd Level Category"
+                        value={selected2ndLevelCategory}
+                        onChange={handleTagChange2}
+                        items={
+                          suggestionCategories
+                            .find(
+                              (category) =>
+                                category.superCategory.name ===
+                                selectedSuperCategory
+                            )
+                            ?.superCategory.secondLevelCategories.map(
+                              (cat) => cat.name
+                            ) || []
+                        }
+                      />
+                    </div>
+                    <button
+                      onClick={handleAskNewCategories}
+                      className="bg-primary text-xs xl:text-base text-white mx-[0.9px] px-3 py-1 rounded-md"
+                    >
+                      Get Suggestions
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="text-primary text-lg  my-3">
+                <span
+                  onClick={
                     isLoading ? () => {} : () => setShowDropDown(!showDropDown)
                   }
                   className="cursor-pointer"
                 >
-                  1. Ask AI to suggest new categories for the Super Category
+                  2. Ask AI to suggest new 2nd Level Categories for the Super
+                  Category
                 </span>
                 {showDropDown && (
                   <div className="flex items-center my-5 mb-7 justify-between">
@@ -201,7 +259,7 @@ function AISuperCategorySuggestions({
                   onClick={isLoading ? () => {} : handleAskNewSuperCateory}
                   className="cursor-pointer"
                 >
-                  2. Ask AI to suggest new Super Category
+                  3. Ask AI to suggest new Super Category
                 </span>
               </div>
             </div>

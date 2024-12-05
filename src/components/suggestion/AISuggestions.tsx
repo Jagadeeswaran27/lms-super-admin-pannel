@@ -17,7 +17,11 @@ import { SelectChangeEvent } from "@mui/material";
 interface AISuggestionsProps {
   closePrompt: () => void;
   addNewPromptItem: (name: string) => void;
-  addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
+  addNewCategory: (
+    superCategory: string,
+    secondLevelCategory: string,
+    thirdLevelCategory: string
+  ) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
   suggestions: SuggestionModel[];
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
@@ -36,8 +40,7 @@ interface NewCategoriesResponse {
 interface NewNameSuggestionState {
   name: string;
   hierarchy: {
-    superCategory: string;
-    secondLevelCategories: string[];
+    thirdLevelCategories: string[];
   };
 }
 
@@ -61,6 +64,8 @@ function AISuggestions({
   const [modifiedSuggestions, setModifiedSuggestions] = useState<
     SuggestionModel[] | null
   >([]);
+  const [selected2ndLevelCategory, setSelected2ndLevelCategory] =
+    useState<string>("");
   const [nameSuggestions, setNameSuggestions] = useState<
     NewNameSuggestionState[]
   >([]);
@@ -103,6 +108,7 @@ function AISuggestions({
         setIsLoading(false);
         return;
       }
+      console.log(data.newSuggestions);
       setNameSuggestions(data.newSuggestions);
       setNewCategories([]);
       setModifiedSuggestions([]);
@@ -113,6 +119,10 @@ function AISuggestions({
     setIsLoading(false);
   };
 
+  const handleTagChange2 = (e: SelectChangeEvent<string>) => {
+    setSelected2ndLevelCategory(e.target.value);
+  };
+
   const handleAskNewCategories = async () => {
     setIsLoading(true);
     const suggestCategories = httpsCallable(functions, "suggestCategories");
@@ -120,12 +130,24 @@ function AISuggestions({
     try {
       const response = await suggestCategories({
         superCategory: selectedSuperCategory,
-        existingCategories: suggestionCategories
+        secondLevelCategories: suggestionCategories
+          .filter((cat) => cat.superCategory.name === selectedSuperCategory)
+          .flatMap((cat) => cat.superCategory.secondLevelCategories),
+        selectedSecondLevelCategory: selected2ndLevelCategory,
+        thirdLevelCategories: suggestionCategories
           .filter(
             (category) => category.superCategory.name === selectedSuperCategory
           )
-          .map((category) =>
-            category.superCategory.secondLevelCategories.map((cat) => cat.name)
+          .flatMap((category) =>
+            category.superCategory.secondLevelCategories
+              .filter(
+                (secondLevel) => secondLevel.name === selected2ndLevelCategory
+              )
+              .flatMap((secondLevel) =>
+                secondLevel.thirdLevelCategories.map(
+                  (thirdLevel) => thirdLevel.name
+                )
+              )
           ),
         suggestions: suggestions.map((suggestion) => suggestion.name),
       });
@@ -266,6 +288,7 @@ function AISuggestions({
     const sanitizedCategory = category.split(".")[1];
     const response = await addNewCategory(
       selectedSuperCategory,
+      selected2ndLevelCategory,
       sanitizedCategory
     );
     if (response) {
@@ -358,17 +381,35 @@ function AISuggestions({
                   }
                   className="cursor-pointer"
                 >
-                  1. Ask AI to suggest new categories
+                  1. Ask AI to suggest new 3rd Level Categories
                 </span>
                 {showDropDown && (
                   <div className="flex items-center my-5 mb-7 justify-between">
-                    <div className="h-[50px] w-[50%]">
+                    <div className="h-[120px] w-[50%]">
                       <CustomDropDown
                         value={selectedSuperCategory}
                         onChange={handleTagChange}
                         items={suggestionCategories.map(
                           (category) => category.superCategory.name
                         )}
+                      />
+                      <div className="h-[20px]"></div>
+
+                      <CustomDropDown
+                        text="Select 2nd Level Category"
+                        value={selected2ndLevelCategory}
+                        onChange={handleTagChange2}
+                        items={
+                          suggestionCategories
+                            .find(
+                              (category) =>
+                                category.superCategory.name ===
+                                selectedSuperCategory
+                            )
+                            ?.superCategory.secondLevelCategories.map(
+                              (cat) => cat.name
+                            ) || []
+                        }
                       />
                     </div>
                     <button
@@ -527,7 +568,7 @@ function AISuggestions({
                       </p>
                       <div className="flex w-[60%] justify-between items-center gap-5">
                         <div className="flex gap-2 flex-wrap">
-                          {suggestion.hierarchy.secondLevelCategories.map(
+                          {suggestion.hierarchy.thirdLevelCategories.map(
                             (cat) => (
                               <p
                                 className="bg-authPrimary text-xs rounded-full px-2 py-[1px] text-white"
@@ -543,7 +584,7 @@ function AISuggestions({
                           onClick={() =>
                             handleAddNewSuggestions(
                               suggestion.name,
-                              suggestion.hierarchy.secondLevelCategories
+                              suggestion.hierarchy.thirdLevelCategories
                             )
                           }
                           className="bg-primary text-sm text-white mx-[0.9px] px-2 py-1 rounded-md"

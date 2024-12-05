@@ -80,7 +80,7 @@ function SuperCategoryMappingContainer() {
               ...categoryItem.superCategory,
               secondLevelCategories: [
                 ...categoryItem.superCategory.secondLevelCategories,
-                { name: category, isVerified: false },
+                { name: category, isVerified: false, thirdLevelCategories: [] },
               ],
             },
           };
