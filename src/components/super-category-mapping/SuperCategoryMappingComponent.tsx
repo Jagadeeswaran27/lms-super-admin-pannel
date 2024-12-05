@@ -1,11 +1,11 @@
 import Header from "../common/Header";
 import { useState } from "react";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import Drawer from "./Drawer";
-import AddedSuggestions from "./AddedSuggestions";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import AddedSuperCategorySuggestions from "./AddedSuperCategoryMapping";
+import Drawer from "../suggestion/Drawer";
 
-interface SuggestionPageComponentProps {
+interface SuperCategoryMappingComponentProps {
   logout: () => void;
   suggestions: SuggestionModel[] | [];
   addSuggestion: (
@@ -20,7 +20,7 @@ interface SuggestionPageComponentProps {
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
 }
 
-function SuggestionPageComponent({
+function SuperCategoryMappingComponent({
   logout,
   suggestions,
   addNewCategory,
@@ -29,7 +29,7 @@ function SuggestionPageComponent({
   addNewSuperCategory,
   modifySuggestion,
   suggestionCategories,
-}: SuggestionPageComponentProps) {
+}: SuperCategoryMappingComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
 
   function openDrawer() {
@@ -53,7 +53,7 @@ function SuggestionPageComponent({
       <section>
         <div className=" mx-auto">
           {suggestions.length > 0 ? (
-            <AddedSuggestions
+            <AddedSuperCategorySuggestions
               addNewCategory={addNewCategory}
               addNewSuperCategory={addNewSuperCategory}
               addSuggestion={addSuggestion}
@@ -66,7 +66,7 @@ function SuggestionPageComponent({
             />
           ) : (
             <p className="flex flex-1 text-brown font-semibold md:text-xl text-base h-full items-center justify-center">
-              No Subjects Found
+              No Suggestions Found
             </p>
           )}
         </div>
@@ -75,4 +75,4 @@ function SuggestionPageComponent({
   );
 }
 
-export default SuggestionPageComponent;
+export default SuperCategoryMappingComponent;

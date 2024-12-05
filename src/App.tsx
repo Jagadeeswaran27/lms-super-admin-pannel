@@ -13,6 +13,7 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import SuggestionPage from "./pages/suggestions/SuggestionPage";
 import { routes } from "./utils/Routes";
 import ManualSuggestionPage from "./pages/suggestions/ManualSuggestionPage";
+import SuperCategoryMappingPage from "./pages/suggestions/SuperCategoryMappingPage";
 
 function App() {
   const theme = createTheme({
@@ -40,6 +41,12 @@ function App() {
                   path={routes.suggestionManual}
                   element={
                     <ProtectedRoute element={<ManualSuggestionPage />} />
+                  }
+                />
+                <Route
+                  path={routes.superCategoryMapping}
+                  element={
+                    <ProtectedRoute element={<SuperCategoryMappingPage />} />
                   }
                 />
                 <Route

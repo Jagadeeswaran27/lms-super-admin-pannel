@@ -47,15 +47,15 @@ function LoginPageContainer() {
       return;
     }
 
-    if (trimmedEmail !== "jagadeeswaran.work@gmail.com") {
-      showSnackBar({
-        dispatch: dispatch,
-        color: ThemeColors.error,
-        message: "Invalid Super Admin Email!",
-      });
-      setIsLoading(false);
-      return;
-    }
+    // if (trimmedEmail !== "jagadeeswaran.work@gmail.com") {
+    //   showSnackBar({
+    //     dispatch: dispatch,
+    //     color: ThemeColors.error,
+    //     message: "Invalid Super Admin Email!",
+    //   });
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     const response = await login(trimmedEmail, trimmedPassword);
 

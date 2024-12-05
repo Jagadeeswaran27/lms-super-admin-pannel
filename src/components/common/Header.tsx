@@ -24,7 +24,7 @@ function Header({ logout, openDrawer }: HeaderProps) {
         </div>
       </div>
       <h1 className="text-authPrimary sm:text-[2.2rem] text-lg font-semibold text-center flex-1">
-        Suggestion
+        Subjects
       </h1>
       <div className="flex-1 sm:hidden"></div>
       <div className="text-center max-sm:hidden flex-1 flex gap-4 justify-end">
@@ -33,7 +33,7 @@ function Header({ logout, openDrawer }: HeaderProps) {
             to={isManual ? routes.suggestions : routes.suggestionManual}
             className="text-white bg-primary  px-2 py-1 font-semibold rounded-lg text-lg block w-full text-center"
           >
-            {isManual ? "AI Suggestions" : "Custom"}
+            {isManual ? "Home" : "Custom"}
           </Link>
         </p>
         <div onClick={logout} className="cursor-pointer">

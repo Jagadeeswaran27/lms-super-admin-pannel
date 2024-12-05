@@ -2,20 +2,13 @@ import { Checkbox, Menu, MenuItem } from "@mui/material";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import { icons } from "../../resources/icons";
 import SuggestionCard from "./SuggestionCard";
-import { MouseEvent, useContext, useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 import { Check } from "@mui/icons-material";
-import MappingCard from "./MappingCard";
 import AISuggestions from "./AISuggestions";
-import AISuperCategorySuggestions from "./AISuperCategorySuggestions";
-import refactorSuggestionCategories from "../../utils/helper";
-import {
-  deleteCategory,
-  modifySuggestionCategory,
-} from "../../core/services/SuggestionService";
-import { showSnackBar } from "../../utils/Snackbar";
 import { ThemeColors } from "../../resources/colors";
-import { SnackBarContext } from "../../store/SnackBarContext";
+import { Link } from "react-router-dom";
+import { routes } from "../../utils/Routes";
 
 interface AddedSuggestionsProps {
   suggestions: SuggestionModel[];
@@ -35,11 +28,6 @@ function getScrollbarWidth() {
 }
 
 let backupSuggestions: SuggestionModel[] = [];
-let backupRefactoredSuggestionCategories: {
-  category: string;
-  isVerified: boolean;
-  superCategories: string[];
-}[] = [];
 
 function AddedSuggestions({
   suggestions,
@@ -58,19 +46,11 @@ function AddedSuggestions({
     useState<SuggestionModel[]>(suggestions);
   const [suggestionCat, setSuggestionCat] =
     useState<SuggestionCategoriesModel[]>(suggestionCategories);
-  const [isViewMapping, setIsViewMapping] = useState<boolean>(false);
+
   const [showNormalSuggestions, setShowNormalSuggestions] =
     useState<boolean>(false);
-  const [
-    showSuperCategoryBasedSuggestions,
-    setShowSuperCategoryBasedSuggestions,
-  ] = useState<boolean>(false);
-  const [refactoredSuggestionCategories, setRefactoredSuggestionCategories] =
-    useState<
-      { category: string; isVerified: boolean; superCategories: string[] }[]
-    >([]);
+
   const [checked, setChecked] = useState<boolean>(false);
-  const [_, dispatch] = useContext(SnackBarContext);
 
   useEffect(() => {
     if (showNormalSuggestions) {
@@ -93,20 +73,20 @@ function AddedSuggestions({
         backupSuggestions = pre;
         return pre.filter((sugg) => sugg.isVerified);
       });
-      setRefactoredSuggestionCategories((pre) => {
-        backupRefactoredSuggestionCategories = pre;
-        return pre.filter((cat) => cat.isVerified);
-      });
+      // setRefactoredSuggestionCategories((pre) => {
+      //   backupRefactoredSuggestionCategories = pre;
+      //   return pre.filter((cat) => cat.isVerified);
+      // });
     } else {
       setFilteredSuggestions(backupSuggestions);
-      setRefactoredSuggestionCategories(backupRefactoredSuggestionCategories);
+      // setRefactoredSuggestionCategories(backupRefactoredSuggestionCategories);
     }
   }, [checked]);
 
   useEffect(() => {
-    setRefactoredSuggestionCategories(
-      refactorSuggestionCategories(suggestionCategories)
-    );
+    // setRefactoredSuggestionCategories(
+    //   refactorSuggestionCategories(suggestionCategories)
+    // );
     if (selectedTag1 === "All") {
       setSuggestionCat(suggestionCategories);
     }
@@ -129,38 +109,6 @@ function AddedSuggestions({
 
   const handleMouseEnter1 = (event: MouseEvent<HTMLImageElement>) => {
     setAnchorEl1(event.currentTarget);
-  };
-
-  const handleModifySuperCategory = async (
-    category: string,
-    superCategory: string
-  ) => {
-    const response = await modifySuggestionCategory(
-      true,
-      [superCategory],
-      [],
-      category,
-      category
-    );
-    if (response) {
-      setRefactoredSuggestionCategories((pre) =>
-        pre.map((cat) =>
-          cat.category === category
-            ? {
-                ...cat,
-                superCategories: [...cat.superCategories, ...[superCategory]],
-              }
-            : cat
-        )
-      );
-
-      showSnackBar({
-        dispatch,
-        color: ThemeColors.success,
-        message: "Category modified successfully",
-      });
-    }
-    return response;
   };
 
   const handleToggleChange = (
@@ -187,20 +135,20 @@ function AddedSuggestions({
     if (tag === "All") {
       setSelectedTag2(["All"]);
       setSuggestionCat(suggestionCategories);
-      setRefactoredSuggestionCategories(
-        refactorSuggestionCategories(suggestionCategories)
-      );
+      // setRefactoredSuggestionCategories(
+      //   refactorSuggestionCategories(suggestionCategories)
+      // );
     } else {
       setSuggestionCat(
         suggestionCategories.filter(
           (cat) => cat.superCategory.name.trim() === tag.trim()
         )
       );
-      setRefactoredSuggestionCategories(
-        refactorSuggestionCategories(suggestionCategories).filter((cat) =>
-          cat.superCategories.includes(tag)
-        )
-      );
+      // setRefactoredSuggestionCategories(
+      //   refactorSuggestionCategories(suggestionCategories).filter((cat) =>
+      //     cat.superCategories.includes(tag)
+      //   )
+      // );
     }
   };
 
@@ -219,28 +167,28 @@ function AddedSuggestions({
     }
   };
 
-  const handleDeleteCategory = async (
-    category: string,
-    superCategory: string[]
-  ) => {
-    const response = await deleteCategory(category, superCategory);
-    if (response) {
-      showSnackBar({
-        dispatch,
-        color: ThemeColors.success,
-        message: "Category Deleted Successfully!",
-      });
-      setRefactoredSuggestionCategories((prevCategories) =>
-        prevCategories.filter((cat) => cat.category !== category)
-      );
-    } else {
-      showSnackBar({
-        dispatch,
-        color: ThemeColors.error,
-        message: "Failed to Delete Category",
-      });
-    }
-  };
+  // const handleDeleteCategory = async (
+  //   category: string,
+  //   superCategory: string[]
+  // ) => {
+  //   const response = await deleteCategory(category, superCategory);
+  //   if (response) {
+  //     showSnackBar({
+  //       dispatch,
+  //       color: ThemeColors.success,
+  //       message: "Category Deleted Successfully!",
+  //     });
+  //     setRefactoredSuggestionCategories((prevCategories) =>
+  //       prevCategories.filter((cat) => cat.category !== category)
+  //     );
+  //   } else {
+  //     showSnackBar({
+  //       dispatch,
+  //       color: ThemeColors.error,
+  //       message: "Failed to Delete Category",
+  //     });
+  //   }
+  // };
 
   return (
     <div className="shadow-custom py-3">
@@ -256,21 +204,12 @@ function AddedSuggestions({
           closePrompt={() => setShowNormalSuggestions(false)}
         />
       )}
-      {showSuperCategoryBasedSuggestions && (
-        <AISuperCategorySuggestions
-          suggestions={suggestions}
-          addNewSuperCategory={addNewSuperCategory}
-          addNewCategory={addNewCategory}
-          suggestionCategories={suggestionCategories}
-          closePrompt={() => setShowSuperCategoryBasedSuggestions(false)}
-        />
-      )}
       <section className="flex items-center justify-between px-10 my-4">
         <div className="flex items-center gap-4">
           <h1 className="text-textBrown md:text-3xl text-2xl max-sm:text-center font-medium">
             Already Added{" "}
             <span className="text-primary md:text-base text-sm">
-              (Suggestions)
+              (Subjects)
             </span>
             :
           </h1>
@@ -314,55 +253,52 @@ function AddedSuggestions({
           </p>
 
           {/* Second Menu */}
-          {!isViewMapping && (
-            <p className="md:text-xl text-textBrown flex gap-2 text-lg">
-              Category:
-              <span className="font-medium gap-2 flex">
-                {selectedTag2.includes("All") ? "All" : "Multiple"}
-                <img
-                  onClick={handleMouseEnter2}
-                  className="cursor-pointer"
-                  src={icons.dropdown}
-                />
-              </span>
-              <Menu
-                id="simple-menu"
-                anchorEl={anchorEl2}
-                open={Boolean(anchorEl2)}
-                onClose={handleMouseLeave2}
-                className="max-h-[600px]"
-              >
-                <MenuItem onClick={() => handleSetSelectedTag2("All")}>
-                  All
-                </MenuItem>
-                {suggestionCat.map((category) =>
-                  category.superCategory.secondLevelCategories.map((cat) => {
-                    const catName = cat.name.trim();
-                    return (
-                      <MenuItem
-                        key={catName}
-                        className="flex justify-between"
-                        onClick={() => handleSetSelectedTag2(catName)}
-                      >
-                        <p>{catName}</p>
-                        {selectedTag2.includes(catName) && <Check />}
-                      </MenuItem>
-                    );
-                  })
-                )}
-              </Menu>
-            </p>
-          )}
+
+          <p className="md:text-xl text-textBrown flex gap-2 text-lg">
+            Category:
+            <span className="font-medium gap-2 flex">
+              {selectedTag2.includes("All") ? "All" : "Multiple"}
+              <img
+                onClick={handleMouseEnter2}
+                className="cursor-pointer"
+                src={icons.dropdown}
+              />
+            </span>
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorEl2}
+              open={Boolean(anchorEl2)}
+              onClose={handleMouseLeave2}
+              className="max-h-[600px]"
+            >
+              <MenuItem onClick={() => handleSetSelectedTag2("All")}>
+                All
+              </MenuItem>
+              {suggestionCat.map((category) =>
+                category.superCategory.secondLevelCategories.map((cat) => {
+                  const catName = cat.name.trim();
+                  return (
+                    <MenuItem
+                      key={catName}
+                      className="flex justify-between"
+                      onClick={() => handleSetSelectedTag2(catName)}
+                    >
+                      <p>{catName}</p>
+                      {selectedTag2.includes(catName) && <Check />}
+                    </MenuItem>
+                  );
+                })
+              )}
+            </Menu>
+          </p>
         </div>
       </section>
       <div className="flex items-center justify-between">
-        <p
-          className="lg:text-xl text-primary my-5 ml-10 text-base font-medium hover:underline cursor-pointer"
-          onClick={() => setIsViewMapping(!isViewMapping)}
-        >
-          {isViewMapping
-            ? "Close Super Category Mapping"
-            : "View Super Category Mapping"}
+        <p className="lg:text-xl text-primary my-5 ml-10 text-base font-medium hover:underline cursor-pointer">
+          <Link to={routes.superCategoryMapping}>
+            {" "}
+            View Super Category Mapping
+          </Link>
         </p>
 
         <div className="mr-20 flex items-center">
@@ -377,8 +313,7 @@ function AddedSuggestions({
         </div>
       </div>
       <div className="max-md:hidden mx-1">
-        {!isViewMapping &&
-          filteredSuggestions.length > 0 &&
+        {filteredSuggestions.length > 0 &&
           filteredSuggestions.map((suggestion, index) => (
             <div key={suggestion.id}>
               <SuggestionCard
@@ -391,37 +326,14 @@ function AddedSuggestions({
               />
             </div>
           ))}
-        {!isViewMapping && filteredSuggestions.length === 0 && (
+        {filteredSuggestions.length === 0 && (
           <p className="text-brown text-center font-semibold text-lg">
             No {selectedTag2.join(", ")} Suggestions Found
           </p>
         )}
-        {isViewMapping &&
-          refactoredSuggestionCategories.map((cat) => {
-            return (
-              <div key={cat.category}>
-                <MappingCard
-                  modifySuperCategory={handleModifySuperCategory}
-                  isVerified={cat.isVerified}
-                  deleteCategory={() =>
-                    handleDeleteCategory(cat.category, cat.superCategories)
-                  }
-                  superCategories={suggestionCategories.map(
-                    (cat) => cat.superCategory.name
-                  )}
-                  category={cat.category}
-                  superCategory={cat.superCategories}
-                />
-              </div>
-            );
-          })}
         <div className="fixed right-0 bottom-0 p-5">
           <img
-            onClick={
-              isViewMapping
-                ? () => setShowSuperCategoryBasedSuggestions(true)
-                : () => setShowNormalSuggestions(true)
-            }
+            onClick={() => setShowNormalSuggestions(true)}
             className="cursor-pointer w-[80px] h-[80px]"
             src={icons.bot}
           />
