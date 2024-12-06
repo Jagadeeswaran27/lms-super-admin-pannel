@@ -22,6 +22,7 @@ interface AddedSuggestionsProps {
     tag: string[],
     image: File | null
   ) => Promise<boolean>;
+  toggleIsVerified: (suggestion: SuggestionModel, newChecked: boolean) => void;
 }
 function getScrollbarWidth() {
   return window.innerWidth - document.documentElement.clientWidth;
@@ -37,6 +38,7 @@ function AddedSuggestions({
   addNewCategory,
   addNewSuperCategory,
   addSuggestion,
+  toggleIsVerified,
 }: AddedSuggestionsProps) {
   const [anchorEl1, setAnchorEl1] = useState<null | HTMLElement>(null);
   const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
@@ -294,12 +296,20 @@ function AddedSuggestions({
         </div>
       </section>
       <div className="flex items-center justify-between">
-        <p className="lg:text-xl text-primary my-5 ml-10 text-base font-medium hover:underline cursor-pointer">
-          <Link to={routes.superCategoryMapping}>
-            {" "}
-            View Super Category Mapping
-          </Link>
-        </p>
+        <div>
+          <p className="lg:text-xl text-primary my-5 ml-10 text-base font-medium hover:underline cursor-pointer">
+            <Link to={routes.superCategoryMapping}>
+              {" "}
+              View Super Category Mapping
+            </Link>
+          </p>
+          <p className="lg:text-xl text-primary my-5 ml-10 text-base font-medium hover:underline cursor-pointer">
+            <Link to={routes.subSubjectsMapping}>
+              {" "}
+              View Sub Subject Mapping
+            </Link>
+          </p>
+        </div>
 
         <div className="mr-20 flex items-center">
           <Checkbox
@@ -317,6 +327,7 @@ function AddedSuggestions({
           filteredSuggestions.map((suggestion, index) => (
             <div key={suggestion.id}>
               <SuggestionCard
+                toggleIsVerified={toggleIsVerified}
                 suggestions={suggestions}
                 modifySuggestion={modifySuggestion}
                 suggestionCategories={suggestionCategories}

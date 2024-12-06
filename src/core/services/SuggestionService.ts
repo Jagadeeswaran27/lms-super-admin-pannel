@@ -12,7 +12,10 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import {
+  SubSubjectModel,
+  SuggestionModel,
+} from "../../models/suggestion/SuggestionModel";
 import { app, db } from "../config/firebase";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 
@@ -216,27 +219,83 @@ export async function getSuggestions(): Promise<SuggestionModel[] | []> {
   try {
     const suggestionsRef = collection(db, "suggestions");
     const querySnapshot = await getDocs(suggestionsRef);
+
     if (querySnapshot.empty) {
       return [];
     }
 
-    const suggestions: SuggestionModel[] = querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        name: data.name,
-        tag: data.tag,
-        isApproved: data.isApproved,
-        image: data.image || "",
-        isRejected: data.isRejected,
-        isVerified: data.isVerified || false,
-      };
-    });
-    // .filter((suggestion) => !suggestion.isApproved && !suggestion.isRejected);
+    const suggestions: SuggestionModel[] = await Promise.all(
+      querySnapshot.docs.map(async (doc) => {
+        const data = doc.data();
+
+        // Fetch sub-subjects collection for the current suggestion
+        const subSubjectsRef = collection(doc.ref, "sub-subjects");
+        const subSubjectsSnapshot = await getDocs(subSubjectsRef);
+        const subSubjects = subSubjectsSnapshot.docs.map((subDoc) => {
+          const subData = subDoc.data();
+          return {
+            id: subDoc.id,
+            name: subData.name,
+            image: subData.image || "",
+            isApproved: subData.isApproved,
+            isRejected: subData.isRejected,
+            isVerified: subData.isVerified || false,
+          };
+        });
+
+        return {
+          id: doc.id,
+          name: data.name,
+          tag: data.tag,
+          isApproved: data.isApproved,
+          image: data.image || "",
+          isRejected: data.isRejected,
+          isVerified: data.isVerified || false,
+          subSubjects: subSubjects,
+        };
+      })
+    );
+
     return suggestions;
   } catch (e) {
     console.error("Error fetching suggestions:", e);
     return [];
+  }
+}
+
+export async function addNewSubSubject(
+  suggestionId: string,
+  subSubject: string,
+  image?: File | null
+): Promise<SubSubjectModel | null> {
+  if (!subSubject.trim() || !image) {
+    return null;
+  }
+  try {
+    const storage = getStorage(app);
+    const storageRef = ref(storage, `suggestions/${Date.now()}_${image.name}`);
+    const uploadResult = await uploadBytes(storageRef, image);
+    const imageUrl = await getDownloadURL(uploadResult.ref);
+
+    const suggestionRef = doc(db, "suggestions", suggestionId);
+    const subSubjectRef = collection(suggestionRef, "sub-subjects");
+
+    const newSubSubject: SubSubjectModel = {
+      id: "",
+      name: subSubject,
+      image: imageUrl,
+      isApproved: true,
+      isRejected: false,
+      isVerified: false,
+    };
+    const addedDoc = await addDoc(subSubjectRef, newSubSubject);
+
+    await updateDoc(addedDoc, { id: addedDoc.id });
+    newSubSubject.id = addedDoc.id;
+    return newSubSubject;
+  } catch (e) {
+    console.error("Error adding new sub-subject:", e);
+    return null;
   }
 }
 
@@ -312,7 +371,7 @@ export async function addAdminSuggestion(
 
     // Add new suggestion to Firestore
     const newSuggestion: SuggestionModel = {
-      id: doc(suggestionsRef).id,
+      id: "",
       name: suggestion,
       isApproved: true,
       isRejected: false,
@@ -321,7 +380,9 @@ export async function addAdminSuggestion(
       isVerified: false,
     };
 
-    await addDoc(suggestionsRef, newSuggestion);
+    const docRef = await addDoc(suggestionsRef, newSuggestion);
+    await updateDoc(docRef, { id: docRef.id });
+    newSuggestion.id = docRef.id;
     return newSuggestion;
   } catch (e) {
     console.error("Error adding suggestion:", e);

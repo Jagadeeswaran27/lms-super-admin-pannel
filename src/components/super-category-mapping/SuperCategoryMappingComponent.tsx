@@ -18,6 +18,11 @@ interface SuperCategoryMappingComponentProps {
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
+  toggleIsVerified: (
+    newChecked: boolean,
+    superCat: string[],
+    categoryName: string
+  ) => void;
 }
 
 function SuperCategoryMappingComponent({
@@ -29,6 +34,7 @@ function SuperCategoryMappingComponent({
   addNewSuperCategory,
   modifySuggestion,
   suggestionCategories,
+  toggleIsVerified,
 }: SuperCategoryMappingComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
 
@@ -54,6 +60,7 @@ function SuperCategoryMappingComponent({
         <div className=" mx-auto">
           {suggestions.length > 0 ? (
             <AddedSuperCategorySuggestions
+              toggleIsVerified={toggleIsVerified}
               addNewCategory={addNewCategory}
               addNewSuperCategory={addNewSuperCategory}
               addSuggestion={addSuggestion}

@@ -10,6 +10,7 @@ import refactorSuggestionCategories from "../../utils/helper";
 import {
   deleteCategory,
   modifySuggestionCategory,
+  toggleCategoryIsVerified,
 } from "../../core/services/SuggestionService";
 import { showSnackBar } from "../../utils/Snackbar";
 import { ThemeColors } from "../../resources/colors";
@@ -29,6 +30,11 @@ interface AddedSuperCategoryMapping {
     tag: string[],
     image: File | null
   ) => Promise<boolean>;
+  toggleIsVerified: (
+    newChecked: boolean,
+    superCat: string[],
+    categoryName: string
+  ) => void;
 }
 function getScrollbarWidth() {
   return window.innerWidth - document.documentElement.clientWidth;
@@ -47,6 +53,7 @@ function AddedSuperCategorySuggestions({
   addNewCategory,
   addNewSuperCategory,
   addSuggestion,
+  toggleIsVerified,
 }: AddedSuperCategoryMapping) {
   const [anchorEl1, setAnchorEl1] = useState<null | HTMLElement>(null);
   const [selectedTag1, setSelectedTag1] = useState<string>("All");
@@ -101,6 +108,28 @@ function AddedSuperCategorySuggestions({
   const handleMouseEnter1 = (event: MouseEvent<HTMLImageElement>) => {
     setAnchorEl1(event.currentTarget);
   };
+
+  async function handleToggleIsVerified(
+    newChecked: boolean,
+    superCat: string[],
+    categoryName: string
+  ) {
+    const response = await toggleCategoryIsVerified(
+      newChecked,
+      superCat,
+      categoryName
+    );
+
+    if (response) {
+      setRefactoredSuggestionCategories((prevCategories) =>
+        prevCategories.map((cat) =>
+          cat.category === categoryName
+            ? { ...cat, isVerified: newChecked }
+            : cat
+        )
+      );
+    }
+  }
 
   const handleModifySuperCategory = async (
     category: string,

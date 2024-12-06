@@ -13,6 +13,7 @@ import {
   getSuggestionCategories,
   getSuggestions,
   modifySuggestion,
+  toggleIsVerified,
 } from "../../core/services/SuggestionService";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 
@@ -22,8 +23,10 @@ function SuggestionsContainer() {
     SuggestionCategoriesModel[] | []
   >([]);
   const [_, dispatch] = useContext(SnackBarContext);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsLoading(true);
     handleGetSuggestions();
     handleGetSuggestionCategories();
   }, []);
@@ -64,6 +67,7 @@ function SuggestionsContainer() {
   async function handleGetSuggestionCategories() {
     const response = await getSuggestionCategories();
     setSuggestionCategories(response);
+    setIsLoading(false);
   }
 
   async function handleAddNewCategory(
@@ -133,8 +137,25 @@ function SuggestionsContainer() {
     return false;
   }
 
+  async function handleToggleIsVerfiied(
+    suggestion: SuggestionModel,
+    newChecked: boolean
+  ) {
+    const response = await toggleIsVerified(suggestion.id, newChecked);
+
+    if (response) {
+      setSuggestions((prevSuggestions) =>
+        prevSuggestions.map((sugg) =>
+          sugg.id === suggestion.id ? { ...sugg, isVerified: newChecked } : sugg
+        )
+      );
+    }
+  }
+
   return (
     <SuggestionPageComponent
+      isLoading={isLoading}
+      toggleIsVerified={handleToggleIsVerfiied}
       addNewSuperCategory={handleAddNewSuperCategory}
       modifySuggestion={handleModifySuggestion}
       suggestionCategories={suggestionCategories}

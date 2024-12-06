@@ -4,10 +4,13 @@ import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import Drawer from "./Drawer";
 import AddedSuggestions from "./AddedSuggestions";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import { CircularProgress } from "@mui/material";
+import { ThemeColors } from "../../resources/colors";
 
 interface SuggestionPageComponentProps {
   logout: () => void;
   suggestions: SuggestionModel[] | [];
+  isLoading: boolean;
   addSuggestion: (
     suggestion: string,
     tag: string[],
@@ -18,6 +21,7 @@ interface SuggestionPageComponentProps {
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
+  toggleIsVerified: (suggestion: SuggestionModel, newChecked: boolean) => void;
 }
 
 function SuggestionPageComponent({
@@ -28,6 +32,8 @@ function SuggestionPageComponent({
   addSuggestion,
   addNewSuperCategory,
   modifySuggestion,
+  toggleIsVerified,
+  isLoading,
   suggestionCategories,
 }: SuggestionPageComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
@@ -52,8 +58,21 @@ function SuggestionPageComponent({
 
       <section>
         <div className=" mx-auto">
-          {suggestions.length > 0 ? (
+          {isLoading && (
+            <div className="flex items-center justify-center h-screen">
+              <CircularProgress
+                sx={{
+                  color: ThemeColors.authPrimary,
+                  size: 50,
+                  animationDuration: "1s",
+                  animationTimingFunction: "ease-in-out",
+                }}
+              />
+            </div>
+          )}
+          {!isLoading && suggestions.length > 0 ? (
             <AddedSuggestions
+              toggleIsVerified={toggleIsVerified}
               addNewCategory={addNewCategory}
               addNewSuperCategory={addNewSuperCategory}
               addSuggestion={addSuggestion}

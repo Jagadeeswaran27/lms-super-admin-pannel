@@ -12,6 +12,7 @@ import {
   getSuggestionCategories,
   getSuggestions,
   modifySuggestion,
+  toggleCategoryIsVerified,
 } from "../../core/services/SuggestionService";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 import SuperCategoryMappingComponent from "../../components/super-category-mapping/SuperCategoryMappingComponent";
@@ -119,6 +120,40 @@ function SuperCategoryMappingContainer() {
     }
   }
 
+  async function handleToggleIsVerified(
+    newChecked: boolean,
+    superCat: string[],
+    categoryName: string
+  ) {
+    const response = await toggleCategoryIsVerified(
+      newChecked,
+      superCat,
+      categoryName
+    );
+
+    if (response) {
+      setSuggestionCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category.superCategory.name === superCat[0]
+            ? {
+                ...category,
+                superCategory: {
+                  ...category.superCategory,
+                  secondLevelCategories:
+                    category.superCategory.secondLevelCategories.map(
+                      (secondLevel) =>
+                        secondLevel.name === categoryName
+                          ? { ...secondLevel, isVerified: newChecked }
+                          : secondLevel
+                    ),
+                },
+              }
+            : category
+        )
+      );
+    }
+  }
+
   async function handleAddSuggestion(
     suggestionText: string,
     tag: string[],
@@ -135,6 +170,7 @@ function SuperCategoryMappingContainer() {
 
   return (
     <SuperCategoryMappingComponent
+      toggleIsVerified={handleToggleIsVerified}
       addNewSuperCategory={handleAddNewSuperCategory}
       modifySuggestion={handleModifySuggestion}
       suggestionCategories={suggestionCategories}

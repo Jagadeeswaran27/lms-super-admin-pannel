@@ -3,6 +3,7 @@ import NewSuggestions from "../suggestion/NewSuggestions";
 import Header from "../common/Header";
 import Drawer from "../suggestion/Drawer";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 
 interface ManualSuggestionProps {
   addSuggestion: (
@@ -14,6 +15,12 @@ interface ManualSuggestionProps {
   addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
+  suggestions: SuggestionModel[];
+  addNewSubSubject: (
+    suggestion: SuggestionModel,
+    subSubject: string,
+    file: File
+  ) => Promise<boolean>;
 }
 
 function ManualSuggestion({
@@ -22,6 +29,8 @@ function ManualSuggestion({
   addNewCategory,
   addNewSuperCategory,
   logout,
+  addNewSubSubject,
+  suggestions,
 }: ManualSuggestionProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
 
@@ -42,6 +51,8 @@ function ManualSuggestion({
 
       <Header openDrawer={openDrawer} logout={logout} />
       <NewSuggestions
+        addNewSubSubject={addNewSubSubject}
+        suggestions={suggestions}
         addNewCategory={addNewCategory}
         addNewSuperCategory={addNewSuperCategory}
         suggestionCategories={suggestionCategories}

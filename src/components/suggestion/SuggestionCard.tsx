@@ -7,7 +7,6 @@ import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCat
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
 import IOSSwitch from "../common/IOSSwitch";
-import { toggleIsVerified } from "../../core/services/SuggestionService";
 import AIButton from "./AIButton";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../../core/config/firebase";
@@ -20,6 +19,7 @@ interface SuggestionCardProps {
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
   suggestions: SuggestionModel[];
+  toggleIsVerified: (suggestion: SuggestionModel, newChecked: boolean) => void;
 }
 
 function SuggestionCard({
@@ -28,6 +28,7 @@ function SuggestionCard({
   deleteSuggestion,
   suggestionCategories,
   modifySuggestion,
+  toggleIsVerified,
 }: // isViewMapping,
 SuggestionCardProps) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -41,7 +42,6 @@ SuggestionCardProps) {
     .sort((a, b) => a.superCategory.name.localeCompare(b.superCategory.name))
     .filter((category) => !newTags.includes(category.superCategory.name));
   const [_, dispatch] = useContext(SnackBarContext);
-  const [isVerified, setIsVerified] = useState<boolean>(suggestion.isVerified);
 
   const nameRef = useRef<HTMLInputElement>(null);
 
@@ -97,10 +97,7 @@ SuggestionCardProps) {
     newChecked: boolean
   ) => {
     event.preventDefault();
-    const response = await toggleIsVerified(suggestion.id, newChecked);
-    if (response) {
-      setIsVerified(newChecked);
-    }
+    toggleIsVerified(suggestion, newChecked);
   };
   const handleGetModifiedSuggestion = async () => {
     setIsLoading(true);
@@ -244,7 +241,10 @@ SuggestionCardProps) {
           )}
         </div>
         <div className="flex gap-2 items-center">
-          <IOSSwitch checked={isVerified} onChange={handleToggleChange} />
+          <IOSSwitch
+            checked={suggestion.isVerified}
+            onChange={handleToggleChange}
+          />
           {isEdit ? (
             <Check
               onClick={handleModifySuggestion}
@@ -255,9 +255,9 @@ SuggestionCardProps) {
             />
           ) : (
             <Edit
-              onClick={isVerified ? () => {} : () => setIsEdit(true)}
+              onClick={suggestion.isVerified ? () => {} : () => setIsEdit(true)}
               className={`${
-                isVerified && "opacity-80 cursor-default"
+                suggestion.isVerified && "opacity-80 cursor-default"
               } cursor-pointer mx-2 transition-all transform hover:scale-110`}
               sx={{
                 color: ThemeColors.brown,
@@ -266,10 +266,12 @@ SuggestionCardProps) {
           )}
           <Delete
             onClick={
-              isVerified ? () => {} : () => deleteSuggestion(suggestion.id)
+              suggestion.isVerified
+                ? () => {}
+                : () => deleteSuggestion(suggestion.id)
             }
             className={`${
-              isVerified && "opacity-80 cursor-default"
+              suggestion.isVerified && "opacity-80 cursor-default"
             } cursor-pointer transition-all transform hover:scale-110`}
             sx={{
               color: ThemeColors.brown,

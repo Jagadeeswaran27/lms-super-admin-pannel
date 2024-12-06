@@ -14,6 +14,7 @@ import SuggestionPage from "./pages/suggestions/SuggestionPage";
 import { routes } from "./utils/Routes";
 import ManualSuggestionPage from "./pages/suggestions/ManualSuggestionPage";
 import SuperCategoryMappingPage from "./pages/suggestions/SuperCategoryMappingPage";
+import SubSubjectsMappingPage from "./pages/suggestions/SubSubjectsMappingPage";
 
 function App() {
   const theme = createTheme({
@@ -47,6 +48,12 @@ function App() {
                   path={routes.superCategoryMapping}
                   element={
                     <ProtectedRoute element={<SuperCategoryMappingPage />} />
+                  }
+                />
+                <Route
+                  path={routes.subSubjectsMapping}
+                  element={
+                    <ProtectedRoute element={<SubSubjectsMappingPage />} />
                   }
                 />
                 <Route

@@ -5,6 +5,8 @@ import NewCategory from "./NewCategory";
 import { icons } from "../../resources/icons";
 import { Link } from "react-router-dom";
 import { routes } from "../../utils/Routes";
+import NewSubSubjectForm from "./NewSubSubjectForm";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 
 interface NewSuggestionsProps {
   addSuggestion: (
@@ -15,12 +17,20 @@ interface NewSuggestionsProps {
   suggestionCategories: SuggestionCategoriesModel[];
   addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
+  suggestions: SuggestionModel[];
+  addNewSubSubject: (
+    suggestion: SuggestionModel,
+    subSubject: string,
+    file: File
+  ) => Promise<boolean>;
 }
 
 function NewSuggestions({
   addSuggestion,
   addNewCategory,
   addNewSuperCategory,
+  addNewSubSubject,
+  suggestions,
   suggestionCategories,
 }: NewSuggestionsProps) {
   return (
@@ -41,7 +51,17 @@ function NewSuggestions({
       <div className="bg-cardColor my-5 w-[95%] mx-auto rounded-xl shadow-custom">
         <p className="pt-3">
           <span className="bg-primary text-white p-2 rounded-r-full">
-            1. Add New Suggestion
+            1. Add New Sub Subject
+          </span>
+        </p>
+        <NewSubSubjectForm
+          addNewSubSubject={addNewSubSubject}
+          suggestions={suggestions}
+          addNewCategory={addNewCategory}
+        />
+        <p className="pt-3">
+          <span className="bg-primary text-white p-2 rounded-r-full">
+            1. Add New Subjects
           </span>
         </p>
         <NewSuggestionForm

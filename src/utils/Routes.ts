@@ -4,4 +4,5 @@ export const routes = {
   allSuggestions: "/suggestions/all",
   suggestionManual: "/suggestions/manual",
   superCategoryMapping: "/super-category-mapping",
+  subSubjectsMapping: "/sub-subjects-mapping",
 };
