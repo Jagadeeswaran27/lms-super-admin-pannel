@@ -1,29 +1,37 @@
-import { useState } from "react";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import { Check, Close, Delete, Edit } from "@mui/icons-material";
-import AIButton from "../suggestion/AIButton";
-import IOSSwitch from "../common/IOSSwitch";
-import { ThemeColors } from "../../resources/colors";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "../../core/config/firebase";
-import NewSubSubjectsPopUp from "./NewSubSubjectsPopUp";
+import { useContext, useState } from 'react';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import { Check, Close, Delete, Edit } from '@mui/icons-material';
+import AIButton from '../suggestion/AIButton';
+import IOSSwitch from '../common/IOSSwitch';
+import { ThemeColors } from '../../resources/colors';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../../core/config/firebase';
+import NewSubSubjectsPopUp from './NewSubSubjectsPopUp';
+import { showSnackBar } from '../../utils/Snackbar';
+import { SnackBarContext } from '../../store/SnackBarContext';
 interface SubSubjectsMappingCardProps {
   suggestion: SuggestionModel;
   addNewSubSubject: (
     suggestion: SuggestionModel,
     subSubject: string
   ) => Promise<boolean>;
+  deleteSuggestions: (id: string) => void;
+  deleteSubSubject: (id: string, docId: string) => void;
   toggleIsVerified: (suggestion: SuggestionModel, newChecked: boolean) => void;
 }
 function SubSubjectsMappingCard({
   suggestion,
   addNewSubSubject,
+  deleteSuggestions,
+  deleteSubSubject,
   toggleIsVerified,
 }: SubSubjectsMappingCardProps) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [newSubSubjects, setNewSubSubjects] = useState<string[]>([]);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, dispatch] = useContext(SnackBarContext);
 
   const handleToggleChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -38,7 +46,7 @@ function SubSubjectsMappingCard({
 
     const suggestNewSubSubjects = httpsCallable(
       functions,
-      "suggestNewSubSubjects"
+      'suggestNewSubSubjects'
     );
     try {
       const response = await suggestNewSubSubjects({
@@ -53,7 +61,7 @@ function SubSubjectsMappingCard({
         setShowPopUp(true);
       }
     } catch (error) {
-      console.error("Error fetching name suggestions:", error);
+      console.error('Error fetching name suggestions:', error);
     }
     setIsLoading(false);
   };
@@ -61,7 +69,7 @@ function SubSubjectsMappingCard({
   return (
     <div
       className={`bg-white ${
-        isEdit ? "border border-primary" : ""
+        isEdit ? 'border border-primary' : ''
       } rounded-md w-[80%] mx-auto my-3 flex relative gap-2 items-center shadow-custom px-2 py-5 lg:pl-5 max-lg:px-7 max-sm:px-2 `}
     >
       <div className="flex gap-3 max-w-[40%] min-w-[40%] items-center">
@@ -89,7 +97,7 @@ function SubSubjectsMappingCard({
                   {isEdit && (
                     <Close
                       fontSize="small"
-                      //   setSuperCat((pre) => pre.filter((p) => p !== cat))
+                      onClick={() => deleteSubSubject(sub.id, suggestion.id)}
                       className="cursor-pointer"
                     />
                   )}
@@ -108,7 +116,11 @@ function SubSubjectsMappingCard({
             />
           )}
           {!isEdit && (
-            <div className="w-[180px] mt-7">
+            <div
+              className={`${
+                suggestion.isVerified ? 'opacity-0 invisible' : ''
+              } w-[180px] mt-7`}
+            >
               <AIButton
                 isLoading={isLoading}
                 text="AI"
@@ -128,29 +140,39 @@ function SubSubjectsMappingCard({
               className=" mx-2 transition-all transform hover:scale-110"
               sx={{
                 color: ThemeColors.brown,
-                cursor: "pointer",
+                cursor: 'pointer',
               }}
             />
           ) : (
             <Edit
               onClick={suggestion.isVerified ? () => {} : () => setIsEdit(true)}
               className={`${
-                suggestion.isVerified && "opacity-80"
+                suggestion.isVerified && 'opacity-0 invisible'
               } mx-2 transition-all transform hover:scale-110`}
               sx={{
                 color: ThemeColors.brown,
-                cursor: suggestion.isVerified ? "default" : "pointer",
+                cursor: suggestion.isVerified ? 'default' : 'pointer',
               }}
             />
           )}
           <Delete
-            // onClick={suggestion.isVerified ? () => {} : deleteCategory}
+            onClick={
+              suggestion.isVerified || suggestion.registeredBy.length > 0
+                ? () => {
+                    showSnackBar({
+                      dispatch: dispatch,
+                      color: ThemeColors.error,
+                      message: 'Cannot delete suggestion',
+                    });
+                  }
+                : () => deleteSuggestions(suggestion.id)
+            }
             className={`${
-              suggestion.isVerified && "opacity-80 cursor-default"
+              suggestion.isVerified && 'opacity-0 invisible'
             } transition-all transform hover:scale-110`}
             sx={{
               color: ThemeColors.brown,
-              cursor: suggestion.isVerified ? "default" : "pointer",
+              cursor: suggestion.isVerified ? 'default' : 'pointer',
             }}
           />
         </div>

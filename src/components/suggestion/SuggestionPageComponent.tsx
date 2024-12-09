@@ -1,11 +1,11 @@
-import Header from "../common/Header";
-import { useState } from "react";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import Drawer from "./Drawer";
-import AddedSuggestions from "./AddedSuggestions";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import { CircularProgress } from "@mui/material";
-import { ThemeColors } from "../../resources/colors";
+import Header from '../common/Header';
+import { useState } from 'react';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import Drawer from './Drawer';
+import AddedSuggestions from './AddedSuggestions';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import { CircularProgress } from '@mui/material';
+import { ThemeColors } from '../../resources/colors';
 
 interface SuggestionPageComponentProps {
   logout: () => void;
@@ -53,9 +53,7 @@ function SuggestionPageComponent({
         logout={logout}
         showDrawer={showDrawer}
       />
-
       <Header openDrawer={openDrawer} logout={logout} />
-
       <section>
         <div className=" mx-auto">
           {isLoading && (
@@ -64,8 +62,8 @@ function SuggestionPageComponent({
                 sx={{
                   color: ThemeColors.authPrimary,
                   size: 50,
-                  animationDuration: "1s",
-                  animationTimingFunction: "ease-in-out",
+                  animationDuration: '1s',
+                  animationTimingFunction: 'ease-in-out',
                 }}
               />
             </div>

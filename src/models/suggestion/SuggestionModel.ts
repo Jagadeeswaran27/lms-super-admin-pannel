@@ -7,6 +7,7 @@ export interface SuggestionModel {
   tag: string[];
   newTags?: string[];
   isVerified: boolean;
+  registeredBy: string[];
   subSubjects?: SubSubjectModel[];
 }
 

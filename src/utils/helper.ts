@@ -1,5 +1,5 @@
-import { SuggestionCategoriesModel } from "../models/suggestion/SuggestionCategoriesModel";
-import { SuggestionModel } from "../models/suggestion/SuggestionModel";
+import { SuggestionCategoriesModel } from '../models/suggestion/SuggestionCategoriesModel';
+import { SuggestionModel } from '../models/suggestion/SuggestionModel';
 
 export function filterSuggestion(
   suggestions: SuggestionModel[],
@@ -62,7 +62,7 @@ export function findSuperCategory(
       .map((cat) => cat.name.trim())
       .includes(secondLevelCategory.trim());
   });
-  return res ? `${res.superCategory.name} : ${secondLevelCategory}` : "";
+  return res ? `${res.superCategory.name} : ${secondLevelCategory}` : '';
 }
 
 export default function refactorSuggestionCategories(
@@ -80,11 +80,7 @@ export default function refactorSuggestionCategories(
 
   const uniqueSecondLevelCategories = secondLevelCategories.filter(
     (category, index, self) =>
-      index ===
-      self.findIndex(
-        (cat) =>
-          cat.name === category.name && cat.isVerified === category.isVerified
-      )
+      index === self.findIndex((cat) => cat.name === category.name)
   );
 
   const refactoredCategories = uniqueSecondLevelCategories.map((sec) => {

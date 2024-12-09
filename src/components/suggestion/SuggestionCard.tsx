@@ -1,16 +1,16 @@
-import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import { ThemeColors } from "../../resources/colors";
-import { MouseEvent, useContext, useRef, useState } from "react";
-import { Menu, MenuItem } from "@mui/material";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import { showSnackBar } from "../../utils/Snackbar";
-import { SnackBarContext } from "../../store/SnackBarContext";
-import IOSSwitch from "../common/IOSSwitch";
-import AIButton from "./AIButton";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "../../core/config/firebase";
-import NewCategoriesPopUp from "./NewCategoriesPopUp";
+import { Add, Check, Close, Delete, Edit } from '@mui/icons-material';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import { ThemeColors } from '../../resources/colors';
+import { MouseEvent, useContext, useRef, useState } from 'react';
+import { Menu, MenuItem } from '@mui/material';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import { showSnackBar } from '../../utils/Snackbar';
+import { SnackBarContext } from '../../store/SnackBarContext';
+import IOSSwitch from '../common/IOSSwitch';
+import AIButton from './AIButton';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../../core/config/firebase';
+import NewCategoriesPopUp from './NewCategoriesPopUp';
 
 interface SuggestionCardProps {
   suggestion: SuggestionModel;
@@ -41,6 +41,7 @@ SuggestionCardProps) {
   const sortedSuggestions = suggestionCategories
     .sort((a, b) => a.superCategory.name.localeCompare(b.superCategory.name))
     .filter((category) => !newTags.includes(category.superCategory.name));
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, dispatch] = useContext(SnackBarContext);
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -59,7 +60,7 @@ SuggestionCardProps) {
       showSnackBar({
         dispatch,
         color: ThemeColors.error,
-        message: "Name cannot be empty",
+        message: 'Name cannot be empty',
       });
       return;
     }
@@ -67,7 +68,7 @@ SuggestionCardProps) {
       showSnackBar({
         dispatch,
         color: ThemeColors.error,
-        message: "Please select at least one tag",
+        message: 'Please select at least one tag',
       });
       return;
     }
@@ -81,13 +82,13 @@ SuggestionCardProps) {
       showSnackBar({
         dispatch,
         color: ThemeColors.success,
-        message: "Suggestion modified successfully",
+        message: 'Suggestion modified successfully',
       });
     } else {
       showSnackBar({
         dispatch,
         color: ThemeColors.error,
-        message: "Failed to modify suggestion",
+        message: 'Failed to modify suggestion',
       });
     }
   };
@@ -107,7 +108,7 @@ SuggestionCardProps) {
         categories.push(cat.name)
       )
     );
-    const modifyTags = httpsCallable(functions, "modifyTags");
+    const modifyTags = httpsCallable(functions, 'modifyTags');
     try {
       const response = await modifyTags({
         subjectData: {
@@ -121,12 +122,12 @@ SuggestionCardProps) {
       };
       if (data.newCategories.length > 0) {
         setNewCategories(
-          data.newCategories.map((cat) => cat.split(".")[1].trim())
+          data.newCategories.map((cat) => cat.split('.')[1].trim())
         );
         setShowPopUp(true);
       }
     } catch (error) {
-      console.error("Error fetching name suggestions:", error);
+      console.error('Error fetching name suggestions:', error);
     }
     setIsLoading(false);
   };
@@ -134,9 +135,9 @@ SuggestionCardProps) {
   return (
     <div
       className={`${
-        isEven ? "bg-white" : "bg-cardColor"
+        isEven ? 'bg-white' : 'bg-cardColor'
       } rounded-md w-[80%] mx-auto my-3 flex relative gap-2 items-center shadow-custom px-2 py-5 lg:pl-5 max-lg:px-7 max-sm:px-2 ${
-        isEdit ? "border border-primary" : ""
+        isEdit ? 'border border-primary' : ''
       }`}
     >
       <div className="flex gap-3 max-w-[40%] min-w-[40%] items-center">
@@ -152,7 +153,7 @@ SuggestionCardProps) {
             <input
               ref={nameRef}
               className={`focus:border-none text-textBrown px-2 focus:outline-none text-lg ${
-                isEven ? "bg-cardColor" : "bg-white"
+                isEven ? 'bg-cardColor' : 'bg-white'
               } px-1 rounded-sm`}
               defaultValue={suggestion.name}
             />
@@ -231,7 +232,11 @@ SuggestionCardProps) {
             />
           )}
           {!isEdit && (
-            <div className="w-[180px] mt-7">
+            <div
+              className={`${
+                suggestion.isVerified ? 'opacity-0 invisible' : ''
+              } w-[180px] mt-7`}
+            >
               <AIButton
                 isLoading={isLoading}
                 text="AI"
@@ -257,7 +262,7 @@ SuggestionCardProps) {
             <Edit
               onClick={suggestion.isVerified ? () => {} : () => setIsEdit(true)}
               className={`${
-                suggestion.isVerified && "opacity-80 cursor-default"
+                suggestion.isVerified && 'opacity-0 invisible'
               } cursor-pointer mx-2 transition-all transform hover:scale-110`}
               sx={{
                 color: ThemeColors.brown,
@@ -266,12 +271,18 @@ SuggestionCardProps) {
           )}
           <Delete
             onClick={
-              suggestion.isVerified
-                ? () => {}
+              suggestion.isVerified || suggestion.registeredBy.length > 0
+                ? () => {
+                    showSnackBar({
+                      dispatch,
+                      color: ThemeColors.error,
+                      message: 'Cannot delete suggestion',
+                    });
+                  }
                 : () => deleteSuggestion(suggestion.id)
             }
             className={`${
-              suggestion.isVerified && "opacity-80 cursor-default"
+              suggestion.isVerified && 'opacity-0 cursor-default'
             } cursor-pointer transition-all transform hover:scale-110`}
             sx={{
               color: ThemeColors.brown,

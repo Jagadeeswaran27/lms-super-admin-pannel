@@ -1,30 +1,35 @@
-import { useContext, useEffect, useState } from "react";
-import { logout } from "../../core/services/AuthService";
-import { showSnackBar } from "../../utils/Snackbar";
-import { SnackBarContext } from "../../store/SnackBarContext";
-import { ThemeColors } from "../../resources/colors";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import { useContext, useEffect, useState } from 'react';
+import { logout } from '../../core/services/AuthService';
+import { showSnackBar } from '../../utils/Snackbar';
+import { SnackBarContext } from '../../store/SnackBarContext';
+import { ThemeColors } from '../../resources/colors';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
 import {
   addAdminSuggestion,
   addSuggestionCategory,
   addSuperCategory,
-  deleteAdminSuggestion,
+  deleteSingleCategory,
+  deleteSuggestion as deleteSuggestionService,
   getSuggestionCategories,
   getSuggestions,
   modifySuggestion,
   toggleCategoryIsVerified,
-} from "../../core/services/SuggestionService";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import SuperCategoryMappingComponent from "../../components/super-category-mapping/SuperCategoryMappingComponent";
+} from '../../core/services/SuggestionService';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import SuperCategoryMappingComponent from '../../components/super-category-mapping/SuperCategoryMappingComponent';
 
 function SuperCategoryMappingContainer() {
   const [suggestions, setSuggestions] = useState<SuggestionModel[] | []>([]);
   const [suggestionCategories, setSuggestionCategories] = useState<
     SuggestionCategoriesModel[] | []
   >([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, dispatch] = useContext(SnackBarContext);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
 
   useEffect(() => {
+    setIsLoading(true);
     handleGetSuggestions();
     handleGetSuggestionCategories();
   }, []);
@@ -58,13 +63,14 @@ function SuperCategoryMappingContainer() {
     showSnackBar({
       dispatch: dispatch,
       color: ThemeColors.success,
-      message: "Logout successfull",
+      message: 'Logout successfull',
     });
   }
 
   async function handleGetSuggestionCategories() {
     const response = await getSuggestionCategories();
     setSuggestionCategories(response);
+    setIsLoading(false);
   }
 
   async function handleAddNewCategory(
@@ -104,7 +110,7 @@ function SuperCategoryMappingContainer() {
   }
 
   async function deleteSuggestion(id: string) {
-    const response = await deleteAdminSuggestion(id);
+    const response = await deleteSuggestionService(id);
     if (response) {
       setSuggestions((prev) => {
         const updatedSuggestions = prev.filter(
@@ -115,7 +121,7 @@ function SuperCategoryMappingContainer() {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
-        message: "Suggestion deleted successfully",
+        message: 'Suggestion deleted successfully',
       });
     }
   }
@@ -159,7 +165,7 @@ function SuperCategoryMappingContainer() {
     tag: string[],
     image: File | null
   ): Promise<boolean> {
-    const response = await addAdminSuggestion(suggestionText ?? "", tag, image);
+    const response = await addAdminSuggestion(suggestionText ?? '', tag, image);
     if (response) {
       setSuggestions((pre) => [response, ...pre]);
 
@@ -167,6 +173,61 @@ function SuperCategoryMappingContainer() {
     }
     return false;
   }
+
+  const deleteCategoryHandler = async (
+    categoryName: string,
+    parentSuperCategory: string[]
+  ) => {
+    console.log(categoryName, parentSuperCategory);
+    const doesCategoryExists = suggestions.some((suggestion) =>
+      suggestion.tag.includes(categoryName)
+    );
+    if (!doesCategoryExists) {
+      const prms = await Promise.all(
+        parentSuperCategory.map((superCategory) =>
+          deleteSingleCategory(superCategory, categoryName)
+        )
+      );
+      const response = prms.every((prm) => prm);
+      if (response) {
+        showSnackBar({
+          dispatch: dispatch,
+          color: ThemeColors.success,
+          message: 'Category deleted successfully',
+        });
+        setSuggestionCategories((prev) =>
+          prev.map((category) => {
+            if (parentSuperCategory.includes(category.superCategory.name)) {
+              return {
+                ...category,
+                superCategory: {
+                  ...category.superCategory,
+                  secondLevelCategories:
+                    category.superCategory.secondLevelCategories.filter(
+                      (secondLevel) =>
+                        secondLevel.name.trim() !== categoryName.trim()
+                    ),
+                },
+              };
+            }
+            return category;
+          })
+        );
+      } else {
+        showSnackBar({
+          dispatch: dispatch,
+          color: ThemeColors.error,
+          message: 'Error deleting category',
+        });
+      }
+    } else {
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: 'Category is used in suggestions',
+      });
+    }
+  };
 
   return (
     <SuperCategoryMappingComponent
@@ -179,6 +240,8 @@ function SuperCategoryMappingContainer() {
       suggestions={suggestions}
       logout={handleLogout}
       addNewCategory={handleAddNewCategory}
+      deleteCategory={deleteCategoryHandler}
+      isLoading={isLoading}
     />
   );
 }

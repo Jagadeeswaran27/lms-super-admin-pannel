@@ -1,27 +1,28 @@
-import { useContext, useEffect, useState } from "react";
-import SuggestionPageComponent from "../../components/suggestion/SuggestionPageComponent";
-import { logout } from "../../core/services/AuthService";
-import { showSnackBar } from "../../utils/Snackbar";
-import { SnackBarContext } from "../../store/SnackBarContext";
-import { ThemeColors } from "../../resources/colors";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import { useContext, useEffect, useState } from 'react';
+import SuggestionPageComponent from '../../components/suggestion/SuggestionPageComponent';
+import { logout } from '../../core/services/AuthService';
+import { showSnackBar } from '../../utils/Snackbar';
+import { SnackBarContext } from '../../store/SnackBarContext';
+import { ThemeColors } from '../../resources/colors';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
 import {
   addAdminSuggestion,
   addSuggestionCategory,
   addSuperCategory,
-  deleteAdminSuggestion,
   getSuggestionCategories,
+  deleteSuggestion as deleteSuggestionService,
   getSuggestions,
   modifySuggestion,
   toggleIsVerified,
-} from "../../core/services/SuggestionService";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+} from '../../core/services/SuggestionService';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
 
 function SuggestionsContainer() {
   const [suggestions, setSuggestions] = useState<SuggestionModel[] | []>([]);
   const [suggestionCategories, setSuggestionCategories] = useState<
     SuggestionCategoriesModel[] | []
   >([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, dispatch] = useContext(SnackBarContext);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -60,7 +61,7 @@ function SuggestionsContainer() {
     showSnackBar({
       dispatch: dispatch,
       color: ThemeColors.success,
-      message: "Logout successfull",
+      message: 'Logout successfull',
     });
   }
 
@@ -107,7 +108,7 @@ function SuggestionsContainer() {
   }
 
   async function deleteSuggestion(id: string) {
-    const response = await deleteAdminSuggestion(id);
+    const response = await deleteSuggestionService(id);
     if (response) {
       setSuggestions((prev) => {
         const updatedSuggestions = prev.filter(
@@ -118,7 +119,13 @@ function SuggestionsContainer() {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
-        message: "Suggestion deleted successfully",
+        message: 'Suggestion deleted successfully',
+      });
+    } else {
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: 'Error deleting suggestion',
       });
     }
   }
@@ -128,7 +135,7 @@ function SuggestionsContainer() {
     tag: string[],
     image: File | null
   ): Promise<boolean> {
-    const response = await addAdminSuggestion(suggestionText ?? "", tag, image);
+    const response = await addAdminSuggestion(suggestionText ?? '', tag, image);
     if (response) {
       setSuggestions((pre) => [response, ...pre]);
 

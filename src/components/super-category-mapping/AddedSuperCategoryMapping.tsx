@@ -1,22 +1,18 @@
-import { Checkbox, Menu, MenuItem } from "@mui/material";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import { icons } from "../../resources/icons";
-import { MouseEvent, useContext, useEffect, useState } from "react";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import MappingCard from "../suggestion/MappingCard";
-import AISuggestions from "../suggestion/AISuggestions";
-import AISuperCategorySuggestions from "../suggestion/AISuperCategorySuggestions";
-import refactorSuggestionCategories from "../../utils/helper";
-import {
-  deleteCategory,
-  modifySuggestionCategory,
-  toggleCategoryIsVerified,
-} from "../../core/services/SuggestionService";
-import { showSnackBar } from "../../utils/Snackbar";
-import { ThemeColors } from "../../resources/colors";
-import { SnackBarContext } from "../../store/SnackBarContext";
-import { Link } from "react-router-dom";
-import { routes } from "../../utils/Routes";
+import { Checkbox, Menu, MenuItem } from '@mui/material';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import { icons } from '../../resources/icons';
+import { MouseEvent, useContext, useEffect, useState } from 'react';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import MappingCard from '../suggestion/MappingCard';
+import AISuggestions from '../suggestion/AISuggestions';
+import AISuperCategorySuggestions from '../suggestion/AISuperCategorySuggestions';
+import refactorSuggestionCategories from '../../utils/helper';
+import { modifySuggestionCategory } from '../../core/services/SuggestionService';
+import { showSnackBar } from '../../utils/Snackbar';
+import { ThemeColors } from '../../resources/colors';
+import { SnackBarContext } from '../../store/SnackBarContext';
+import { Link } from 'react-router-dom';
+import { routes } from '../../utils/Routes';
 
 interface AddedSuperCategoryMapping {
   suggestions: SuggestionModel[];
@@ -35,6 +31,7 @@ interface AddedSuperCategoryMapping {
     superCat: string[],
     categoryName: string
   ) => void;
+  deleteCategory: (category: string, parentSuperCategory: string[]) => void;
 }
 function getScrollbarWidth() {
   return window.innerWidth - document.documentElement.clientWidth;
@@ -53,10 +50,10 @@ function AddedSuperCategorySuggestions({
   addNewCategory,
   addNewSuperCategory,
   addSuggestion,
-  toggleIsVerified,
+  deleteCategory,
 }: AddedSuperCategoryMapping) {
   const [anchorEl1, setAnchorEl1] = useState<null | HTMLElement>(null);
-  const [selectedTag1, setSelectedTag1] = useState<string>("All");
+  const [selectedTag1, setSelectedTag1] = useState<string>('All');
 
   const [showNormalSuggestions, setShowNormalSuggestions] =
     useState<boolean>(false);
@@ -69,20 +66,22 @@ function AddedSuperCategorySuggestions({
       { category: string; isVerified: boolean; superCategories: string[] }[]
     >([]);
   const [checked, setChecked] = useState<boolean>(false);
+  const [unverifiedChecked, setUnverifiedChecked] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, dispatch] = useContext(SnackBarContext);
 
   useEffect(() => {
     if (showNormalSuggestions) {
       const scrollbarWidth = getScrollbarWidth();
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
-      document.body.style.overflow = "auto";
-      document.body.style.paddingRight = "0px";
+      document.body.style.overflow = 'auto';
+      document.body.style.paddingRight = '0px';
     }
     return () => {
-      document.body.style.overflow = "auto";
-      document.body.style.paddingRight = "0px";
+      document.body.style.overflow = 'auto';
+      document.body.style.paddingRight = '0px';
     };
   }, [showNormalSuggestions]);
 
@@ -92,16 +91,21 @@ function AddedSuperCategorySuggestions({
         backupRefactoredSuggestionCategories = pre;
         return pre.filter((cat) => cat.isVerified);
       });
+    } else if (unverifiedChecked) {
+      setRefactoredSuggestionCategories(
+        backupRefactoredSuggestionCategories.filter((cat) => !cat.isVerified)
+      );
     } else {
       setRefactoredSuggestionCategories(backupRefactoredSuggestionCategories);
     }
-  }, [checked]);
+  }, [checked, unverifiedChecked]);
 
   useEffect(() => {
     setRefactoredSuggestionCategories(
       refactorSuggestionCategories(suggestionCategories)
     );
-    if (selectedTag1 === "All") {
+    if (selectedTag1 === 'All') {
+      // console.log('All');
     }
   }, [suggestionCategories]);
 
@@ -109,27 +113,27 @@ function AddedSuperCategorySuggestions({
     setAnchorEl1(event.currentTarget);
   };
 
-  async function handleToggleIsVerified(
-    newChecked: boolean,
-    superCat: string[],
-    categoryName: string
-  ) {
-    const response = await toggleCategoryIsVerified(
-      newChecked,
-      superCat,
-      categoryName
-    );
+  // async function handleToggleIsVerified(
+  //   newChecked: boolean,
+  //   superCat: string[],
+  //   categoryName: string
+  // ) {
+  //   const response = await toggleCategoryIsVerified(
+  //     newChecked,
+  //     superCat,
+  //     categoryName
+  //   );
 
-    if (response) {
-      setRefactoredSuggestionCategories((prevCategories) =>
-        prevCategories.map((cat) =>
-          cat.category === categoryName
-            ? { ...cat, isVerified: newChecked }
-            : cat
-        )
-      );
-    }
-  }
+  //   if (response) {
+  //     setRefactoredSuggestionCategories((prevCategories) =>
+  //       prevCategories.map((cat) =>
+  //         cat.category === categoryName
+  //           ? { ...cat, isVerified: newChecked }
+  //           : cat
+  //       )
+  //     );
+  //   }
+  // }
 
   const handleModifySuperCategory = async (
     category: string,
@@ -157,7 +161,7 @@ function AddedSuperCategorySuggestions({
       showSnackBar({
         dispatch,
         color: ThemeColors.success,
-        message: "Category modified successfully",
+        message: 'Category modified successfully',
       });
     }
     return response;
@@ -170,13 +174,20 @@ function AddedSuperCategorySuggestions({
     setChecked(newChecked);
   };
 
+  const handleUnverifiedToggleChange = (
+    _: React.ChangeEvent<HTMLInputElement>,
+    newChecked: boolean
+  ) => {
+    setUnverifiedChecked(newChecked);
+  };
+
   const handleMouseLeave1 = () => {
     setAnchorEl1(null);
   };
 
   const handleSetSelectedTag1 = (tag: string) => {
     setSelectedTag1(tag);
-    if (tag === "All") {
+    if (tag === 'All') {
       setRefactoredSuggestionCategories(
         refactorSuggestionCategories(suggestionCategories)
       );
@@ -189,28 +200,28 @@ function AddedSuperCategorySuggestions({
     }
   };
 
-  const handleDeleteCategory = async (
-    category: string,
-    superCategory: string[]
-  ) => {
-    const response = await deleteCategory(category, superCategory);
-    if (response) {
-      showSnackBar({
-        dispatch,
-        color: ThemeColors.success,
-        message: "Category Deleted Successfully!",
-      });
-      setRefactoredSuggestionCategories((prevCategories) =>
-        prevCategories.filter((cat) => cat.category !== category)
-      );
-    } else {
-      showSnackBar({
-        dispatch,
-        color: ThemeColors.error,
-        message: "Failed to Delete Category",
-      });
-    }
-  };
+  // const handleDeleteCategory = async (
+  //   category: string,
+  //   superCategory: string[]
+  // ) => {
+  //   const response = await deleteCategory(category, superCategory);
+  //   if (response) {
+  //     showSnackBar({
+  //       dispatch,
+  //       color: ThemeColors.success,
+  //       message: 'Category Deleted Successfully!',
+  //     });
+  //     setRefactoredSuggestionCategories((prevCategories) =>
+  //       prevCategories.filter((cat) => cat.category !== category)
+  //     );
+  //   } else {
+  //     showSnackBar({
+  //       dispatch,
+  //       color: ThemeColors.error,
+  //       message: 'Failed to Delete Category',
+  //     });
+  //   }
+  // };
 
   return (
     <div className="shadow-custom py-3">
@@ -247,7 +258,7 @@ function AddedSuperCategorySuggestions({
             />
           </Link>
           <h1 className="text-textBrown md:text-3xl text-2xl max-sm:text-center font-medium">
-            Already Added{" "}
+            Already Added{' '}
             <span className="text-primary md:text-base text-sm">
               (Super Category Mapping)
             </span>
@@ -258,13 +269,14 @@ function AddedSuperCategorySuggestions({
         <div className="flex items-center gap-5">
           {/* First Menu */}
           <p className="md:text-xl flex text-textBrown gap-2 text-base lg:text-lg">
-            <span className="font-semibold">Sort by</span>Super Category:{" "}
+            <span className="font-semibold">Sort by</span>Super Category:{' '}
             <span className="font-medium gap-2 flex">
               {selectedTag1}
               <img
                 onClick={handleMouseEnter1}
                 className="cursor-pointer"
                 src={icons.dropdown}
+                alt="dropdown"
               />
             </span>
             <Menu
@@ -274,7 +286,7 @@ function AddedSuperCategorySuggestions({
               onClose={handleMouseLeave1}
               className="max-h-[600px]"
             >
-              <MenuItem onClick={() => handleSetSelectedTag1("All")}>
+              <MenuItem onClick={() => handleSetSelectedTag1('All')}>
                 All
               </MenuItem>
               {suggestionCategories.map((category) => (
@@ -293,7 +305,7 @@ function AddedSuperCategorySuggestions({
           </p>
         </div>
       </section>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-end">
         <p className="lg:text-xl opacity-0 text-primary my-5 ml-10 text-base font-medium cursor-default hover:underline">
           View Subjects Mapping
         </p>
@@ -308,6 +320,16 @@ function AddedSuperCategorySuggestions({
             Show Verified
           </span>
         </div>
+        <div className="mr-20 flex items-center">
+          <Checkbox
+            checked={unverifiedChecked}
+            onChange={handleUnverifiedToggleChange}
+            style={{ color: ThemeColors.primary }}
+          />
+          <span className="text-textBrown text-lg font-semibold ml-2">
+            Show Unverified
+          </span>
+        </div>
       </div>
       <div className="max-md:hidden mx-1">
         {refactoredSuggestionCategories.map((cat) => {
@@ -316,9 +338,7 @@ function AddedSuperCategorySuggestions({
               <MappingCard
                 modifySuperCategory={handleModifySuperCategory}
                 isVerified={cat.isVerified}
-                deleteCategory={() =>
-                  handleDeleteCategory(cat.category, cat.superCategories)
-                }
+                deleteCategory={deleteCategory}
                 superCategories={suggestionCategories.map(
                   (cat) => cat.superCategory.name
                 )}
@@ -333,6 +353,7 @@ function AddedSuperCategorySuggestions({
             onClick={() => setShowSuperCategoryBasedSuggestions(true)}
             className="cursor-pointer w-[80px] h-[80px]"
             src={icons.bot}
+            alt="bot"
           />
         </div>
       </div>
