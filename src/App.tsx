@@ -3,16 +3,19 @@ import {
   Route,
   BrowserRouter as Router,
   Routes,
-} from "react-router-dom";
-import LoginPage from "./pages/auth/LoginPage";
-import AuthProvider from "./store/AuthContext";
-import AuthRedirect from "./components/protection/AuthRedirect";
-import ProtectedRoute from "./components/protection/ProtectedRoute";
-import { SnackBarProvider } from "./store/SnackBarContext";
-import { ThemeProvider, createTheme } from "@mui/material";
-import SuggestionPage from "./pages/suggestions/SuggestionPage";
-import { routes } from "./utils/Routes";
-import ManualSuggestionPage from "./pages/suggestions/ManualSuggestionPage";
+} from 'react-router-dom';
+import LoginPage from './pages/auth/LoginPage';
+import AuthProvider from './store/AuthContext';
+import AuthRedirect from './components/protection/AuthRedirect';
+import ProtectedRoute from './components/protection/ProtectedRoute';
+import { SnackBarProvider } from './store/SnackBarContext';
+import { ThemeProvider, createTheme } from '@mui/material';
+import SubjectsToCategoriesPage from './pages/suggestions/SubjectsToCategoriesPage';
+import { routes } from './utils/Routes';
+import ManualSuggestionPage from './pages/suggestions/ManualSuggestionPage';
+import CategoriesToSuperCategoriesPage from './pages/suggestions/CategoriesToSuperCategoriesPage';
+import SubSubjectsToSubjectsPage from './pages/suggestions/SubSubjectsToSubjectsPage';
+import SubjectsToSubSubjectsPage from './pages/suggestions/SubjectsToSubSubjectsPage';
 
 function App() {
   const theme = createTheme({
@@ -33,8 +36,10 @@ function App() {
                   element={<AuthRedirect element={<LoginPage />} />}
                 />
                 <Route
-                  path={routes.suggestions}
-                  element={<ProtectedRoute element={<SuggestionPage />} />}
+                  path={routes.subjectsToCategories}
+                  element={
+                    <ProtectedRoute element={<SubjectsToCategoriesPage />} />
+                  }
                 />
                 <Route
                   path={routes.suggestionManual}
@@ -43,8 +48,30 @@ function App() {
                   }
                 />
                 <Route
+                  path={routes.categoriesToSuperCategories}
+                  element={
+                    <ProtectedRoute
+                      element={<CategoriesToSuperCategoriesPage />}
+                    />
+                  }
+                />
+                <Route
+                  path={routes.subSubjectsToSubjects}
+                  element={
+                    <ProtectedRoute element={<SubSubjectsToSubjectsPage />} />
+                  }
+                />
+                <Route
+                  path={routes.subjectsToSubSubjects}
+                  element={
+                    <ProtectedRoute element={<SubjectsToSubSubjectsPage />} />
+                  }
+                />
+                <Route
                   path="*"
-                  element={<Navigate to="/suggestions" replace />}
+                  element={
+                    <Navigate to={routes.subjectsToCategories} replace />
+                  }
                 />
               </Routes>
             </div>

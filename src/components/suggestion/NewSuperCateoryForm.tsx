@@ -16,7 +16,7 @@ function NewSuperCateoryForm({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
-  const disabled = inputValue.length === 0;
+  const disabled = inputValue.trim().length === 0;
   function handleCloseSuccessModal() {
     setShowSuccess(false);
     setInputValue("");

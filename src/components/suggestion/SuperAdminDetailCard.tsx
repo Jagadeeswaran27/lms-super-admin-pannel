@@ -1,15 +1,18 @@
-import { useContext } from "react";
-import { images } from "../../resources/images";
-import { AuthContext } from "../../store/AuthContext";
-interface SuperAdminDetailCardProps {}
+import { useContext } from 'react';
+import { images } from '../../resources/images';
+import { AuthContext } from '../../store/AuthContext';
 
-function SuperAdminDetailCard({}: SuperAdminDetailCardProps) {
+function SuperAdminDetailCard() {
   const { authUser } = useContext(AuthContext);
   return (
     <div className="bg-cardColor flex flex-col p-3 justify-evenly h-[250px] shadow-custom  rounded-xl">
       <h1 className="text-textBrown font-semibold text-xl ">Super Admin :</h1>
       <div className="w-[40%] mx-auto">
-        <img src={images.backupPerson} className="w-full h-full" />
+        <img
+          src={images.backupPerson}
+          className="w-full h-full"
+          alt="super admin"
+        />
       </div>
       <p className="border-textBrown text-authPrimary font-medium text-xl text-center py-2 border-[0.1px] rounded-full">
         {authUser?.userName}

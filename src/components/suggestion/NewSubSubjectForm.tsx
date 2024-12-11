@@ -1,57 +1,48 @@
 import { useContext, useRef, useState } from 'react';
-import InputField from '../common/InputField';
-import { SelectChangeEvent } from '@mui/material';
 import Success from './Success';
-import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import InputField from '../common/InputField';
+import CustomDropDown from '../common/CustomDropDown';
+import { SelectChangeEvent } from '@mui/material';
 import { icons } from '../../resources/icons';
-import MultipleCustomDropDown from '../common/MultipleCustomDropDown';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import AIButton from './AIButton';
 import { showSnackBar } from '../../utils/Snackbar';
 import { ThemeColors } from '../../resources/colors';
 import { SnackBarContext } from '../../store/SnackBarContext';
-import AIButton from './AIButton';
 import ImageSuggestions from './ImageSuggestions';
 
-interface NewSuggestionFormProps {
-  addSuggestion: (
-    suggestion: string,
-    tag: string[],
-    image: File | null
+interface NewSubSubjectFormProps {
+  suggestions: SuggestionModel[];
+  addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
+  addNewSubSubject: (
+    suggestion: SuggestionModel,
+    subSubject: string,
+    file: File
   ) => Promise<boolean>;
-  suggestionCategories: SuggestionCategoriesModel[];
 }
 
-function NewSuggestionForm({
-  addSuggestion,
-  suggestionCategories,
-}: NewSuggestionFormProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [inputValue, setInputValue] = useState<string>('');
+function NewSubSubjectForm({
+  suggestions,
+  addNewSubSubject,
+}: NewSubSubjectFormProps) {
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState<string>('');
+  const [tag, setTag] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [file, setFile] = useState<File | null>(null);
-  const [tag, setTag] = useState<string[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [showImageSuggestions, setShowImageSuggestions] =
     useState<boolean>(false);
-  const [isImageDownloading, setIsImageDownloading] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, dispatch] = useContext(SnackBarContext);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [isImageDownloading, setIsImageDownloading] = useState<boolean>(false);
 
-  const disabled =
-    inputValue.trim().length === 0 || file === null || tag.length === 0;
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
-  const handleTagChange = (e: SelectChangeEvent<string[]>) => {
-    setTag(e.target.value as string[]);
-  };
+  const disabled = inputValue.trim().length === 0 || tag.length === 0;
 
-  async function handleAddNewSuggestion() {
-    setIsLoading(true);
-    const response = await addSuggestion(inputValue, tag, file);
-    if (response) {
-      setShowSuccess(true);
-    }
-    setIsLoading(false);
+  function handleCloseSuccessModal() {
+    setShowSuccess(false);
+    setTag('');
+    setInputValue('');
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,12 +52,26 @@ function NewSuggestionForm({
     }
   };
 
-  function handleCloseSuccessModal() {
-    setShowSuccess(false);
-    setTag([]);
-    setInputValue('');
-    setFile(null);
+  async function handleAddNewCategory() {
+    const suggestion = suggestions.find((sugg) => sugg.name === tag);
+    if (!suggestion || !file) {
+      return;
+    }
+    setIsLoading(true);
+    const response = await addNewSubSubject(suggestion, inputValue, file);
+    if (response) {
+      setShowSuccess(true);
+    }
+    setIsLoading(false);
   }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleTagChange = (e: SelectChangeEvent<string>) => {
+    setTag(e.target.value as string);
+  };
 
   function handleSetShowImageSuggestions() {
     if (inputValue.trim().length === 0) {
@@ -106,7 +111,7 @@ function NewSuggestionForm({
     <div>
       {showSuccess && (
         <Success
-          message="Suggestion Added"
+          message="Category Added"
           closeModal={handleCloseSuccessModal}
         />
       )}
@@ -120,7 +125,7 @@ function NewSuggestionForm({
 
       <div className="flex items-end justify-evenly p-5">
         <form
-          onSubmit={handleAddNewSuggestion}
+          onSubmit={handleAddNewCategory}
           className="flex flex-grow xl:mx-10 lg:mx-4 mx-2 pb-5 p-1 shadow-custom rounded-xl bg-white"
         >
           <section className="flex-1 mx-4">
@@ -175,29 +180,23 @@ function NewSuggestionForm({
               </div>
             </div>
           </section>
+
           <section className="flex-1 max-w-[40%] mx-4">
             <h2 className="text-textBrown md:text-xl text-lg max-sm:text-center pt-5 pb-3 font-medium">
-              Tag <span className="text-primary text-[10px]">(categories)</span>{' '}
+              Subject{' '}
+              <span className="text-primary text-[10px]">(categories)</span>{' '}
             </h2>
-            <MultipleCustomDropDown
+            <CustomDropDown
+              text="Select An Subject"
               value={tag}
               onChange={handleTagChange}
-              items={[
-                ...new Set(
-                  suggestionCategories
-                    .map(
-                      (category) => category.superCategory.secondLevelCategories
-                    )
-                    .flat()
-                    .map((cat) => cat.name.trim())
-                ),
-              ].map((name) => name.charAt(0) + name.slice(1))}
+              items={suggestions.map((sugg) => sugg.name)}
             />
           </section>
         </form>
         <div className="w-[10%] h-full my-5">
           <button
-            onClick={handleAddNewSuggestion}
+            onClick={handleAddNewCategory}
             disabled={disabled || isLoading}
             className={`${
               disabled && 'opacity-80'
@@ -212,4 +211,4 @@ function NewSuggestionForm({
   );
 }
 
-export default NewSuggestionForm;
+export default NewSubSubjectForm;

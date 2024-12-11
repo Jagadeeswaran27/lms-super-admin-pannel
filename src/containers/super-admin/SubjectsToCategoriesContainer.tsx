@@ -1,29 +1,33 @@
-import { useContext, useEffect, useState } from "react";
-import SuggestionPageComponent from "../../components/suggestion/SuggestionPageComponent";
-import { logout } from "../../core/services/AuthService";
-import { showSnackBar } from "../../utils/Snackbar";
-import { SnackBarContext } from "../../store/SnackBarContext";
-import { ThemeColors } from "../../resources/colors";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import { useContext, useEffect, useState } from 'react';
+import SubjectsToCategoriesComponent from '../../components/suggestion/SubjectsToCategoriesComponent';
+import { logout } from '../../core/services/AuthService';
+import { showSnackBar } from '../../utils/Snackbar';
+import { SnackBarContext } from '../../store/SnackBarContext';
+import { ThemeColors } from '../../resources/colors';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
 import {
   addAdminSuggestion,
   addSuggestionCategory,
   addSuperCategory,
-  deleteAdminSuggestion,
   getSuggestionCategories,
+  deleteSuggestion as deleteSuggestionService,
   getSuggestions,
   modifySuggestion,
-} from "../../core/services/SuggestionService";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+  toggleIsVerified,
+} from '../../core/services/SuggestionService';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
 
-function SuggestionsContainer() {
+function SubjectsToCategoriesContainer() {
   const [suggestions, setSuggestions] = useState<SuggestionModel[] | []>([]);
   const [suggestionCategories, setSuggestionCategories] = useState<
     SuggestionCategoriesModel[] | []
   >([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, dispatch] = useContext(SnackBarContext);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsLoading(true);
     handleGetSuggestions();
     handleGetSuggestionCategories();
   }, []);
@@ -57,13 +61,14 @@ function SuggestionsContainer() {
     showSnackBar({
       dispatch: dispatch,
       color: ThemeColors.success,
-      message: "Logout successfull",
+      message: 'Logout successfull',
     });
   }
 
   async function handleGetSuggestionCategories() {
     const response = await getSuggestionCategories();
     setSuggestionCategories(response);
+    setIsLoading(false);
   }
 
   async function handleAddNewCategory(
@@ -103,7 +108,7 @@ function SuggestionsContainer() {
   }
 
   async function deleteSuggestion(id: string) {
-    const response = await deleteAdminSuggestion(id);
+    const response = await deleteSuggestionService(id);
     if (response) {
       setSuggestions((prev) => {
         const updatedSuggestions = prev.filter(
@@ -114,7 +119,13 @@ function SuggestionsContainer() {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
-        message: "Suggestion deleted successfully",
+        message: 'Suggestion deleted successfully',
+      });
+    } else {
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: 'Error deleting suggestion',
       });
     }
   }
@@ -124,7 +135,7 @@ function SuggestionsContainer() {
     tag: string[],
     image: File | null
   ): Promise<boolean> {
-    const response = await addAdminSuggestion(suggestionText ?? "", tag, image);
+    const response = await addAdminSuggestion(suggestionText ?? '', tag, image);
     if (response) {
       setSuggestions((pre) => [response, ...pre]);
 
@@ -133,8 +144,25 @@ function SuggestionsContainer() {
     return false;
   }
 
+  async function handleToggleIsVerfiied(
+    suggestion: SuggestionModel,
+    newChecked: boolean
+  ) {
+    const response = await toggleIsVerified(suggestion.id, newChecked);
+
+    if (response) {
+      setSuggestions((prevSuggestions) =>
+        prevSuggestions.map((sugg) =>
+          sugg.id === suggestion.id ? { ...sugg, isVerified: newChecked } : sugg
+        )
+      );
+    }
+  }
+
   return (
-    <SuggestionPageComponent
+    <SubjectsToCategoriesComponent
+      isLoading={isLoading}
+      toggleIsVerified={handleToggleIsVerfiied}
       addNewSuperCategory={handleAddNewSuperCategory}
       modifySuggestion={handleModifySuggestion}
       suggestionCategories={suggestionCategories}
@@ -147,4 +175,4 @@ function SuggestionsContainer() {
   );
 }
 
-export default SuggestionsContainer;
+export default SubjectsToCategoriesContainer;

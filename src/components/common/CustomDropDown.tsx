@@ -12,9 +12,10 @@ interface CustomDropDownProps {
   items: string[];
   onChange?: (e: SelectChangeEvent<string>) => void; // Change the event type to handle array
   value: string; // Use string array for multiple selection
+  text?: string;
 }
 
-function CustomDropDown({ items, onChange, value }: CustomDropDownProps) {
+function CustomDropDown({ items, onChange, value, text }: CustomDropDownProps) {
   return (
     <FormControl fullWidth>
       <InputLabel
@@ -26,7 +27,7 @@ function CustomDropDown({ items, onChange, value }: CustomDropDownProps) {
           },
         }}
       >
-        Select an Super Category
+        {text ?? "Select an Super Category"}
       </InputLabel>
       <Select
         value={value}
