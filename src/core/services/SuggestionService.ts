@@ -10,21 +10,21 @@ import {
   and,
   deleteDoc,
   setDoc,
-} from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
 import {
   SubSubjectModel,
   SuggestionModel,
   WithSubSubjectModel,
-} from '../../models/suggestion/SuggestionModel';
-import { app, db } from '../config/firebase';
-import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+} from "../../models/suggestion/SuggestionModel";
+import { app, db } from "../config/firebase";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 
 export async function getSuggestionCategories(): Promise<
   SuggestionCategoriesModel[] | []
 > {
   try {
-    const suggestionCategoriesRef = collection(db, 'suggestion-hierarchy');
+    const suggestionCategoriesRef = collection(db, "suggestion-hierarchy");
     const querySnapshot = await getDocs(suggestionCategoriesRef);
 
     if (querySnapshot.empty) {
@@ -57,7 +57,7 @@ export async function getSuggestionCategories(): Promise<
 
     return suggestionCategories;
   } catch (e) {
-    console.error('Error fetching suggestion categories:', e);
+    console.error("Error fetching suggestion categories:", e);
     return [];
   }
 }
@@ -66,14 +66,14 @@ export async function modifySuggestion(
   suggestion: SuggestionModel
 ): Promise<boolean> {
   try {
-    const suggestionRef = doc(db, 'suggestions', suggestion.id);
+    const suggestionRef = doc(db, "suggestions", suggestion.id);
     await updateDoc(suggestionRef, {
       tag: suggestion.tag,
       name: suggestion.name,
     });
     return true;
   } catch (e) {
-    console.error('Error modifying suggestion:', e);
+    console.error("Error modifying suggestion:", e);
     return false;
   }
 }
@@ -85,15 +85,15 @@ export async function modifySubSubject(
   try {
     const subSubjectRef = doc(
       db,
-      'suggestions',
+      "suggestions",
       subSubject.subjectId,
-      'sub-subjects',
+      "sub-subjects",
       subSubject.id
     );
     await updateDoc(subSubjectRef, { name: name });
     return true;
   } catch (e) {
-    console.error('Error modifying subject:', e);
+    console.error("Error modifying subject:", e);
     return false;
   }
 }
@@ -113,7 +113,7 @@ export async function addSuggestionCategory(
 
     return true;
   } catch (e) {
-    console.error('Error adding suggestion category:', e);
+    console.error("Error adding suggestion category:", e);
     return false;
   }
 }
@@ -121,14 +121,14 @@ export async function addSuperCategory(
   superCategory: string
 ): Promise<boolean> {
   try {
-    const suggestionCategoriesRef = collection(db, 'suggestion-hierarchy');
+    const suggestionCategoriesRef = collection(db, "suggestion-hierarchy");
     const newCategoryDocRef = doc(suggestionCategoriesRef, superCategory);
 
     await setDoc(newCategoryDocRef, { name: superCategory });
 
     return true;
   } catch (e) {
-    console.error('Error adding suggestion category:', e);
+    console.error("Error adding suggestion category:", e);
     return false;
   }
 }
@@ -145,9 +145,9 @@ export async function modifySuggestionCategory(
       for (const superCategory of newSuperCategories) {
         const oldCategoryRef = doc(
           db,
-          'suggestion-hierarchy',
+          "suggestion-hierarchy",
           superCategory,
-          '2nd Level',
+          "2nd Level",
           oldCategory
         );
 
@@ -155,9 +155,9 @@ export async function modifySuggestionCategory(
 
         const newCategoryRef = doc(
           db,
-          'suggestion-hierarchy',
+          "suggestion-hierarchy",
           superCategory,
-          '2nd Level',
+          "2nd Level",
           newCategory
         );
 
@@ -166,9 +166,9 @@ export async function modifySuggestionCategory(
       for (const superCategory of oldSuperCategories) {
         const categoryRef = doc(
           db,
-          'suggestion-hierarchy',
+          "suggestion-hierarchy",
           superCategory,
-          '2nd Level',
+          "2nd Level",
           oldCategory
         );
         await deleteDoc(categoryRef);
@@ -176,7 +176,7 @@ export async function modifySuggestionCategory(
 
       return true;
     } catch (e) {
-      console.error('Error modifying suggestion category:', e);
+      console.error("Error modifying suggestion category:", e);
       return false;
     }
   }
@@ -185,9 +185,9 @@ export async function modifySuggestionCategory(
       for (const superCategory of newSuperCategories) {
         const newCategoryRef = doc(
           db,
-          'suggestion-hierarchy',
+          "suggestion-hierarchy",
           superCategory,
-          '2nd Level',
+          "2nd Level",
           newCategory
         );
 
@@ -196,9 +196,9 @@ export async function modifySuggestionCategory(
       for (const superCategory of oldSuperCategories) {
         const categoryRef = doc(
           db,
-          'suggestion-hierarchy',
+          "suggestion-hierarchy",
           superCategory,
-          '2nd Level',
+          "2nd Level",
           oldCategory
         );
         await deleteDoc(categoryRef);
@@ -206,7 +206,7 @@ export async function modifySuggestionCategory(
 
       return true;
     } catch (e) {
-      console.error('Error modifying suggestion category:', e);
+      console.error("Error modifying suggestion category:", e);
       return false;
     }
   } else {
@@ -224,9 +224,9 @@ export async function deleteCategory(
     try {
       const categoryRef = doc(
         db,
-        'suggestion-hierarchy',
+        "suggestion-hierarchy",
         superCategory,
-        '2nd Level',
+        "2nd Level",
         category
       );
       await deleteDoc(categoryRef);
@@ -248,22 +248,22 @@ export async function deleteSingleCategory(
   try {
     const categoryRef = doc(
       db,
-      'suggestion-hierarchy',
+      "suggestion-hierarchy",
       superCategory,
-      '2nd Level',
+      "2nd Level",
       category
     );
     await deleteDoc(categoryRef);
     return true;
   } catch (e) {
-    console.error('Error deleting single category:', e);
+    console.error("Error deleting single category:", e);
     return false;
   }
 }
 
 export async function getSuggestions(): Promise<SuggestionModel[] | []> {
   try {
-    const suggestionsRef = collection(db, 'suggestions');
+    const suggestionsRef = collection(db, "suggestions");
     const querySnapshot = await getDocs(suggestionsRef);
 
     if (querySnapshot.empty) {
@@ -275,14 +275,14 @@ export async function getSuggestions(): Promise<SuggestionModel[] | []> {
         const data = doc.data();
 
         // Fetch sub-subjects collection for the current suggestion
-        const subSubjectsRef = collection(doc.ref, 'sub-subjects');
+        const subSubjectsRef = collection(doc.ref, "sub-subjects");
         const subSubjectsSnapshot = await getDocs(subSubjectsRef);
         const subSubjects = subSubjectsSnapshot.docs.map((subDoc) => {
           const subData = subDoc.data();
           return {
             id: subDoc.id,
             name: subData.name,
-            image: subData.image || '',
+            image: subData.image || "",
             isApproved: subData.isApproved,
             isRejected: subData.isRejected,
             isVerified: subData.isVerified || false,
@@ -295,7 +295,7 @@ export async function getSuggestions(): Promise<SuggestionModel[] | []> {
           name: data.name,
           tag: data.tag,
           isApproved: data.isApproved,
-          image: data.image || '',
+          image: data.image || "",
           isRejected: data.isRejected,
           isVerified: data.isVerified || false,
           subSubjects: subSubjects,
@@ -306,7 +306,7 @@ export async function getSuggestions(): Promise<SuggestionModel[] | []> {
 
     return suggestions;
   } catch (e) {
-    console.error('Error fetching suggestions:', e);
+    console.error("Error fetching suggestions:", e);
     return [];
   }
 }
@@ -325,16 +325,17 @@ export async function addNewSubSubject(
     const uploadResult = await uploadBytes(storageRef, image);
     const imageUrl = await getDownloadURL(uploadResult.ref);
 
-    const suggestionRef = doc(db, 'suggestions', suggestionId);
-    const subSubjectRef = collection(suggestionRef, 'sub-subjects');
+    const suggestionRef = doc(db, "suggestions", suggestionId);
+    const subSubjectRef = collection(suggestionRef, "sub-subjects");
 
     const newSubSubject: SubSubjectModel = {
-      id: '',
+      id: "",
       name: subSubject,
       image: imageUrl,
       isApproved: true,
       isRejected: false,
       isVerified: false,
+      registeredBy: [],
     };
     const addedDoc = await addDoc(subSubjectRef, newSubSubject);
 
@@ -342,29 +343,29 @@ export async function addNewSubSubject(
     newSubSubject.id = addedDoc.id;
     return newSubSubject;
   } catch (e) {
-    console.error('Error adding new sub-subject:', e);
+    console.error("Error adding new sub-subject:", e);
     return null;
   }
 }
 
 export async function approveSuggestion(id: string): Promise<boolean> {
   try {
-    const suggestionRef = doc(db, 'suggestions', id);
+    const suggestionRef = doc(db, "suggestions", id);
     await updateDoc(suggestionRef, { isApproved: true });
     return true;
   } catch (e) {
-    console.error('Error approving suggestion:', e);
+    console.error("Error approving suggestion:", e);
     return false;
   }
 }
 
 export async function rejectSuggestion(id: string): Promise<boolean> {
   try {
-    const suggestionRef = doc(db, 'suggestions', id);
+    const suggestionRef = doc(db, "suggestions", id);
     await updateDoc(suggestionRef, { isRejected: true });
     return true;
   } catch (e) {
-    console.error('Error rejecting suggestion:', e);
+    console.error("Error rejecting suggestion:", e);
     return false;
   }
 }
@@ -385,30 +386,30 @@ export async function addAdminSuggestion(
   tag: string[],
   image?: File | null
 ): Promise<SuggestionModel | null> {
-  if (suggestion === '' || image === null || image === undefined) {
+  if (suggestion === "" || image === null || image === undefined) {
     return null;
   }
 
   try {
     // Check if suggestion already exists
-    const suggestionsRef = collection(db, 'suggestions');
+    const suggestionsRef = collection(db, "suggestions");
     const q = query(
       suggestionsRef,
       or(
         and(
-          where('name', '>=', suggestion.toLowerCase()),
-          where('name', '<=', suggestion.toLowerCase() + '\uf8ff')
+          where("name", ">=", suggestion.toLowerCase()),
+          where("name", "<=", suggestion.toLowerCase() + "\uf8ff")
         ),
         and(
-          where('name', '>=', suggestion.toUpperCase()),
-          where('name', '<=', suggestion.toUpperCase() + '\uf8ff')
+          where("name", ">=", suggestion.toUpperCase()),
+          where("name", "<=", suggestion.toUpperCase() + "\uf8ff")
         )
       )
     );
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-      console.error('Suggestion already exists');
+      console.error("Suggestion already exists");
       return null;
     }
 
@@ -419,7 +420,7 @@ export async function addAdminSuggestion(
 
     // Add new suggestion to Firestore
     const newSuggestion: SuggestionModel = {
-      id: '',
+      id: "",
       name: suggestion,
       isApproved: true,
       isRejected: false,
@@ -434,7 +435,7 @@ export async function addAdminSuggestion(
     newSuggestion.id = docRef.id;
     return newSuggestion;
   } catch (e) {
-    console.error('Error adding suggestion:', e);
+    console.error("Error adding suggestion:", e);
     return null;
   }
 }
@@ -444,11 +445,11 @@ export async function toggleIsVerified(
   isVerified: boolean
 ): Promise<boolean> {
   try {
-    const suggestionRef = doc(db, 'suggestions', id);
+    const suggestionRef = doc(db, "suggestions", id);
     await updateDoc(suggestionRef, { isVerified: isVerified });
     return true;
   } catch (e) {
-    console.error('Error verifying suggestion:', e);
+    console.error("Error verifying suggestion:", e);
     return false;
   }
 }
@@ -462,27 +463,27 @@ export async function toggleCategoryIsVerified(
     for (const superCategory of superCategories) {
       const categoryRef = doc(
         db,
-        'suggestion-hierarchy',
+        "suggestion-hierarchy",
         superCategory,
-        '2nd Level',
+        "2nd Level",
         category
       );
       await updateDoc(categoryRef, { isVerified: isVerified });
     }
     return true;
   } catch (e) {
-    console.error('Error verifying category:', e);
+    console.error("Error verifying category:", e);
     return false;
   }
 }
 
 export async function deleteSuggestion(id: string): Promise<boolean> {
   try {
-    const suggestionRef = doc(db, 'suggestions', id);
+    const suggestionRef = doc(db, "suggestions", id);
     await deleteDoc(suggestionRef);
     return true;
   } catch (e) {
-    console.error('Error deleting suggestion:', e);
+    console.error("Error deleting suggestion:", e);
     return false;
   }
 }
@@ -492,11 +493,11 @@ export async function deleteSubSubject(
   docId: string
 ): Promise<boolean> {
   try {
-    const subSubjectRef = doc(db, 'suggestions', docId, 'sub-subjects', id);
+    const subSubjectRef = doc(db, "suggestions", docId, "sub-subjects", id);
     await deleteDoc(subSubjectRef);
     return true;
   } catch (e) {
-    console.error('Error deleting sub-subject:', e);
+    console.error("Error deleting sub-subject:", e);
     return false;
   }
 }
@@ -509,16 +510,16 @@ export async function toggleIsVerifiedForSubjects(
   try {
     const subSubjectRef = doc(
       db,
-      'suggestions',
+      "suggestions",
       subjectId,
-      'sub-subjects',
+      "sub-subjects",
       subSubjectId
     );
 
     await updateDoc(subSubjectRef, { isVerified: isVerified });
     return true;
   } catch (e) {
-    console.error('Error toggling sub-subject verification:', e);
+    console.error("Error toggling sub-subject verification:", e);
     return false;
   }
 }

@@ -1,12 +1,12 @@
-import { Checkbox, Menu, MenuItem } from '@mui/material';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
-import { icons } from '../../resources/icons';
-import SuggestionCard from './SuggestionCard';
-import { MouseEvent, useEffect, useState } from 'react';
-import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
-import { Check } from '@mui/icons-material';
-import AISuggestions from './AISuggestions';
-import { ThemeColors } from '../../resources/colors';
+import { Checkbox, Menu, MenuItem } from "@mui/material";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import { icons } from "../../resources/icons";
+import SuggestionCard from "./SuggestionCard";
+import { MouseEvent, useEffect, useState } from "react";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import { Check } from "@mui/icons-material";
+import AISuggestions from "./AISuggestions";
+import { ThemeColors } from "../../resources/colors";
 
 interface AddedSuggestionsProps {
   suggestions: SuggestionModel[];
@@ -40,8 +40,8 @@ function AddedSuggestions({
 }: AddedSuggestionsProps) {
   const [anchorEl1, setAnchorEl1] = useState<null | HTMLElement>(null);
   const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
-  const [selectedTag1, setSelectedTag1] = useState<string>('All');
-  const [selectedTag2, setSelectedTag2] = useState<string[]>(['All']);
+  const [selectedTag1, setSelectedTag1] = useState<string>("All");
+  const [selectedTag2, setSelectedTag2] = useState<string[]>(["All"]);
   const [filteredSuggestions, setFilteredSuggestions] =
     useState<SuggestionModel[]>(suggestions);
   const [suggestionCat, setSuggestionCat] =
@@ -54,17 +54,26 @@ function AddedSuggestions({
   const [unverifiedChecked, setUnverifiedChecked] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!checked && !unverifiedChecked) {
+      setFilteredSuggestions(
+        backupSuggestions.length ? backupSuggestions : suggestions
+      );
+      backupSuggestions = []; // Clear backup after restoring
+    }
+  }, [checked, unverifiedChecked, suggestions]);
+
+  useEffect(() => {
     if (showNormalSuggestions) {
       const scrollbarWidth = getScrollbarWidth();
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
-      document.body.style.overflow = 'auto';
-      document.body.style.paddingRight = '0px';
+      document.body.style.overflow = "auto";
+      document.body.style.paddingRight = "0px";
     }
     return () => {
-      document.body.style.overflow = 'auto';
-      document.body.style.paddingRight = '0px';
+      document.body.style.overflow = "auto";
+      document.body.style.paddingRight = "0px";
     };
   }, [showNormalSuggestions]);
 
@@ -88,20 +97,20 @@ function AddedSuggestions({
     // setRefactoredSuggestionCategories(
     //   refactorSuggestionCategories(suggestionCategories)
     // );
-    if (selectedTag1 === 'All') {
+    if (selectedTag1 === "All") {
       setSuggestionCat(suggestionCategories);
     }
   }, [suggestionCategories]);
 
   useEffect(() => {
-    if (selectedTag1 === 'All' && selectedTag2.includes('All')) {
+    if (selectedTag1 === "All" && selectedTag2.includes("All")) {
       setFilteredSuggestions(suggestions);
       setSuggestionCat(suggestionCategories);
     } else {
       setFilteredSuggestions(
         suggestions.filter(
           (suggestion) =>
-            selectedTag2.includes('All') ||
+            selectedTag2.includes("All") ||
             selectedTag2.every((tag) => suggestion.tag.includes(tag))
         )
       );
@@ -142,8 +151,8 @@ function AddedSuggestions({
 
   const handleSetSelectedTag1 = (tag: string) => {
     setSelectedTag1(tag);
-    if (tag === 'All') {
-      setSelectedTag2(['All']);
+    if (tag === "All") {
+      setSelectedTag2(["All"]);
       setSuggestionCat(suggestionCategories);
       // setRefactoredSuggestionCategories(
       //   refactorSuggestionCategories(suggestionCategories)
@@ -163,16 +172,16 @@ function AddedSuggestions({
   };
 
   const handleSetSelectedTag2 = (tag: string) => {
-    if (tag === 'All') {
-      setSelectedTag2(['All']);
+    if (tag === "All") {
+      setSelectedTag2(["All"]);
     } else {
       setSelectedTag2((prevTags) => {
-        const newTags = prevTags.includes('All')
+        const newTags = prevTags.includes("All")
           ? [tag]
           : prevTags.includes(tag)
           ? prevTags.filter((t) => t !== tag)
           : [...prevTags, tag];
-        return newTags.length ? newTags : ['All'];
+        return newTags.length ? newTags : ["All"];
       });
     }
   };
@@ -217,7 +226,7 @@ function AddedSuggestions({
       <section className="flex items-center justify-between px-10 my-4">
         <div className="flex items-center gap-4">
           <h1 className="text-textBrown md:text-3xl text-2xl max-sm:text-center font-medium">
-            Already Added{' '}
+            Already Added{" "}
             <span className="text-primary md:text-base text-sm">
               (Subjects)
             </span>
@@ -226,7 +235,7 @@ function AddedSuggestions({
         </div>
         <div className="flex items-center gap-5">
           <p className="md:text-xl flex text-textBrown gap-2 text-base lg:text-lg">
-            <span className="font-semibold">Sort by</span>Super Category:{' '}
+            <span className="font-semibold">Sort by</span>Super Category:{" "}
             <span className="font-medium gap-2 flex">
               {selectedTag1}
               <img
@@ -243,7 +252,7 @@ function AddedSuggestions({
               onClose={handleMouseLeave1}
               className="max-h-[600px]"
             >
-              <MenuItem onClick={() => handleSetSelectedTag1('All')}>
+              <MenuItem onClick={() => handleSetSelectedTag1("All")}>
                 All
               </MenuItem>
               {suggestionCategories.map((category) => (
@@ -263,7 +272,7 @@ function AddedSuggestions({
           <p className="md:text-xl text-textBrown flex gap-2 text-lg">
             Category:
             <span className="font-medium gap-2 flex">
-              {selectedTag2.includes('All') ? 'All' : 'Multiple'}
+              {selectedTag2.includes("All") ? "All" : "Multiple"}
               <img
                 onClick={handleMouseEnter2}
                 className="cursor-pointer"
@@ -278,7 +287,7 @@ function AddedSuggestions({
               onClose={handleMouseLeave2}
               className="max-h-[600px]"
             >
-              <MenuItem onClick={() => handleSetSelectedTag2('All')}>
+              <MenuItem onClick={() => handleSetSelectedTag2("All")}>
                 All
               </MenuItem>
               {Array.from(
@@ -342,7 +351,7 @@ function AddedSuggestions({
           ))}
         {filteredSuggestions.length === 0 && (
           <p className="text-brown text-center font-semibold text-lg">
-            No {selectedTag2.join(', ')} Suggestions Found
+            No {selectedTag2.join(", ")} Suggestions Found
           </p>
         )}
         <div className="fixed right-0 bottom-0 p-5">

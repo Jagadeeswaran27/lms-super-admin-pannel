@@ -1,6 +1,9 @@
 {
   "projects": {
-    "production": "ultrasonic-clinic"
+    "production": "ultrasonic-clinic",
+    "webiste": "ultrasonic-clinic-uat",
+    "website": "ultrasonic-clinic-uat",
+    "default": "ultrasonic-clinic-uat"
   },
   "targets": {},
   "etags": {},

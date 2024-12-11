@@ -60,15 +60,15 @@ function LoginPageContainer() {
     const response = await login(trimmedEmail, trimmedPassword);
 
     if (response) {
-      if (!response.user.emailVerified) {
-        showSnackBar({
-          dispatch: dispatch,
-          color: ThemeColors.error,
-          message: "Please verify your email",
-        });
-        setIsLoading(false);
-        return;
-      }
+      // if (!response.user.emailVerified) {
+      //   showSnackBar({
+      //     dispatch: dispatch,
+      //     color: ThemeColors.error,
+      //     message: "Please verify your email",
+      //   });
+      //   setIsLoading(false);
+      //   return;
+      // }
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
