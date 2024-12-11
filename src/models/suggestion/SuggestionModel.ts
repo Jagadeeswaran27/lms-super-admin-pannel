@@ -18,4 +18,10 @@ export interface SubSubjectModel {
   isRejected: boolean;
   isVerified: boolean;
   name: string;
+  registeredBy: string[];
+}
+
+export interface WithSubSubjectModel extends SubSubjectModel {
+  subjectName: string;
+  subjectId: string;
 }

@@ -15,6 +15,7 @@ import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
 import {
   SubSubjectModel,
   SuggestionModel,
+  WithSubSubjectModel,
 } from '../../models/suggestion/SuggestionModel';
 import { app, db } from '../config/firebase';
 import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
@@ -73,6 +74,26 @@ export async function modifySuggestion(
     return true;
   } catch (e) {
     console.error('Error modifying suggestion:', e);
+    return false;
+  }
+}
+
+export async function modifySubSubject(
+  subSubject: WithSubSubjectModel,
+  name: string
+): Promise<boolean> {
+  try {
+    const subSubjectRef = doc(
+      db,
+      'suggestions',
+      subSubject.subjectId,
+      'sub-subjects',
+      subSubject.id
+    );
+    await updateDoc(subSubjectRef, { name: name });
+    return true;
+  } catch (e) {
+    console.error('Error modifying subject:', e);
     return false;
   }
 }
@@ -476,6 +497,28 @@ export async function deleteSubSubject(
     return true;
   } catch (e) {
     console.error('Error deleting sub-subject:', e);
+    return false;
+  }
+}
+
+export async function toggleIsVerifiedForSubjects(
+  subjectId: string,
+  subSubjectId: string,
+  isVerified: boolean
+): Promise<boolean> {
+  try {
+    const subSubjectRef = doc(
+      db,
+      'suggestions',
+      subjectId,
+      'sub-subjects',
+      subSubjectId
+    );
+
+    await updateDoc(subSubjectRef, { isVerified: isVerified });
+    return true;
+  } catch (e) {
+    console.error('Error toggling sub-subject verification:', e);
     return false;
   }
 }

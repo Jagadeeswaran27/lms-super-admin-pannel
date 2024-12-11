@@ -19,7 +19,7 @@ interface SubSubjectsMappingCardProps {
   deleteSubSubject: (id: string, docId: string) => void;
   toggleIsVerified: (suggestion: SuggestionModel, newChecked: boolean) => void;
 }
-function SubSubjectsMappingCard({
+function SubjectMappingCard({
   suggestion,
   addNewSubSubject,
   deleteSuggestions,
@@ -181,4 +181,4 @@ function SubSubjectsMappingCard({
   );
 }
 
-export default SubSubjectsMappingCard;
+export default SubjectMappingCard;

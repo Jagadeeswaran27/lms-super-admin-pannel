@@ -14,19 +14,19 @@ const NavigationCard: React.FC = (): JSX.Element => {
           Add Manual Suggestion
         </Link>
         <Link
-          to={routes.superCategoryMapping}
+          to={routes.categoriesToSuperCategories}
           className="border-textBrown text-authPrimary font-normal text-base px-4 rounded-full"
         >
           Super Category Mapping
         </Link>
         <Link
-          to={routes.suggestions}
+          to={routes.subjectsToCategories}
           className="border-textBrown text-authPrimary font-normal text-base px-4 rounded-full"
         >
           Subjects Mapping
         </Link>
         <Link
-          to={routes.subSubjectsMapping}
+          to={routes.subSubjectsToSubjects}
           className="border-textBrown text-authPrimary font-normal text-base px-4 rounded-full"
         >
           Sub Subject Mapping

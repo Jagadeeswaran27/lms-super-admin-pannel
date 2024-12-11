@@ -16,9 +16,9 @@ import {
   toggleCategoryIsVerified,
 } from '../../core/services/SuggestionService';
 import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
-import SuperCategoryMappingComponent from '../../components/super-category-mapping/SuperCategoryMappingComponent';
+import CategoriesToSuperCategoriesComponent from '../../components/super-category-mapping/CategoriesToSuperCategoriesComponent';
 
-function SuperCategoryMappingContainer() {
+function CategoriesToSuperCategoriesContainer() {
   const [suggestions, setSuggestions] = useState<SuggestionModel[] | []>([]);
   const [suggestionCategories, setSuggestionCategories] = useState<
     SuggestionCategoriesModel[] | []
@@ -26,7 +26,6 @@ function SuperCategoryMappingContainer() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, dispatch] = useContext(SnackBarContext);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
 
   useEffect(() => {
     setIsLoading(true);
@@ -230,7 +229,7 @@ function SuperCategoryMappingContainer() {
   };
 
   return (
-    <SuperCategoryMappingComponent
+    <CategoriesToSuperCategoriesComponent
       toggleIsVerified={handleToggleIsVerified}
       addNewSuperCategory={handleAddNewSuperCategory}
       modifySuggestion={handleModifySuggestion}
@@ -246,4 +245,4 @@ function SuperCategoryMappingContainer() {
   );
 }
 
-export default SuperCategoryMappingContainer;
+export default CategoriesToSuperCategoriesContainer;

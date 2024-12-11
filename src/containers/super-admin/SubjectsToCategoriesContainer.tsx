@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import SuggestionPageComponent from '../../components/suggestion/SuggestionPageComponent';
+import SubjectsToCategoriesComponent from '../../components/suggestion/SubjectsToCategoriesComponent';
 import { logout } from '../../core/services/AuthService';
 import { showSnackBar } from '../../utils/Snackbar';
 import { SnackBarContext } from '../../store/SnackBarContext';
@@ -17,7 +17,7 @@ import {
 } from '../../core/services/SuggestionService';
 import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
 
-function SuggestionsContainer() {
+function SubjectsToCategoriesContainer() {
   const [suggestions, setSuggestions] = useState<SuggestionModel[] | []>([]);
   const [suggestionCategories, setSuggestionCategories] = useState<
     SuggestionCategoriesModel[] | []
@@ -160,7 +160,7 @@ function SuggestionsContainer() {
   }
 
   return (
-    <SuggestionPageComponent
+    <SubjectsToCategoriesComponent
       isLoading={isLoading}
       toggleIsVerified={handleToggleIsVerfiied}
       addNewSuperCategory={handleAddNewSuperCategory}
@@ -175,4 +175,4 @@ function SuggestionsContainer() {
   );
 }
 
-export default SuggestionsContainer;
+export default SubjectsToCategoriesContainer;

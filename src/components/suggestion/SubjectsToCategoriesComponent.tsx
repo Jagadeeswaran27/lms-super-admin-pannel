@@ -1,47 +1,41 @@
 import Header from '../common/Header';
 import { useState } from 'react';
 import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import Drawer from './Drawer';
+import AddedSuggestions from './AddedSuggestions';
 import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
-import AddedSuperCategorySuggestions from './AddedSuperCategoryMapping';
-import Drawer from '../suggestion/Drawer';
-import { ThemeColors } from '../../resources/colors';
 import { CircularProgress } from '@mui/material';
+import { ThemeColors } from '../../resources/colors';
 
-interface SuperCategoryMappingComponentProps {
+interface SuggestionPageComponentProps {
   logout: () => void;
   suggestions: SuggestionModel[] | [];
+  isLoading: boolean;
   addSuggestion: (
     suggestion: string,
     tag: string[],
     image: File | null
   ) => Promise<boolean>;
   deleteSuggestion: (id: string) => void;
-  isLoading: boolean;
-  deleteCategory: (category: string, parentSuperCategory: string[]) => void;
   addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
-  toggleIsVerified: (
-    newChecked: boolean,
-    superCat: string[],
-    categoryName: string
-  ) => void;
+  toggleIsVerified: (suggestion: SuggestionModel, newChecked: boolean) => void;
 }
 
-function SuperCategoryMappingComponent({
+function SubjectsToCategoriesComponent({
   logout,
   suggestions,
   addNewCategory,
   deleteSuggestion,
-  deleteCategory,
   addSuggestion,
   addNewSuperCategory,
   modifySuggestion,
-  suggestionCategories,
   toggleIsVerified,
   isLoading,
-}: SuperCategoryMappingComponentProps) {
+  suggestionCategories,
+}: SuggestionPageComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
 
   function openDrawer() {
@@ -59,9 +53,7 @@ function SuperCategoryMappingComponent({
         logout={logout}
         showDrawer={showDrawer}
       />
-
       <Header openDrawer={openDrawer} logout={logout} />
-
       <section>
         <div className=" mx-auto">
           {isLoading && (
@@ -77,7 +69,7 @@ function SuperCategoryMappingComponent({
             </div>
           )}
           {!isLoading && suggestions.length > 0 ? (
-            <AddedSuperCategorySuggestions
+            <AddedSuggestions
               toggleIsVerified={toggleIsVerified}
               addNewCategory={addNewCategory}
               addNewSuperCategory={addNewSuperCategory}
@@ -85,14 +77,13 @@ function SuperCategoryMappingComponent({
               modifySuggestion={modifySuggestion}
               suggestionCategories={suggestionCategories}
               deleteSuggestion={deleteSuggestion}
-              deleteCategory={deleteCategory}
               suggestions={suggestions.sort((a, b) =>
                 a.name.localeCompare(b.name)
               )}
             />
           ) : (
             <p className="flex flex-1 text-brown font-semibold md:text-xl text-base h-full items-center justify-center">
-              No Suggestions Found
+              No Subjects Found
             </p>
           )}
         </div>
@@ -101,4 +92,4 @@ function SuperCategoryMappingComponent({
   );
 }
 
-export default SuperCategoryMappingComponent;
+export default SubjectsToCategoriesComponent;

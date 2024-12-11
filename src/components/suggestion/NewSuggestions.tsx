@@ -36,7 +36,7 @@ function NewSuggestions({
   return (
     <div>
       <div className="my-3 mt-5 flex items-center pl-5 gap-2">
-        <Link to={routes.suggestions} className="flex gap-1 items-center">
+        <Link to={routes.subjectsToCategories} className="flex gap-1 items-center">
           <img
             src={icons.back}
             alt=""

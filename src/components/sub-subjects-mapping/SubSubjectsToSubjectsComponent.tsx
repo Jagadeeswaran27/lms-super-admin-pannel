@@ -1,8 +1,11 @@
-import { useEffect, useState, MouseEvent } from 'react';
+import { useState, MouseEvent } from 'react';
 import Drawer from '../suggestion/Drawer';
 import Header from '../common/Header';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
-import SubSubjectsMappingCard from './SubSubjectsMappingCard';
+import {
+  SuggestionModel,
+  WithSubSubjectModel,
+} from '../../models/suggestion/SuggestionModel';
+import SubSubjectMappingCard from './SubSubjectMappingCard';
 import { Link } from 'react-router-dom';
 import { routes } from '../../utils/Routes';
 import { icons } from '../../resources/icons';
@@ -19,10 +22,16 @@ interface SubSubjectsMappingComponentProps {
     suggestion: SuggestionModel,
     subSubject: string
   ) => Promise<boolean>;
+  handleModifySubject: (
+    subSubject: WithSubSubjectModel,
+    name: string
+  ) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
-  deleteSuggestions: (id: string) => void;
   deleteSubSubject: (id: string, docId: string) => void;
-  toggleIsVerified: (suggestion: SuggestionModel, newChecked: boolean) => void;
+  toggleIsVerified: (
+    subSubject: WithSubSubjectModel,
+    newChecked: boolean
+  ) => void;
 }
 
 function SubSubjectsMappingComponent({
@@ -32,8 +41,8 @@ function SubSubjectsMappingComponent({
   suggestionCategories,
   addNewSubSubject,
   toggleIsVerified,
-  deleteSuggestions,
   deleteSubSubject,
+  handleModifySubject,
 }: SubSubjectsMappingComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
   const [checked, setChecked] = useState<boolean>(false);
@@ -124,7 +133,7 @@ function SubSubjectsMappingComponent({
     setChecked(false);
   };
 
-  const getFilteredSuggestions = () => {
+  const getFilteredSubSubjects = (): WithSubSubjectModel[] => {
     let filteredSuggestions: SuggestionModel[] = JSON.parse(
       JSON.stringify(suggestions)
     );
@@ -141,20 +150,22 @@ function SubSubjectsMappingComponent({
       );
     }
 
-    if (checked) {
-      filteredSuggestions = filteredSuggestions.filter(
-        (sugg) => sugg.isVerified
-      );
-    } else if (unverifiedChecked) {
-      filteredSuggestions = filteredSuggestions.filter(
-        (sugg) => !sugg.isVerified
-      );
-    }
-
-    return filteredSuggestions;
+    return filteredSuggestions.flatMap((suggestion) => {
+      const subSubjects = suggestion.subSubjects || [];
+      const filteredSubSubjects = checked
+        ? subSubjects.filter((sub) => sub.isVerified)
+        : unverifiedChecked
+        ? subSubjects.filter((sub) => !sub.isVerified)
+        : subSubjects;
+      return filteredSubSubjects.map((subSubject) => ({
+        ...subSubject,
+        subjectName: suggestion.name,
+        subjectId: suggestion.id,
+      }));
+    });
   };
 
-  const filteredSuggestions = getFilteredSuggestions();
+  const filteredSubSubjects = getFilteredSubSubjects();
 
   return (
     <div>
@@ -182,7 +193,7 @@ function SubSubjectsMappingComponent({
           <>
             <section className="flex items-start justify-between px-10 my-4 mt-8">
               <div className="flex items-center gap-4">
-                <Link to={routes.suggestions}>
+                <Link to={routes.subjectsToCategories}>
                   <img
                     src={icons.back}
                     alt=""
@@ -309,7 +320,7 @@ function SubSubjectsMappingComponent({
                     </Menu>
                   </p>
                 </div>
-                <div className="flex mt-8">
+                <div className="flex mt-8 justify-end">
                   <div className="mr-20 flex items-center">
                     <Checkbox
                       checked={checked}
@@ -335,14 +346,14 @@ function SubSubjectsMappingComponent({
             </section>
             <section>
               <div className="mx-auto">
-                {filteredSuggestions.length > 0 ? (
-                  filteredSuggestions.map((sugg) => (
-                    <div key={sugg.id}>
-                      <SubSubjectsMappingCard
+                {filteredSubSubjects.length > 0 ? (
+                  filteredSubSubjects.map((subject) => (
+                    <div key={subject.id}>
+                      <SubSubjectMappingCard
                         toggleIsVerified={toggleIsVerified}
                         addNewSubSubject={addNewSubSubject}
-                        suggestion={sugg}
-                        deleteSuggestions={deleteSuggestions}
+                        modifyName={handleModifySubject}
+                        subSubject={subject}
                         deleteSubSubject={deleteSubSubject}
                       />
                     </div>
@@ -350,7 +361,7 @@ function SubSubjectsMappingComponent({
                 ) : (
                   <div className="flex justify-center items-center">
                     <p className="text-textBrown text-lg font-semibold">
-                      No suggestions found
+                      No sub-subjects found
                     </p>
                   </div>
                 )}

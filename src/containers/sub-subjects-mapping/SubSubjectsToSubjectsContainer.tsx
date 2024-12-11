@@ -1,23 +1,26 @@
 import { useContext, useEffect, useState } from 'react';
-import SubSubjectsMappingComponent from '../../components/sub-subjects-mapping/SubSubjectsMappingComponent';
+import SubSubjectsToSubjectsComponent from '../../components/sub-subjects-mapping/SubSubjectsToSubjectsComponent';
 import { logout } from '../../core/services/AuthService';
 import { showSnackBar } from '../../utils/Snackbar';
 import { SnackBarContext } from '../../store/SnackBarContext';
 import { ThemeColors } from '../../resources/colors';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import {
+  SuggestionModel,
+  WithSubSubjectModel,
+} from '../../models/suggestion/SuggestionModel';
 import {
   addNewSubSubject,
   deleteSubSubject,
-  deleteSuggestion,
   getSuggestionCategories,
   getSuggestions,
-  toggleIsVerified,
+  modifySubSubject,
+  toggleIsVerifiedForSubjects,
 } from '../../core/services/SuggestionService';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../core/config/firebase';
 import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
 
-function SubSubjectsMappingContainer() {
+function SubSubjectsToSubjectsContainer() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, dispatch] = useContext(SnackBarContext);
   const [suggestions, setSuggestions] = useState<SuggestionModel[] | []>([]);
@@ -85,16 +88,29 @@ function SubSubjectsMappingContainer() {
   };
 
   async function handleToggleIsVerfiied(
-    suggestion: SuggestionModel,
+    subSubject: WithSubSubjectModel,
     newChecked: boolean
   ) {
-    const response = await toggleIsVerified(suggestion.id, newChecked);
-
+    const response = await toggleIsVerifiedForSubjects(
+      subSubject.subjectId,
+      subSubject.id,
+      newChecked
+    );
     if (response) {
       setSuggestions((prevSuggestions) =>
-        prevSuggestions.map((sugg) =>
-          sugg.id === suggestion.id ? { ...sugg, isVerified: newChecked } : sugg
-        )
+        prevSuggestions.map((suggestion) => {
+          if (suggestion.name === subSubject.subjectName) {
+            return {
+              ...suggestion,
+              subSubjects: suggestion.subSubjects?.map((sub) =>
+                sub.id === subSubject.id
+                  ? { ...sub, isVerified: newChecked }
+                  : sub
+              ),
+            };
+          }
+          return suggestion;
+        })
       );
     }
   }
@@ -129,39 +145,25 @@ function SubSubjectsMappingContainer() {
     return true;
   }
 
-  const deleteSuggestionHandler = async (id: string) => {
-    const response = await deleteSuggestion(id);
-    if (response) {
-      setSuggestions((prevSuggestions) =>
-        prevSuggestions.filter((sugg) => sugg.id !== id)
-      );
-      showSnackBar({
-        dispatch: dispatch,
-        color: ThemeColors.success,
-        message: 'Suggestion deleted successfully',
-      });
-    } else {
-      showSnackBar({
-        dispatch: dispatch,
-        color: ThemeColors.error,
-        message: 'Error deleting suggestion',
-      });
-    }
-  };
-
   const deleteSubSubjectHandler = async (id: string, docId: string) => {
-    const response = await deleteSubSubject(id, docId);
+    const response = await deleteSubSubject(docId, id);
     if (response) {
-      setSuggestions((prevSuggestions) =>
-        prevSuggestions.map((sugg) =>
-          sugg.id === docId
-            ? {
-                ...sugg,
-                subSubjects: sugg.subSubjects?.filter((sub) => sub.id !== id),
-              }
-            : sugg
-        )
-      );
+      setSuggestions((prevSuggestions) => {
+        const updatedSuggestions = prevSuggestions.map((suggestion) => {
+          console.log(suggestion, id);
+          if (suggestion.id === id) {
+            return {
+              ...suggestion,
+              subSubjects: (suggestion.subSubjects || []).filter(
+                (subSubject) => subSubject.id !== docId
+              ),
+            };
+          }
+          return suggestion;
+        });
+        console.log('Updated suggestions:', updatedSuggestions);
+        return updatedSuggestions;
+      });
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
@@ -185,20 +187,40 @@ function SubSubjectsMappingContainer() {
     });
   }
 
-  console.log(suggestions);
+  async function handleModifySubject(
+    subSubject: WithSubSubjectModel,
+    name: string
+  ): Promise<boolean> {
+    const response = await modifySubSubject(subSubject, name);
+    if (response) {
+      setSuggestions((prevSuggestions) =>
+        prevSuggestions.map((sugg) =>
+          sugg.id === subSubject.subjectId
+            ? {
+                ...sugg,
+                subSubjects: sugg.subSubjects?.map((sub) =>
+                  sub.id === subSubject.id ? { ...sub, name: name } : sub
+                ),
+              }
+            : sugg
+        )
+      );
+    }
+    return response;
+  }
 
   return (
-    <SubSubjectsMappingComponent
+    <SubSubjectsToSubjectsComponent
       toggleIsVerified={handleToggleIsVerfiied}
       suggestions={suggestions}
       isLoading={isLoading}
       suggestionCategories={suggestionCategories}
       addNewSubSubject={handleAddNewSubSubject}
       logout={handleLogout}
-      deleteSuggestions={deleteSuggestionHandler}
       deleteSubSubject={deleteSubSubjectHandler}
+      handleModifySubject={handleModifySubject}
     />
   );
 }
 
-export default SubSubjectsMappingContainer;
+export default SubSubjectsToSubjectsContainer;

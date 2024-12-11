@@ -248,7 +248,7 @@ function AddedSuperCategorySuggestions({
       )}
       <section className="flex items-center justify-between px-10 my-4">
         <div className="flex items-center gap-4">
-          <Link to={routes.suggestions}>
+          <Link to={routes.subjectsToCategories}>
             <img
               src={icons.back}
               alt=""

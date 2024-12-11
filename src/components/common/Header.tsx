@@ -22,7 +22,7 @@ function Header({ logout, openDrawer }: HeaderProps) {
           />
           <span className="">
             <Link
-              to={routes.suggestions}
+              to={routes.subjectsToCategories}
               className="text-white bg-primary ml-4 px-2 py-1 font-semibold rounded-lg text-lg block w-full text-center"
             >
               Home

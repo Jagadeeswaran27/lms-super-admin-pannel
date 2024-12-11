@@ -68,7 +68,6 @@ function AddedSuggestions({
     };
   }, [showNormalSuggestions]);
 
-  
   useEffect(() => {
     if (checked) {
       setFilteredSuggestions((pre) => {
@@ -282,21 +281,24 @@ function AddedSuggestions({
               <MenuItem onClick={() => handleSetSelectedTag2('All')}>
                 All
               </MenuItem>
-              {suggestionCat.map((category) =>
-                category.superCategory.secondLevelCategories.map((cat) => {
-                  const catName = cat.name.trim();
-                  return (
-                    <MenuItem
-                      key={catName}
-                      className="flex justify-between"
-                      onClick={() => handleSetSelectedTag2(catName)}
-                    >
-                      <p>{catName}</p>
-                      {selectedTag2.includes(catName) && <Check />}
-                    </MenuItem>
-                  );
-                })
-              )}
+              {Array.from(
+                new Set(
+                  suggestionCat.flatMap((category) =>
+                    category.superCategory.secondLevelCategories.map((cat) =>
+                      cat.name.trim()
+                    )
+                  )
+                )
+              ).map((catName) => (
+                <MenuItem
+                  key={catName}
+                  className="flex justify-between"
+                  onClick={() => handleSetSelectedTag2(catName)}
+                >
+                  <p>{catName}</p>
+                  {selectedTag2.includes(catName) && <Check />}
+                </MenuItem>
+              ))}
             </Menu>
           </p>
         </div>
