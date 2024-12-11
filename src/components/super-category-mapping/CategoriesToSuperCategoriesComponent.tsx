@@ -1,11 +1,13 @@
-import Header from "../common/Header";
-import { useState } from "react";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import Drawer from "./Drawer";
-import AddedSuggestions from "./AddedSuggestions";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import Header from '../common/Header';
+import { useState } from 'react';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import AddedSuperCategorySuggestions from './AddedSuperCategoryMapping';
+import Drawer from '../suggestion/Drawer';
+import { ThemeColors } from '../../resources/colors';
+import { CircularProgress } from '@mui/material';
 
-interface SuggestionPageComponentProps {
+interface SuperCategoryMappingComponentProps {
   logout: () => void;
   suggestions: SuggestionModel[] | [];
   addSuggestion: (
@@ -14,22 +16,32 @@ interface SuggestionPageComponentProps {
     image: File | null
   ) => Promise<boolean>;
   deleteSuggestion: (id: string) => void;
+  isLoading: boolean;
+  deleteCategory: (category: string, parentSuperCategory: string[]) => void;
   addNewCategory: (superCategory: string, category: string) => Promise<boolean>;
   addNewSuperCategory: (superCategory: string) => Promise<boolean>;
   suggestionCategories: SuggestionCategoriesModel[];
   modifySuggestion: (suggestion: SuggestionModel) => Promise<boolean>;
+  toggleIsVerified: (
+    newChecked: boolean,
+    superCat: string[],
+    categoryName: string
+  ) => void;
 }
 
-function SuggestionPageComponent({
+function CategoriesToSuperCategoriesComponent({
   logout,
   suggestions,
   addNewCategory,
   deleteSuggestion,
+  deleteCategory,
   addSuggestion,
   addNewSuperCategory,
   modifySuggestion,
   suggestionCategories,
-}: SuggestionPageComponentProps) {
+  toggleIsVerified,
+  isLoading,
+}: SuperCategoryMappingComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
 
   function openDrawer() {
@@ -52,21 +64,35 @@ function SuggestionPageComponent({
 
       <section>
         <div className=" mx-auto">
-          {suggestions.length > 0 ? (
-            <AddedSuggestions
+          {isLoading && (
+            <div className="flex items-center justify-center h-screen">
+              <CircularProgress
+                sx={{
+                  color: ThemeColors.authPrimary,
+                  size: 50,
+                  animationDuration: '1s',
+                  animationTimingFunction: 'ease-in-out',
+                }}
+              />
+            </div>
+          )}
+          {!isLoading && suggestions.length > 0 ? (
+            <AddedSuperCategorySuggestions
+              toggleIsVerified={toggleIsVerified}
               addNewCategory={addNewCategory}
               addNewSuperCategory={addNewSuperCategory}
               addSuggestion={addSuggestion}
               modifySuggestion={modifySuggestion}
               suggestionCategories={suggestionCategories}
               deleteSuggestion={deleteSuggestion}
+              deleteCategory={deleteCategory}
               suggestions={suggestions.sort((a, b) =>
                 a.name.localeCompare(b.name)
               )}
             />
           ) : (
             <p className="flex flex-1 text-brown font-semibold md:text-xl text-base h-full items-center justify-center">
-              No Suggestions Found
+              No categories found
             </p>
           )}
         </div>
@@ -75,4 +101,4 @@ function SuggestionPageComponent({
   );
 }
 
-export default SuggestionPageComponent;
+export default CategoriesToSuperCategoriesComponent;

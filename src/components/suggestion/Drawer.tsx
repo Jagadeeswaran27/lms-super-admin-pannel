@@ -1,4 +1,4 @@
-import SuggestionSidebar from "./SuggestionSidebar";
+import SuggestionSidebar from './SuggestionSidebar';
 
 interface DrawerProps {
   showDrawer: boolean;
@@ -12,8 +12,8 @@ function Drawer({ closeDrawer, logout, showDrawer }: DrawerProps) {
       onClick={closeDrawer}
       className={`fixed z-20 w-full h-full bg-[rgba(255,255,255,0.7)] transform transition-transform duration-300 ease-in-out ${
         showDrawer
-          ? "opacity-100 pointer-events-auto translate-x-0"
-          : "opacity-0 pointer-events-none -translate-x-[50px]"
+          ? 'opacity-100 pointer-events-auto translate-x-0'
+          : 'opacity-0 pointer-events-none -translate-x-[50px]'
       }`}
     >
       <div

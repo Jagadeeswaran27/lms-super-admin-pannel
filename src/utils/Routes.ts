@@ -1,6 +1,11 @@
 export const routes = {
   login: "/",
-  suggestions: "/suggestions",
+  subjectsToCategories: "/subjects-to-categories",
   allSuggestions: "/suggestions/all",
   suggestionManual: "/suggestions/manual",
+  categoriesToSuperCategories: "/categories-to-super-categories",
+  subjectsToSubSubjects: "/subjects-to-sub-subjects",
+  subSubjectsToSubjects: "/sub-subjects-to-subjects",
 };
+
+

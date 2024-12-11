@@ -1,14 +1,20 @@
 import { Checkbox, Menu, MenuItem } from '@mui/material';
 import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
 import { icons } from '../../resources/icons';
-import SuggestionCard from './SuggestionCard';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useContext, useEffect, useState } from 'react';
 import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
-import { Check } from '@mui/icons-material';
-import AISuggestions from './AISuggestions';
+import MappingCard from '../suggestion/MappingCard';
+import AISuggestions from '../suggestion/AISuggestions';
+import AISuperCategorySuggestions from '../suggestion/AISuperCategorySuggestions';
+import refactorSuggestionCategories from '../../utils/helper';
+import { modifySuggestionCategory } from '../../core/services/SuggestionService';
+import { showSnackBar } from '../../utils/Snackbar';
 import { ThemeColors } from '../../resources/colors';
+import { SnackBarContext } from '../../store/SnackBarContext';
+import { Link } from 'react-router-dom';
+import { routes } from '../../utils/Routes';
 
-interface AddedSuggestionsProps {
+interface AddedSuperCategoryMapping {
   suggestions: SuggestionModel[];
   deleteSuggestion: (id: string) => void;
   suggestionCategories: SuggestionCategoriesModel[];
@@ -20,38 +26,49 @@ interface AddedSuggestionsProps {
     tag: string[],
     image: File | null
   ) => Promise<boolean>;
-  toggleIsVerified: (suggestion: SuggestionModel, newChecked: boolean) => void;
+  toggleIsVerified: (
+    newChecked: boolean,
+    superCat: string[],
+    categoryName: string
+  ) => void;
+  deleteCategory: (category: string, parentSuperCategory: string[]) => void;
 }
 function getScrollbarWidth() {
   return window.innerWidth - document.documentElement.clientWidth;
 }
 
-let backupSuggestions: SuggestionModel[] = [];
+let backupRefactoredSuggestionCategories: {
+  category: string;
+  isVerified: boolean;
+  superCategories: string[];
+}[] = [];
 
-function AddedSuggestions({
+function AddedSuperCategorySuggestions({
   suggestions,
-  deleteSuggestion,
   suggestionCategories,
   modifySuggestion,
   addNewCategory,
   addNewSuperCategory,
   addSuggestion,
-  toggleIsVerified,
-}: AddedSuggestionsProps) {
+  deleteCategory,
+}: AddedSuperCategoryMapping) {
   const [anchorEl1, setAnchorEl1] = useState<null | HTMLElement>(null);
-  const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
   const [selectedTag1, setSelectedTag1] = useState<string>('All');
-  const [selectedTag2, setSelectedTag2] = useState<string[]>(['All']);
-  const [filteredSuggestions, setFilteredSuggestions] =
-    useState<SuggestionModel[]>(suggestions);
-  const [suggestionCat, setSuggestionCat] =
-    useState<SuggestionCategoriesModel[]>(suggestionCategories);
 
   const [showNormalSuggestions, setShowNormalSuggestions] =
     useState<boolean>(false);
-
+  const [
+    showSuperCategoryBasedSuggestions,
+    setShowSuperCategoryBasedSuggestions,
+  ] = useState<boolean>(false);
+  const [refactoredSuggestionCategories, setRefactoredSuggestionCategories] =
+    useState<
+      { category: string; isVerified: boolean; superCategories: string[] }[]
+    >([]);
   const [checked, setChecked] = useState<boolean>(false);
   const [unverifiedChecked, setUnverifiedChecked] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, dispatch] = useContext(SnackBarContext);
 
   useEffect(() => {
     if (showNormalSuggestions) {
@@ -70,46 +87,84 @@ function AddedSuggestions({
 
   useEffect(() => {
     if (checked) {
-      setFilteredSuggestions((pre) => {
-        backupSuggestions = pre;
-        return pre.filter((sugg) => sugg.isVerified);
+      setRefactoredSuggestionCategories((pre) => {
+        backupRefactoredSuggestionCategories = pre;
+        return pre.filter((cat) => cat.isVerified);
       });
     } else if (unverifiedChecked) {
-      setFilteredSuggestions((pre) => {
-        backupSuggestions = pre;
-        return pre.filter((sugg) => !sugg.isVerified);
-      });
+      setRefactoredSuggestionCategories(
+        backupRefactoredSuggestionCategories.filter((cat) => !cat.isVerified)
+      );
     } else {
-      setFilteredSuggestions(suggestions);
+      setRefactoredSuggestionCategories(backupRefactoredSuggestionCategories);
     }
   }, [checked, unverifiedChecked]);
 
   useEffect(() => {
-    // setRefactoredSuggestionCategories(
-    //   refactorSuggestionCategories(suggestionCategories)
-    // );
+    setRefactoredSuggestionCategories(
+      refactorSuggestionCategories(suggestionCategories)
+    );
     if (selectedTag1 === 'All') {
-      setSuggestionCat(suggestionCategories);
+      // console.log('All');
     }
   }, [suggestionCategories]);
 
-  useEffect(() => {
-    if (selectedTag1 === 'All' && selectedTag2.includes('All')) {
-      setFilteredSuggestions(suggestions);
-      setSuggestionCat(suggestionCategories);
-    } else {
-      setFilteredSuggestions(
-        suggestions.filter(
-          (suggestion) =>
-            selectedTag2.includes('All') ||
-            selectedTag2.every((tag) => suggestion.tag.includes(tag))
-        )
-      );
-    }
-  }, [suggestions, selectedTag1, selectedTag2]);
-
   const handleMouseEnter1 = (event: MouseEvent<HTMLImageElement>) => {
     setAnchorEl1(event.currentTarget);
+  };
+
+  // async function handleToggleIsVerified(
+  //   newChecked: boolean,
+  //   superCat: string[],
+  //   categoryName: string
+  // ) {
+  //   const response = await toggleCategoryIsVerified(
+  //     newChecked,
+  //     superCat,
+  //     categoryName
+  //   );
+
+  //   if (response) {
+  //     setRefactoredSuggestionCategories((prevCategories) =>
+  //       prevCategories.map((cat) =>
+  //         cat.category === categoryName
+  //           ? { ...cat, isVerified: newChecked }
+  //           : cat
+  //       )
+  //     );
+  //   }
+  // }
+
+  const handleModifySuperCategory = async (
+    category: string,
+    superCategory: string
+  ) => {
+    const response = await modifySuggestionCategory(
+      true,
+      [superCategory],
+      [],
+      category,
+      category
+    );
+    if (response) {
+      setRefactoredSuggestionCategories((pre) =>
+        pre.map((cat) =>
+          cat.category === category
+            ? {
+                ...cat,
+                superCategories: [...cat.superCategories, ...[superCategory]],
+              }
+            : cat
+        )
+      );
+
+      showSnackBar({
+        dispatch,
+        color: ThemeColors.success,
+        message: 'Category modified successfully',
+      });
+    }
+    return response;
   };
 
   const handleToggleChange = (
@@ -117,7 +172,6 @@ function AddedSuggestions({
     newChecked: boolean
   ) => {
     setChecked(newChecked);
-    setUnverifiedChecked(false);
   };
 
   const handleUnverifiedToggleChange = (
@@ -125,55 +179,24 @@ function AddedSuggestions({
     newChecked: boolean
   ) => {
     setUnverifiedChecked(newChecked);
-    setChecked(false);
   };
 
   const handleMouseLeave1 = () => {
     setAnchorEl1(null);
   };
 
-  const handleMouseEnter2 = (event: MouseEvent<HTMLImageElement>) => {
-    setAnchorEl2(event.currentTarget);
-  };
-
-  const handleMouseLeave2 = () => {
-    setAnchorEl2(null);
-  };
-
   const handleSetSelectedTag1 = (tag: string) => {
     setSelectedTag1(tag);
     if (tag === 'All') {
-      setSelectedTag2(['All']);
-      setSuggestionCat(suggestionCategories);
-      // setRefactoredSuggestionCategories(
-      //   refactorSuggestionCategories(suggestionCategories)
-      // );
+      setRefactoredSuggestionCategories(
+        refactorSuggestionCategories(suggestionCategories)
+      );
     } else {
-      setSuggestionCat(
-        suggestionCategories.filter(
-          (cat) => cat.superCategory.name.trim() === tag.trim()
+      setRefactoredSuggestionCategories(
+        refactorSuggestionCategories(suggestionCategories).filter((cat) =>
+          cat.superCategories.includes(tag)
         )
       );
-      // setRefactoredSuggestionCategories(
-      //   refactorSuggestionCategories(suggestionCategories).filter((cat) =>
-      //     cat.superCategories.includes(tag)
-      //   )
-      // );
-    }
-  };
-
-  const handleSetSelectedTag2 = (tag: string) => {
-    if (tag === 'All') {
-      setSelectedTag2(['All']);
-    } else {
-      setSelectedTag2((prevTags) => {
-        const newTags = prevTags.includes('All')
-          ? [tag]
-          : prevTags.includes(tag)
-          ? prevTags.filter((t) => t !== tag)
-          : [...prevTags, tag];
-        return newTags.length ? newTags : ['All'];
-      });
     }
   };
 
@@ -186,7 +209,7 @@ function AddedSuggestions({
   //     showSnackBar({
   //       dispatch,
   //       color: ThemeColors.success,
-  //       message: "Category Deleted Successfully!",
+  //       message: 'Category Deleted Successfully!',
   //     });
   //     setRefactoredSuggestionCategories((prevCategories) =>
   //       prevCategories.filter((cat) => cat.category !== category)
@@ -195,7 +218,7 @@ function AddedSuggestions({
   //     showSnackBar({
   //       dispatch,
   //       color: ThemeColors.error,
-  //       message: "Failed to Delete Category",
+  //       message: 'Failed to Delete Category',
   //     });
   //   }
   // };
@@ -214,17 +237,37 @@ function AddedSuggestions({
           closePrompt={() => setShowNormalSuggestions(false)}
         />
       )}
+      {showSuperCategoryBasedSuggestions && (
+        <AISuperCategorySuggestions
+          suggestions={suggestions}
+          addNewSuperCategory={addNewSuperCategory}
+          addNewCategory={addNewCategory}
+          suggestionCategories={suggestionCategories}
+          closePrompt={() => setShowSuperCategoryBasedSuggestions(false)}
+        />
+      )}
       <section className="flex items-center justify-between px-10 my-4">
         <div className="flex items-center gap-4">
+          <Link to={routes.subjectsToCategories}>
+            <img
+              src={icons.back}
+              alt=""
+              width={30}
+              height={30}
+              className="cursor-pointer"
+            />
+          </Link>
           <h1 className="text-textBrown md:text-3xl text-2xl max-sm:text-center font-medium">
             Already Added{' '}
             <span className="text-primary md:text-base text-sm">
-              (Subjects)
+              (Super Category Mapping)
             </span>
             :
           </h1>
         </div>
+
         <div className="flex items-center gap-5">
+          {/* First Menu */}
           <p className="md:text-xl flex text-textBrown gap-2 text-base lg:text-lg">
             <span className="font-semibold">Sort by</span>Super Category:{' '}
             <span className="font-medium gap-2 flex">
@@ -260,50 +303,13 @@ function AddedSuggestions({
               ))}
             </Menu>
           </p>
-          <p className="md:text-xl text-textBrown flex gap-2 text-lg">
-            Category:
-            <span className="font-medium gap-2 flex">
-              {selectedTag2.includes('All') ? 'All' : 'Multiple'}
-              <img
-                onClick={handleMouseEnter2}
-                className="cursor-pointer"
-                src={icons.dropdown}
-                alt="dropdown"
-              />
-            </span>
-            <Menu
-              id="simple-menu"
-              anchorEl={anchorEl2}
-              open={Boolean(anchorEl2)}
-              onClose={handleMouseLeave2}
-              className="max-h-[600px]"
-            >
-              <MenuItem onClick={() => handleSetSelectedTag2('All')}>
-                All
-              </MenuItem>
-              {Array.from(
-                new Set(
-                  suggestionCat.flatMap((category) =>
-                    category.superCategory.secondLevelCategories.map((cat) =>
-                      cat.name.trim()
-                    )
-                  )
-                )
-              ).map((catName) => (
-                <MenuItem
-                  key={catName}
-                  className="flex justify-between"
-                  onClick={() => handleSetSelectedTag2(catName)}
-                >
-                  <p>{catName}</p>
-                  {selectedTag2.includes(catName) && <Check />}
-                </MenuItem>
-              ))}
-            </Menu>
-          </p>
         </div>
       </section>
       <div className="flex items-center justify-end">
+        <p className="lg:text-xl opacity-0 text-primary my-5 ml-10 text-base font-medium cursor-default hover:underline">
+          View Subjects Mapping
+        </p>
+
         <div className="mr-20 flex items-center">
           <Checkbox
             checked={checked}
@@ -326,31 +332,28 @@ function AddedSuggestions({
         </div>
       </div>
       <div className="max-md:hidden mx-1">
-        {filteredSuggestions.length > 0 &&
-          filteredSuggestions.map((suggestion, index) => (
-            <div key={suggestion.id}>
-              <SuggestionCard
-                toggleIsVerified={toggleIsVerified}
-                suggestions={suggestions}
-                modifySuggestion={modifySuggestion}
-                suggestionCategories={suggestionCategories}
-                deleteSuggestion={deleteSuggestion}
-                index={index}
-                suggestion={suggestion}
+        {refactoredSuggestionCategories.map((cat) => {
+          return (
+            <div key={cat.category}>
+              <MappingCard
+                modifySuperCategory={handleModifySuperCategory}
+                isVerified={cat.isVerified}
+                deleteCategory={deleteCategory}
+                superCategories={suggestionCategories.map(
+                  (cat) => cat.superCategory.name
+                )}
+                category={cat.category}
+                superCategory={cat.superCategories}
               />
             </div>
-          ))}
-        {filteredSuggestions.length === 0 && (
-          <p className="text-brown text-center font-semibold text-lg">
-            No {selectedTag2.join(', ')} Suggestions Found
-          </p>
-        )}
+          );
+        })}
         <div className="fixed right-0 bottom-0 p-5">
           <img
-            onClick={() => setShowNormalSuggestions(true)}
+            onClick={() => setShowSuperCategoryBasedSuggestions(true)}
             className="cursor-pointer w-[80px] h-[80px]"
             src={icons.bot}
-            alt={icons.bot}
+            alt="bot"
           />
         </div>
       </div>
@@ -358,4 +361,4 @@ function AddedSuggestions({
   );
 }
 
-export default AddedSuggestions;
+export default AddedSuperCategorySuggestions;
