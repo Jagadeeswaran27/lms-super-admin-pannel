@@ -1,6 +1,6 @@
 # Ignore all .env files (including .env, .env.development, .env.production, etc.)
 .env*
-.env.development
+.env.uat
 # Logs
 logs
 *.log
