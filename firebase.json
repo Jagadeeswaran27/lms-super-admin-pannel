@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "lms-admin-panel-uat",
     "public": "dist",
     "ignore": [
       "firebase.json",

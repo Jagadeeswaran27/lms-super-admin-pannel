@@ -1,11 +1,11 @@
-import Header from '../common/Header';
-import { useState } from 'react';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
-import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
-import AddedSuperCategorySuggestions from './AddedSuperCategoryMapping';
-import Drawer from '../suggestion/Drawer';
-import { ThemeColors } from '../../resources/colors';
-import { CircularProgress } from '@mui/material';
+import Header from "../common/Header";
+import { useState } from "react";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import AddedSuperCategorySuggestions from "./AddedSuperCategoryMapping";
+import Drawer from "../suggestion/Drawer";
+import { ThemeColors } from "../../resources/colors";
+import { CircularProgress } from "@mui/material";
 
 interface SuperCategoryMappingComponentProps {
   logout: () => void;
@@ -70,13 +70,13 @@ function CategoriesToSuperCategoriesComponent({
                 sx={{
                   color: ThemeColors.authPrimary,
                   size: 50,
-                  animationDuration: '1s',
-                  animationTimingFunction: 'ease-in-out',
+                  animationDuration: "1s",
+                  animationTimingFunction: "ease-in-out",
                 }}
               />
             </div>
           )}
-          {!isLoading && suggestions.length > 0 ? (
+          {!isLoading && suggestionCategories.length > 0 ? (
             <AddedSuperCategorySuggestions
               toggleIsVerified={toggleIsVerified}
               addNewCategory={addNewCategory}
