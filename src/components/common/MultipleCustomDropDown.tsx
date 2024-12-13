@@ -7,6 +7,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { ThemeColors } from "../../resources/colors";
+import { Check } from "@mui/icons-material";
 
 interface MultipleCustomDropDownProps {
   items: string[];
@@ -17,7 +18,7 @@ interface MultipleCustomDropDownProps {
 function MultipleCustomDropDown({
   items,
   onChange,
-  value,
+  value = [], // Default to an empty array
 }: MultipleCustomDropDownProps) {
   return (
     <FormControl fullWidth>
@@ -34,9 +35,9 @@ function MultipleCustomDropDown({
       </InputLabel>
       <Select
         multiple
-        value={value || []}
+        value={value}
         onChange={onChange}
-        label="Select an option"
+        renderValue={(selected) => selected.join(", ")} // Displays selected items as a comma-separated string
         input={
           <OutlinedInput
             label="Select an option"
@@ -59,6 +60,7 @@ function MultipleCustomDropDown({
         {items.map((item, index) => (
           <MenuItem key={index} value={item}>
             {item}
+            {value.includes(item) && <Check />}
           </MenuItem>
         ))}
       </Select>

@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from 'react';
-import SubjectsToSubSubjectsComponent from '../../components/sub-subjects-mapping/SubjectToSubSubjectsComponent';
-import { logout } from '../../core/services/AuthService';
-import { showSnackBar } from '../../utils/Snackbar';
-import { SnackBarContext } from '../../store/SnackBarContext';
-import { ThemeColors } from '../../resources/colors';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import { useContext, useEffect, useState } from "react";
+import SubjectsToSubSubjectsComponent from "../../components/sub-subjects-mapping/SubjectToSubSubjectsComponent";
+import { logout } from "../../core/services/AuthService";
+import { showSnackBar } from "../../utils/Snackbar";
+import { SnackBarContext } from "../../store/SnackBarContext";
+import { ThemeColors } from "../../resources/colors";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import {
   addNewSubSubject,
   deleteSubSubject,
@@ -12,10 +12,10 @@ import {
   getSuggestionCategories,
   getSuggestions,
   toggleIsVerified,
-} from '../../core/services/SuggestionService';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../core/config/firebase';
-import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+} from "../../core/services/SuggestionService";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../../core/config/firebase";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 
 function SubjectsToSubSubjectsContainer() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,7 +54,7 @@ function SubjectsToSubSubjectsContainer() {
       const fileData = new File([blob], fileName, { type: blob.type });
       return fileData;
     } catch (e) {
-      console.error('Error downloading image:', e);
+      console.error("Error downloading image:", e);
       return null;
     }
   };
@@ -62,7 +62,7 @@ function SubjectsToSubSubjectsContainer() {
   const handleGetImageSuggestion = async (
     value: string
   ): Promise<File | null> => {
-    const generateImages = httpsCallable(functions, 'generateImages');
+    const generateImages = httpsCallable(functions, "generateImages");
     try {
       const response = await generateImages({
         // prompt: `Design an engaging and visually appealing online course thumbnail. The image should feature abstract and minimalist symbols representing education, learning, and growth. Include elements like stylized books, lightbulbs, graduation caps, gears, or trees of knowledge, arranged into a cohesive, modern design. Use smooth gradients or contrasting color palettes to create a vibrant and welcoming tone. The overall style should communicate progress and intellectual development.Do not embed any text or course title in the image itself. Instead, place the word ${value} as separate text positioned directly below the image, ensuring clear separation between the graphic and the text content. The image should remain clean and focused on visuals without any embedded typography.`,
@@ -79,7 +79,7 @@ function SubjectsToSubSubjectsContainer() {
       );
       return downloadResponse;
     } catch (error) {
-      console.error('Error fetching name suggestions:', error);
+      console.error("Error fetching name suggestions:", error);
       return null;
     }
   };
@@ -138,13 +138,13 @@ function SubjectsToSubSubjectsContainer() {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
-        message: 'Suggestion deleted successfully',
+        message: "Suggestion deleted successfully",
       });
     } else {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.error,
-        message: 'Error deleting suggestion',
+        message: "Error deleting suggestion",
       });
     }
   };
@@ -165,13 +165,13 @@ function SubjectsToSubSubjectsContainer() {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
-        message: 'Sub-subject deleted successfully',
+        message: "Sub-subject deleted successfully",
       });
     } else {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.error,
-        message: 'Error deleting sub-subject',
+        message: "Error deleting sub-subject",
       });
     }
   };
@@ -181,11 +181,9 @@ function SubjectsToSubSubjectsContainer() {
     showSnackBar({
       dispatch: dispatch,
       color: ThemeColors.success,
-      message: 'Logout successful',
+      message: "Logout successful",
     });
   }
-
-  console.log(suggestions);
 
   return (
     <SubjectsToSubSubjectsComponent
