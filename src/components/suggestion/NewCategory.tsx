@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState,useContext } from "react";
 import Success from "./Success";
 import InputField from "../common/InputField";
 import CustomDropDown from "../common/CustomDropDown";
 import { SelectChangeEvent } from "@mui/material";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 import { icons } from "../../resources/icons";
+import { showSnackBar } from "../../utils/Snackbar";
+import { SnackBarContext } from "../../store/SnackBarContext";
+import { ThemeColors } from "../../resources/colors";
 
 interface NewCategoryProps {
   suggestionCategories: SuggestionCategoriesModel[];
@@ -15,6 +18,8 @@ function NewCategory({
   suggestionCategories,
   addNewCategory,
 }: NewCategoryProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, dispatch] = useContext(SnackBarContext);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>("");
   const [tag, setTag] = useState<string>("");
@@ -29,6 +34,14 @@ function NewCategory({
   }
 
   async function handleAddNewCategory() {
+    if(disabled){
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: "Please fill in all details",
+      })
+    }
+    else{
     setIsLoading(true);
     const response = await addNewCategory(tag, inputValue);
     if (response) {
@@ -36,6 +49,7 @@ function NewCategory({
     }
     setIsLoading(false);
   }
+}
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -90,9 +104,9 @@ function NewCategory({
         <div className="w-[10%] h-full my-5">
           <button
             onClick={handleAddNewCategory}
-            disabled={disabled || isLoading}
+            disabled={isLoading}
             className={`${
-              disabled && "opacity-80"
+              isLoading && "opacity-80"
             } bg-primary flex items-center justify-center lg:gap-3 gap-1 rounded-md text-white font-semibold p-3`}
           >
             {isLoading ? "Adding..." : "Add"}

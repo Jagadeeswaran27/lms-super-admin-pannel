@@ -61,7 +61,7 @@ function NewSuggestions({
         />
         <p className="pt-3">
           <span className="bg-primary text-white p-2 rounded-r-full">
-            1. Add New Subjects
+            2. Add New Subjects
           </span>
         </p>
         <NewSuggestionForm
@@ -70,7 +70,7 @@ function NewSuggestions({
         />
         <p className="pt-3">
           <span className="bg-primary text-white p-2 rounded-r-full">
-            2. Add New Category
+            3. Add New Category
           </span>
           <NewCategory
             addNewCategory={addNewCategory}
@@ -79,7 +79,7 @@ function NewSuggestions({
         </p>
         <p className="pt-3">
           <span className="bg-primary text-white p-2 rounded-r-full">
-            3. Add New Super Category
+            4. Add New Super Category
           </span>
         </p>
         <NewSuperCateoryForm addNewSuperCategory={addNewSuperCategory} />
