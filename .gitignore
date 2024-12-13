@@ -12,8 +12,7 @@ lerna-debug.log*
 
 # Dependency directories
 node_modules
-
-# Build outputs
+.env*
 dist
 dist-ssr
 *.local

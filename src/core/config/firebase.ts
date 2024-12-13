@@ -10,12 +10,12 @@ import { getFunctions } from "firebase/functions";
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_KEY,
-  authDomain: "ultrasonic-clinic-uat.firebaseapp.com",
-  projectId: "ultrasonic-clinic-uat",
-  storageBucket: "ultrasonic-clinic-uat.firebasestorage.app",
-  messagingSenderId: "786493953653",
-  appId: "1:786493953653:web:b568a49b8e810b9c49ca3c",
-  measurementId: "G-8422PTVXS9",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
