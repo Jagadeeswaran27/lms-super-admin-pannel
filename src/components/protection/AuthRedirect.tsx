@@ -27,7 +27,7 @@ export default function AuthRedirect({ element }: authRedireactProps) {
     );
   }
 
-  if (user && user.emailVerified) {
+  if (user) {
     return <Navigate to={routes.subjectsToCategories} />;
   }
 
