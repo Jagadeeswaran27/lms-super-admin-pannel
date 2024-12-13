@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
-import ManualSuggestion from '../../components/all-suggestions/ManualSuggestion';
-import { logout } from '../../core/services/AuthService';
+import { useContext, useEffect, useState } from "react";
+import ManualSuggestion from "../../components/all-suggestions/ManualSuggestion";
+import { logout } from "../../core/services/AuthService";
 import {
   addAdminSuggestion,
   addNewSubSubject,
@@ -8,12 +8,12 @@ import {
   addSuperCategory,
   getSuggestionCategories,
   getSuggestions,
-} from '../../core/services/SuggestionService';
-import { showSnackBar } from '../../utils/Snackbar';
-import { SnackBarContext } from '../../store/SnackBarContext';
-import { ThemeColors } from '../../resources/colors';
-import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+} from "../../core/services/SuggestionService";
+import { showSnackBar } from "../../utils/Snackbar";
+import { SnackBarContext } from "../../store/SnackBarContext";
+import { ThemeColors } from "../../resources/colors";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 
 function ManualSuggestionContainer() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -49,7 +49,24 @@ function ManualSuggestionContainer() {
       subSubject,
       file
     );
-    if (newSubSubject) return true;
+    if (newSubSubject) {
+      setSuggestions((prev) => {
+        const updatedSuggestions = prev.map((suggestionItem) => {
+          if (suggestionItem.id === suggestion.id) {
+            return {
+              ...suggestionItem,
+              subSubjects: [
+                ...(suggestionItem.subSubjects ?? []),
+                newSubSubject,
+              ],
+            };
+          }
+          return suggestionItem;
+        });
+        return updatedSuggestions;
+      });
+      return true;
+    }
     return false;
   }
   async function handleAddNewCategory(
@@ -82,9 +99,9 @@ function ManualSuggestionContainer() {
     tag: string[],
     image: File | null
   ): Promise<boolean> {
-    const response = await addAdminSuggestion(suggestionText ?? '', tag, image);
+    const response = await addAdminSuggestion(suggestionText ?? "", tag, image);
     if (response) {
-      //   setSuggestions((pre) => [response, ...pre]);
+      setSuggestions((pre) => [response, ...pre]);
 
       return true;
     }
@@ -106,7 +123,7 @@ function ManualSuggestionContainer() {
     showSnackBar({
       dispatch: dispatch,
       color: ThemeColors.success,
-      message: 'Logout successfull',
+      message: "Logout successfull",
     });
   }
   return (
