@@ -46,6 +46,14 @@ function NewSuggestionForm({
   };
 
   async function handleAddNewSuggestion() {
+    if(disabled){
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: "Please fill in all details",
+      })
+    }
+    else{
     setIsLoading(true);
     const response = await addSuggestion(inputValue, tag, file);
     if (response) {
@@ -53,6 +61,7 @@ function NewSuggestionForm({
     }
     setIsLoading(false);
   }
+}
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -198,9 +207,9 @@ function NewSuggestionForm({
         <div className="w-[10%] h-full my-5">
           <button
             onClick={handleAddNewSuggestion}
-            disabled={disabled || isLoading}
+            disabled={isLoading}
             className={`${
-              disabled && 'opacity-80'
+              isLoading && 'opacity-80'
             } bg-primary flex items-center justify-center lg:gap-3 gap-1 rounded-md text-white font-semibold p-3`}
           >
             {isLoading ? 'Adding...' : 'Add'}

@@ -37,7 +37,8 @@ function NewSubSubjectForm({
   const [_, dispatch] = useContext(SnackBarContext);
   const [isImageDownloading, setIsImageDownloading] = useState<boolean>(false);
 
-  const disabled = inputValue.trim().length === 0 || tag.length === 0;
+  const disabled =
+    inputValue.trim().length === 0 || file === null || tag.length === 0;
 
   function handleCloseSuccessModal() {
     setShowSuccess(false);
@@ -54,16 +55,24 @@ function NewSubSubjectForm({
   };
 
   async function handleAddNewCategory() {
-    const suggestion = suggestions.find((sugg) => sugg.name === tag);
-    if (!suggestion || !file) {
-      return;
+    if (disabled) {
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: "Please fill in all details",
+      });
+    } else {
+      const suggestion = suggestions.find((sugg) => sugg.name === tag);
+      if (!suggestion || !file) {
+        return;
+      }
+      setIsLoading(true);
+      const response = await addNewSubSubject(suggestion, inputValue, file);
+      if (response) {
+        setShowSuccess(true);
+      }
+      setIsLoading(false);
     }
-    setIsLoading(true);
-    const response = await addNewSubSubject(suggestion, inputValue, file);
-    if (response) {
-      setShowSuccess(true);
-    }
-    setIsLoading(false);
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -198,9 +207,9 @@ function NewSubSubjectForm({
         <div className="w-[10%] h-full my-5">
           <button
             onClick={handleAddNewCategory}
-            disabled={disabled || isLoading}
+            disabled={isLoading}
             className={`${
-              disabled && "opacity-80"
+              isLoading && "opacity-80"
             } bg-primary flex items-center justify-center lg:gap-3 gap-1 rounded-md text-white font-semibold p-3`}
           >
             {isLoading ? "Adding..." : "Add"}
