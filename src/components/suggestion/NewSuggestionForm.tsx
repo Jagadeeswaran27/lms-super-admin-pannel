@@ -37,7 +37,7 @@ function NewSuggestionForm({
   const fileRef = useRef<HTMLInputElement>(null);
 
   const disabled =
-    inputValue.trim().length === 0 || file === null || tag.length === 0;
+    inputValue.trim().length === 0 && file === null && tag.length === 0;
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
@@ -46,13 +46,22 @@ function NewSuggestionForm({
   };
 
   async function handleAddNewSuggestion() {
-    if(disabled){
-      showSnackBar({
-        dispatch: dispatch,
-        color: ThemeColors.error,
-        message: "Please fill in all details",
-      })
-    }
+    let text: string = "";
+    if (disabled) {
+      text = "Please fill in all details";
+    } else if (inputValue.trim().length != 0  && tag.length === 0 && !file) {
+      text = "Please select a subject and upload an image";
+    } else if (!file && tag.length == 0 && inputValue.trim().length === 0) {
+      text = "Please select a subject and enter a name";
+    } else if (tag.length != 0 && inputValue.trim().length === 0 && !file) {
+      text = "Please select a image and enter a name";
+    } else if (inputValue.trim().length === 0) {
+      text = "Please fill in the name";
+    } else if (file===null) {
+      text = "Please upload an image";
+    } else if (tag.length === 0) {
+      text = "Please select a subject";
+    } 
     else{
     setIsLoading(true);
     const response = await addSuggestion(inputValue, tag, file);
@@ -60,6 +69,13 @@ function NewSuggestionForm({
       setShowSuccess(true);
     }
     setIsLoading(false);
+  }
+  if (text.length != 0) {
+    showSnackBar({
+      dispatch: dispatch,
+      color: ThemeColors.error,
+      message: text,
+    });
   }
 }
 
@@ -186,7 +202,7 @@ function NewSuggestionForm({
           </section>
           <section className="flex-1 max-w-[40%] mx-4">
             <h2 className="text-textBrown md:text-xl text-lg max-sm:text-center pt-5 pb-3 font-medium">
-              Tag <span className="text-primary text-[10px]">(categories)</span>{' '}
+            Categories<span className="text-primary text-[10px]"></span>{' '}
             </h2>
             <MultipleCustomDropDown
               value={tag}

@@ -32,7 +32,7 @@ function NewSuperCateoryForm({
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.error,
-        message: "Please fill in all details",
+        message: "Please fill the name",
       })
     }
     else{    
