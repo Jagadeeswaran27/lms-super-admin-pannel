@@ -25,7 +25,7 @@ function NewCategory({
   const [tag, setTag] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const disabled = inputValue.length === 0 || tag.length === 0;
+  const disabled = inputValue.length === 0 && tag.length === 0;
 
   function handleCloseSuccessModal() {
     setShowSuccess(false);
@@ -34,13 +34,14 @@ function NewCategory({
   }
 
   async function handleAddNewCategory() {
-    if(disabled){
-      showSnackBar({
-        dispatch: dispatch,
-        color: ThemeColors.error,
-        message: "Please fill in all details",
-      })
-    }
+    let text: string = "";
+    if (disabled) {
+      text = "Please fill in all details";
+    } else if (inputValue.trim().length != 0  && tag.length === 0) {
+      text = "Please select a super category";
+    }  else if (tag.length != 0 && inputValue.trim().length === 0 ) {
+      text = "Please enter a name";
+    } 
     else{
     setIsLoading(true);
     const response = await addNewCategory(tag, inputValue);
@@ -48,6 +49,13 @@ function NewCategory({
       setShowSuccess(true);
     }
     setIsLoading(false);
+  }
+  if(text.length != 0){
+    showSnackBar({
+      dispatch: dispatch,
+      color: ThemeColors.error,
+      message: text,
+    })
   }
 }
 
@@ -90,7 +98,7 @@ function NewCategory({
 
           <section className="flex-1 max-w-[40%] mx-4">
             <h2 className="text-textBrown md:text-xl text-lg max-sm:text-center pt-5 pb-3 font-medium">
-              Tag <span className="text-primary text-[10px]">(categories)</span>{" "}
+            Super Categories <span className="text-primary text-[10px]"></span>{" "}
             </h2>
             <CustomDropDown
               value={tag}
