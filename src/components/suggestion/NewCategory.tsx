@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState,useContext } from "react";
 import Success from "./Success";
 import InputField from "../common/InputField";
 import CustomDropDown from "../common/CustomDropDown";
 import { SelectChangeEvent } from "@mui/material";
 import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
 import { icons } from "../../resources/icons";
+import { showSnackBar } from "../../utils/Snackbar";
+import { SnackBarContext } from "../../store/SnackBarContext";
+import { ThemeColors } from "../../resources/colors";
 
 interface NewCategoryProps {
   suggestionCategories: SuggestionCategoriesModel[];
@@ -15,12 +18,14 @@ function NewCategory({
   suggestionCategories,
   addNewCategory,
 }: NewCategoryProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, dispatch] = useContext(SnackBarContext);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>("");
   const [tag, setTag] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const disabled = inputValue.length === 0 || tag.length === 0;
+  const disabled = inputValue.length === 0 && tag.length === 0;
 
   function handleCloseSuccessModal() {
     setShowSuccess(false);
@@ -29,6 +34,15 @@ function NewCategory({
   }
 
   async function handleAddNewCategory() {
+    let text: string = "";
+    if (disabled) {
+      text = "Please fill in all details";
+    } else if (inputValue.trim().length != 0  && tag.length === 0) {
+      text = "Please select a super category";
+    }  else if (tag.length != 0 && inputValue.trim().length === 0 ) {
+      text = "Please enter a name";
+    } 
+    else{
     setIsLoading(true);
     const response = await addNewCategory(tag, inputValue);
     if (response) {
@@ -36,6 +50,14 @@ function NewCategory({
     }
     setIsLoading(false);
   }
+  if(text.length != 0){
+    showSnackBar({
+      dispatch: dispatch,
+      color: ThemeColors.error,
+      message: text,
+    })
+  }
+}
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -76,7 +98,7 @@ function NewCategory({
 
           <section className="flex-1 max-w-[40%] mx-4">
             <h2 className="text-textBrown md:text-xl text-lg max-sm:text-center pt-5 pb-3 font-medium">
-              Tag <span className="text-primary text-[10px]">(categories)</span>{" "}
+            Super Categories <span className="text-primary text-[10px]"></span>{" "}
             </h2>
             <CustomDropDown
               value={tag}
@@ -90,9 +112,9 @@ function NewCategory({
         <div className="w-[10%] h-full my-5">
           <button
             onClick={handleAddNewCategory}
-            disabled={disabled || isLoading}
+            disabled={isLoading}
             className={`${
-              disabled && "opacity-80"
+              isLoading && "opacity-80"
             } bg-primary flex items-center justify-center lg:gap-3 gap-1 rounded-md text-white font-semibold p-3`}
           >
             {isLoading ? "Adding..." : "Add"}

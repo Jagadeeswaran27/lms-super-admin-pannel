@@ -13,7 +13,9 @@ import { AuthUserModel } from "../../models/auth/AuthUserModel";
 export async function logout() {
   try {
     await signOut(auth);
-  } catch (e) {}
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // export async function changePassword(

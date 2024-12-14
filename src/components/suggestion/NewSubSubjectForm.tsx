@@ -1,15 +1,15 @@
-import { useContext, useRef, useState } from 'react';
-import Success from './Success';
-import InputField from '../common/InputField';
-import CustomDropDown from '../common/CustomDropDown';
-import { SelectChangeEvent } from '@mui/material';
-import { icons } from '../../resources/icons';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
-import AIButton from './AIButton';
-import { showSnackBar } from '../../utils/Snackbar';
-import { ThemeColors } from '../../resources/colors';
-import { SnackBarContext } from '../../store/SnackBarContext';
-import ImageSuggestions from './ImageSuggestions';
+import { useContext, useRef, useState } from "react";
+import Success from "./Success";
+import InputField from "../common/InputField";
+import CustomDropDown from "../common/CustomDropDown";
+import { SelectChangeEvent } from "@mui/material";
+import { icons } from "../../resources/icons";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import AIButton from "./AIButton";
+import { showSnackBar } from "../../utils/Snackbar";
+import { ThemeColors } from "../../resources/colors";
+import { SnackBarContext } from "../../store/SnackBarContext";
+import ImageSuggestions from "./ImageSuggestions";
 
 interface NewSubSubjectFormProps {
   suggestions: SuggestionModel[];
@@ -26,8 +26,8 @@ function NewSubSubjectForm({
   addNewSubSubject,
 }: NewSubSubjectFormProps) {
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
-  const [inputValue, setInputValue] = useState<string>('');
-  const [tag, setTag] = useState<string>('');
+  const [inputValue, setInputValue] = useState<string>("");
+  const [tag, setTag] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [file, setFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -37,12 +37,14 @@ function NewSubSubjectForm({
   const [_, dispatch] = useContext(SnackBarContext);
   const [isImageDownloading, setIsImageDownloading] = useState<boolean>(false);
 
-  const disabled = inputValue.trim().length === 0 || tag.length === 0;
+  const disabled =
+    inputValue.trim().length === 0 && file === null && tag.length === 0;
 
   function handleCloseSuccessModal() {
     setShowSuccess(false);
-    setTag('');
-    setInputValue('');
+    setTag("");
+    setInputValue("");
+    setFile(null);
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,16 +55,40 @@ function NewSubSubjectForm({
   };
 
   async function handleAddNewCategory() {
-    const suggestion = suggestions.find((sugg) => sugg.name === tag);
-    if (!suggestion || !file) {
-      return;
+    let text: string = "";
+    if (disabled) {
+      text = "Please fill in all details";
+    } else if (inputValue.trim().length != 0  && tag.length === 0 && !file) {
+      text = "Please select a subject and upload an image";
+    } else if (!file && tag.length == 0 && inputValue.trim().length === 0) {
+      text = "Please select a subject and enter a name";
+    } else if (tag.length != 0 && inputValue.trim().length === 0 && !file) {
+      text = "Please select a image and enter a name";
+    } else if (inputValue.trim().length === 0) {
+      text = "Please fill in the name";
+    } else if (file===null) {
+      text = "Please upload an image";
+    } else if (tag.length === 0) {
+      text = "Please select a subject";
+    } else {
+      const suggestion = suggestions.find((sugg) => sugg.name === tag);
+      if (!suggestion || !file) {
+        return;
+      }
+      setIsLoading(true);
+      const response = await addNewSubSubject(suggestion, inputValue, file);
+      if (response) {
+        setShowSuccess(true);
+      }
+      setIsLoading(false);
     }
-    setIsLoading(true);
-    const response = await addNewSubSubject(suggestion, inputValue, file);
-    if (response) {
-      setShowSuccess(true);
+    if (text.length != 0) {
+      showSnackBar({
+        dispatch: dispatch,
+        color: ThemeColors.error,
+        message: text,
+      });
     }
-    setIsLoading(false);
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,7 +104,7 @@ function NewSubSubjectForm({
       showSnackBar({
         color: ThemeColors.error,
         dispatch: dispatch,
-        message: 'Type your course name!',
+        message: "Type your course name!",
       });
       return;
     }
@@ -102,7 +128,7 @@ function NewSubSubjectForm({
 
       setFile(fileData);
     } catch (e) {
-      console.error('Error downloading image:', e);
+      console.error("Error downloading image:", e);
     }
     setIsImageDownloading(false);
   };
@@ -130,7 +156,7 @@ function NewSubSubjectForm({
         >
           <section className="flex-1 mx-4">
             <h2 className="text-textBrown md:text-xl text-lg max-sm:text-center pt-5 pb-3 font-medium">
-              Name <span className="text-primary text-[10px]">(required)</span>{' '}
+              Name <span className="text-primary text-[10px]">(required)</span>{" "}
             </h2>
             <div>
               <InputField
@@ -144,8 +170,8 @@ function NewSubSubjectForm({
           </section>
           <section className="flex flex-col flex-1 justify-around mx-4">
             <h2 className="text-textBrown md:text-xl text-lg max-sm:text-center pt-5 pb-3 font-medium">
-              Upload Icon{' '}
-              <span className="text-primary text-[10px]">(required)</span>{' '}
+              Upload Icon{" "}
+              <span className="text-primary text-[10px]">(required)</span>{" "}
             </h2>
             <div className="text-textBrown items-center flex flex-col gap-2">
               <div className="text-textBrown flex justify-center  items-center gap-2">
@@ -166,7 +192,7 @@ function NewSubSubjectForm({
                   </p>
                 </div>
                 <h1 className="text-primary text-sm xl:text-base">
-                  {file ? '1 File Chosen' : '0 File'}
+                  {file ? "1 File Chosen" : "0 File"}
                 </h1>
               </div>
               <p>Or</p>
@@ -174,7 +200,7 @@ function NewSubSubjectForm({
                 <AIButton
                   showButton={true}
                   isLoading={isImageDownloading}
-                  text={'AI'}
+                  text={"AI"}
                   onClick={handleSetShowImageSuggestions}
                 />
               </div>
@@ -183,26 +209,28 @@ function NewSubSubjectForm({
 
           <section className="flex-1 max-w-[40%] mx-4">
             <h2 className="text-textBrown md:text-xl text-lg max-sm:text-center pt-5 pb-3 font-medium">
-              Subject{' '}
-              <span className="text-primary text-[10px]">(categories)</span>{' '}
+              Subjects{" "}
+              <span className="text-primary text-[10px]"></span>{" "}
             </h2>
             <CustomDropDown
               text="Select An Subject"
               value={tag}
               onChange={handleTagChange}
-              items={suggestions.map((sugg) => sugg.name)}
+              items={suggestions
+                .map((sugg) => sugg.name)
+                .sort((a, b) => a.localeCompare(b))}
             />
           </section>
         </form>
         <div className="w-[10%] h-full my-5">
           <button
             onClick={handleAddNewCategory}
-            disabled={disabled || isLoading}
+            disabled={isLoading}
             className={`${
-              disabled && 'opacity-80'
+              isLoading && "opacity-80"
             } bg-primary flex items-center justify-center lg:gap-3 gap-1 rounded-md text-white font-semibold p-3`}
           >
-            {isLoading ? 'Adding...' : 'Add'}
+            {isLoading ? "Adding..." : "Add"}
             <img src={icons.book} alt="book" />
           </button>
         </div>
