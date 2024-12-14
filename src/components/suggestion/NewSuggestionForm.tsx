@@ -200,7 +200,7 @@ function NewSuggestionForm({
                     .flat()
                     .map((cat) => cat.name.trim())
                 ),
-              ].map((name) => name.charAt(0) + name.slice(1))}
+              ].map((name) => name.charAt(0) + name.slice(1)).sort((a,b)=>a.localeCompare(b))}
             />
           </section>
         </form>
