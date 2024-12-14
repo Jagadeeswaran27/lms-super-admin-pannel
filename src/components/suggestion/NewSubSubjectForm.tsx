@@ -200,7 +200,9 @@ function NewSubSubjectForm({
               text="Select An Subject"
               value={tag}
               onChange={handleTagChange}
-              items={suggestions.map((sugg) => sugg.name)}
+              items={suggestions
+                .map((sugg) => sugg.name)
+                .sort((a, b) => a.localeCompare(b))}
             />
           </section>
         </form>
