@@ -1,11 +1,12 @@
-import { useContext, useEffect, useState } from "react";
-import { logout } from "../../core/services/AuthService";
-import { showSnackBar } from "../../utils/Snackbar";
-import { SnackBarContext } from "../../store/SnackBarContext";
-import { ThemeColors } from "../../resources/colors";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import { useContext, useEffect, useState } from 'react';
+import { logout } from '../../core/services/AuthService';
+import { showSnackBar } from '../../utils/Snackbar';
+import { SnackBarContext } from '../../store/SnackBarContext';
+import { ThemeColors } from '../../resources/colors';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
 import {
   addAdminSuggestion,
+  addNewSuperCategoryByAI,
   addSuggestionCategory,
   addSuperCategory,
   deleteSingleCategory,
@@ -15,9 +16,9 @@ import {
   modifySuggestion,
   modifySuggestionCategory,
   toggleCategoryIsVerified,
-} from "../../core/services/SuggestionService";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import CategoriesToSuperCategoriesComponent from "../../components/super-category-mapping/CategoriesToSuperCategoriesComponent";
+} from '../../core/services/SuggestionService';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import CategoriesToSuperCategoriesComponent from '../../components/super-category-mapping/CategoriesToSuperCategoriesComponent';
 
 function CategoriesToSuperCategoriesContainer() {
   const [suggestions, setSuggestions] = useState<SuggestionModel[] | []>([]);
@@ -63,7 +64,7 @@ function CategoriesToSuperCategoriesContainer() {
     showSnackBar({
       dispatch: dispatch,
       color: ThemeColors.success,
-      message: "Logout successfull",
+      message: 'Logout successfull',
     });
   }
 
@@ -121,7 +122,7 @@ function CategoriesToSuperCategoriesContainer() {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.success,
-        message: "Suggestion deleted successfully",
+        message: 'Suggestion deleted successfully',
       });
     }
   }
@@ -165,7 +166,7 @@ function CategoriesToSuperCategoriesContainer() {
     tag: string[],
     image: File | null
   ): Promise<boolean> {
-    const response = await addAdminSuggestion(suggestionText ?? "", tag, image);
+    const response = await addAdminSuggestion(suggestionText ?? '', tag, image);
     if (response) {
       setSuggestions((pre) => [response, ...pre]);
 
@@ -192,7 +193,7 @@ function CategoriesToSuperCategoriesContainer() {
         showSnackBar({
           dispatch: dispatch,
           color: ThemeColors.success,
-          message: "Category deleted successfully",
+          message: 'Category deleted successfully',
         });
         setSuggestionCategories((prev) =>
           prev.map((category) => {
@@ -216,43 +217,79 @@ function CategoriesToSuperCategoriesContainer() {
         showSnackBar({
           dispatch: dispatch,
           color: ThemeColors.error,
-          message: "Error deleting category",
+          message: 'Error deleting category',
         });
       }
     } else {
       showSnackBar({
         dispatch: dispatch,
         color: ThemeColors.error,
-        message: "Category is used in suggestions",
+        message: 'Category is used in suggestions',
       });
     }
   };
 
   const handleModifySuperCategory = async (
     isNameModified: boolean,
-    newSuperCategories: string[],
-    oldSuperCategories: string[],
-    oldCategory: string,
-    newCategory: string
+    newName: string,
+    addedSuperCategories: string[],
+    removedSuperCategories: string[]
   ) => {
-    const response = await modifySuggestionCategory(
-      isNameModified,
-      newSuperCategories,
-      oldSuperCategories,
-      oldCategory,
-      newCategory
-    );
+    // const response = await modifySuggestionCategory(
+    //   isNameModified,
+    //   newSuperCategories,
+    //   oldSuperCategories,
+    //   oldCategory,
+    //   newCategory
+    // );
+    // if (response) {
+    //   setSuggestionCategories((prev) =>
+    //     prev.map((cat) =>
+    //       newSuperCategories.includes(cat.superCategory.name)
+    //         ? ({
+    //             ...cat,
+    //             superCategory: {
+    //               ...cat.superCategory,
+    //               secondLevelCategories: [
+    //                 ...cat.superCategory.secondLevelCategories,
+    //                 { name: newCategory, isVerified: false },
+    //               ],
+    //             },
+    //           } as SuggestionCategoriesModel)
+    //         : cat
+    //     )
+    //   );
+    //   showSnackBar({
+    //     dispatch,
+    //     color: ThemeColors.success,
+    //     message: "Category modified successfully",
+    //   });
+    // } else {
+    //   showSnackBar({
+    //     dispatch,
+    //     color: ThemeColors.error,
+    //     message: "Error modifying category",
+    //   });
+    // }
+    return true;
+  };
+
+  const handleAddNewSuperCategoryByAI = async (
+    superCategory: string,
+    category: string
+  ) => {
+    const response = await addNewSuperCategoryByAI(superCategory, category);
     if (response) {
       setSuggestionCategories((prev) =>
         prev.map((cat) =>
-          newSuperCategories.includes(cat.superCategory.name)
+          superCategory === cat.superCategory.name
             ? ({
                 ...cat,
                 superCategory: {
                   ...cat.superCategory,
                   secondLevelCategories: [
                     ...cat.superCategory.secondLevelCategories,
-                    { name: newCategory, isVerified: false },
+                    { name: category, isVerified: false },
                   ],
                 },
               } as SuggestionCategoriesModel)
@@ -260,15 +297,15 @@ function CategoriesToSuperCategoriesContainer() {
         )
       );
       showSnackBar({
-        dispatch,
+        dispatch: dispatch,
         color: ThemeColors.success,
-        message: "Category modified successfully",
+        message: 'Super category added successfully',
       });
     } else {
       showSnackBar({
-        dispatch,
+        dispatch: dispatch,
         color: ThemeColors.error,
-        message: "Error modifying category",
+        message: 'Error adding super category',
       });
     }
     return response;
@@ -288,6 +325,7 @@ function CategoriesToSuperCategoriesContainer() {
       deleteCategory={deleteCategoryHandler}
       isLoading={isLoading}
       handleModifySuperCategory={handleModifySuperCategory}
+      handleAddNewSuperCategoryByAI={handleAddNewSuperCategoryByAI}
     />
   );
 }

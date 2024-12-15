@@ -1,11 +1,11 @@
-import Header from "../common/Header";
-import { useState } from "react";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import AddedSuperCategorySuggestions from "./AddedSuperCategoryMapping";
-import Drawer from "../suggestion/Drawer";
-import { ThemeColors } from "../../resources/colors";
-import { CircularProgress } from "@mui/material";
+import Header from '../common/Header';
+import { useState } from 'react';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import AddedSuperCategorySuggestions from './AddedSuperCategoryMapping';
+import Drawer from '../suggestion/Drawer';
+import { ThemeColors } from '../../resources/colors';
+import { CircularProgress } from '@mui/material';
 
 interface SuperCategoryMappingComponentProps {
   logout: () => void;
@@ -29,10 +29,13 @@ interface SuperCategoryMappingComponentProps {
   ) => void;
   handleModifySuperCategory: (
     isNameModified: boolean,
-    newSuperCategories: string[],
-    oldSuperCategories: string[],
-    oldCategory: string,
-    newCategory: string
+    newName: string,
+    addedSuperCategories: string[],
+    removedSuperCategories: string[]
+  ) => Promise<boolean>;
+  handleAddNewSuperCategoryByAI: (
+    superCategory: string,
+    category: string
   ) => Promise<boolean>;
 }
 
@@ -49,6 +52,7 @@ function CategoriesToSuperCategoriesComponent({
   toggleIsVerified,
   isLoading,
   handleModifySuperCategory,
+  handleAddNewSuperCategoryByAI,
 }: SuperCategoryMappingComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
 
@@ -78,8 +82,8 @@ function CategoriesToSuperCategoriesComponent({
                 sx={{
                   color: ThemeColors.authPrimary,
                   size: 50,
-                  animationDuration: "1s",
-                  animationTimingFunction: "ease-in-out",
+                  animationDuration: '1s',
+                  animationTimingFunction: 'ease-in-out',
                 }}
               />
             </div>
@@ -98,6 +102,7 @@ function CategoriesToSuperCategoriesComponent({
                 a.name.localeCompare(b.name)
               )}
               handleModifySuperCategory={handleModifySuperCategory}
+              handleAddNewSuperCategoryByAI={handleAddNewSuperCategoryByAI}
             />
           ) : (
             <p className="flex flex-1 text-brown font-semibold md:text-xl text-base h-full items-center justify-center">
