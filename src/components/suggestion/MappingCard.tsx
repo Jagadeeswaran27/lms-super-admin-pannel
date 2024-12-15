@@ -1,6 +1,6 @@
 import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
 import { ThemeColors } from "../../resources/colors";
-import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
+import { MouseEvent, useContext, useRef, useState } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
