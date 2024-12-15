@@ -1,13 +1,12 @@
-import { Add, Check, Close, Delete, Edit } from '@mui/icons-material';
-import { ThemeColors } from '../../resources/colors';
-import { MouseEvent, useState, useRef } from 'react';
-import { Menu, MenuItem } from '@mui/material';
-import { toggleCategoryIsVerified } from '../../core/services/SuggestionService';
-import IOSSwitch from '../common/IOSSwitch';
-import AIButton from './AIButton';
-import NewSuperCategoriesPopUp from './NewSuperCategoriesPopUp';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../core/config/firebase';
+import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
+import { ThemeColors } from "../../resources/colors";
+import { MouseEvent, useState, useRef } from "react";
+import { Menu, MenuItem } from "@mui/material";
+import IOSSwitch from "../common/IOSSwitch";
+import AIButton from "./AIButton";
+import NewSuperCategoriesPopUp from "./NewSuperCategoriesPopUp";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../../core/config/firebase";
 
 interface MappingCardProps {
   category: string;
@@ -18,13 +17,20 @@ interface MappingCardProps {
   modifySuperCategory: (
     isNameModified: boolean,
     newName: string,
+    oldName: string,
     addedSuperCategories: string[],
-    removedSuperCategories: string[]
+    removedSuperCategories: string[],
+    oldSuperCategories: string[]
   ) => Promise<boolean>;
   handleAddNewSuperCategoryByAI: (
     superCategory: string,
     category: string
   ) => Promise<boolean>;
+  toggleIsVerified: (
+    newChecked: boolean,
+    superCat: string[],
+    categoryName: string
+  ) => void;
 }
 
 function MappingCard({
@@ -35,10 +41,10 @@ function MappingCard({
   isVerified,
   modifySuperCategory,
   handleAddNewSuperCategoryByAI,
+  toggleIsVerified,
 }: MappingCardProps) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [checked, setChecked] = useState<boolean>(isVerified);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [newSuperCategories, setNewSuperCategories] = useState<string[]>([]);
@@ -108,21 +114,14 @@ function MappingCard({
     newChecked: boolean
   ) => {
     event.preventDefault();
-    const response = await toggleCategoryIsVerified(
-      newChecked,
-      superCategory,
-      category
-    );
-    if (response) {
-      setChecked(newChecked);
-    }
+    await toggleIsVerified(newChecked, superCategory, category);
   };
 
   const handleGetModifiedSuperCategories = async () => {
     setIsLoading(true);
     const suggestSuperCategoryIndividual = httpsCallable(
       functions,
-      'suggestSuperCategoryIndividual'
+      "suggestSuperCategoryIndividual"
     );
     try {
       const response = await suggestSuperCategoryIndividual({
@@ -134,12 +133,12 @@ function MappingCard({
       const data = response.data as { suggestedSuperCategories: string[] };
       if (data.suggestedSuperCategories.length > 0) {
         setNewSuperCategories(
-          data.suggestedSuperCategories.map((cat) => cat.split('.')[1].trim())
+          data.suggestedSuperCategories.map((cat) => cat.split(".")[1].trim())
         );
         setShowPopUp(true);
       }
     } catch (e) {
-      console.error('Error getting modified super categories:', e);
+      console.error("Error getting modified super categories:", e);
     }
     setIsLoading(false);
   };
@@ -162,18 +161,23 @@ function MappingCard({
     const removedSuperCategories = superCategory.filter(
       (cat) => !referenceSuperCategory.includes(cat)
     );
-    modifySuperCategory(
+    const response = await modifySuperCategory(
       isNameModified,
-      nameRef.current?.value ?? '',
+      nameRef.current?.value ?? "",
+      category,
       addedSuperCategories,
-      removedSuperCategories
+      removedSuperCategories,
+      referenceSuperCategory
     );
+    if (response) {
+      setIsEdit(false);
+    }
   };
 
   return (
     <div
       className={`bg-white ${
-        isEdit ? 'border border-primary' : ''
+        isEdit ? "border border-primary" : ""
       } rounded-md w-[80%] mx-auto my-3 flex relative gap-2 items-center shadow-custom px-2 py-5 lg:pl-5 max-lg:px-7 max-sm:px-2 `}
     >
       <div className="flex gap-3 max-w-[40%] min-w-[40%] items-center">
@@ -252,7 +256,7 @@ function MappingCard({
           {!isEdit && (
             <div
               className={`${
-                checked ? 'opacity-0 invisible' : ''
+                isVerified ? "opacity-0 invisible" : ""
               } w-[180px] mt-7`}
             >
               <AIButton
@@ -264,38 +268,40 @@ function MappingCard({
           )}
         </div>
         <div className="flex gap-2 items-center">
-          <IOSSwitch checked={checked} onChange={handleToggleChange} />
+          <IOSSwitch checked={isVerified} onChange={handleToggleChange} />
           {isEdit ? (
             <Check
               onClick={handleModifyCategory}
               className=" mx-2 transition-all transform hover:scale-110"
               sx={{
                 color: ThemeColors.brown,
-                cursor: 'pointer',
+                cursor: "pointer",
               }}
             />
           ) : (
             <Edit
-              onClick={checked ? () => {} : () => setIsEdit(true)}
+              onClick={isVerified ? () => {} : () => setIsEdit(true)}
               className={`${
-                checked && 'opacity-0 invisible'
+                isVerified && "opacity-0 invisible"
               } mx-2 transition-all transform hover:scale-110`}
               sx={{
                 color: ThemeColors.brown,
-                cursor: checked ? 'default' : 'pointer',
+                cursor: isVerified ? "default" : "pointer",
               }}
             />
           )}
           <Delete
             onClick={
-              checked ? () => {} : () => deleteCategory(category, superCategory)
+              isVerified
+                ? () => {}
+                : () => deleteCategory(category, superCategory)
             }
             className={`${
-              checked && 'opacity-0 invisible'
+              isVerified && "opacity-0 invisible"
             } transition-all transform hover:scale-110`}
             sx={{
               color: ThemeColors.brown,
-              cursor: checked ? 'default' : 'pointer',
+              cursor: isVerified ? "default" : "pointer",
             }}
           />
         </div>
