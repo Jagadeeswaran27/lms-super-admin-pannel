@@ -1,4 +1,4 @@
-import SubjectsToSubSubjectsContainer from "../../containers/sub-subjects-mapping/SubjectToSubsubjectContainer";
+import SubjectsToSubSubjectsContainer from "../../containers/sub-subjects-mapping/SubjectToSubSubjectContainer";
 
 function SubjectsToSubSubjectsPage() {
   return <SubjectsToSubSubjectsContainer />;

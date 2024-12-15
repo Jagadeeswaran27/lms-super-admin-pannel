@@ -1,22 +1,22 @@
-import { Close } from "@mui/icons-material";
-import AIButton from "./AIButton";
-import { useState } from "react";
+import { Close } from '@mui/icons-material';
+import AIButton from './AIButton';
+import { useState } from 'react';
 
 interface NewSuperCategoriesPopUpProps {
   closePrompt: () => void;
   newSuperCategories: string[];
-  modifySuperCategory: (
-    category: string,
-    superCategory: string
-  ) => Promise<boolean>;
   category: string;
+  handleAddNewSuperCategoryByAI: (
+    superCategory: string,
+    category: string
+  ) => Promise<boolean>;
 }
 
 function NewSuperCategoriesPopUp({
   closePrompt,
   newSuperCategories,
   category,
-  modifySuperCategory,
+  handleAddNewSuperCategoryByAI,
 }: NewSuperCategoriesPopUpProps) {
   const [cat, setCat] = useState<string[]>(newSuperCategories);
   return (
@@ -29,9 +29,9 @@ function NewSuperCategoriesPopUp({
           className="w-[60%] h-[50%] mx-auto rounded-2xl shadow-primary overflow-y-scroll bg-white "
           onClick={(e) => e.stopPropagation()}
           style={{
-            animation: "fadeInUp 0.3s ease-in",
-            scrollbarWidth: "thin",
-            scrollbarColor: "transparent transparent",
+            animation: 'fadeInUp 0.3s ease-in',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'transparent transparent',
           }}
         >
           <div className="flex justify-between items-center shadow-custom py-3 px-5">
@@ -58,9 +58,9 @@ function NewSuperCategoriesPopUp({
 
                     <button
                       onClick={async () => {
-                        const response = await modifySuperCategory(
-                          category,
-                          cat
+                        const response = await handleAddNewSuperCategoryByAI(
+                          cat,
+                          category
                         );
                         if (response) {
                           setCat((prev) => prev.filter((c) => c !== cat));

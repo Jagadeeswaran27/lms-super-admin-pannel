@@ -133,6 +133,129 @@ export async function addSuperCategory(
   }
 }
 
+// export async function modifyCategoryName(): Promise<boolean> {
+//   try {
+//     for (const superCategory of newSuperCategories) {
+//       const oldCategoryRef = doc(
+//         db,
+//         'suggestion-hierarchy',
+//         superCategory,
+//         '2nd Level',
+//         oldCategory
+//       );
+
+//       await deleteDoc(oldCategoryRef);
+
+//       const newCategoryRef = doc(
+//         db,
+//         'suggestion-hierarchy',
+//         superCategory,
+//         '2nd Level',
+//         newCategory
+//       );
+
+//       await setDoc(newCategoryRef, { name: newCategory, isVerified: false });
+//     }
+//     for (const superCategory of oldSuperCategories) {
+//       const categoryRef = doc(
+//         db,
+//         'suggestion-hierarchy',
+//         superCategory,
+//         '2nd Level',
+//         oldCategory
+//       );
+//       await deleteDoc(categoryRef);
+//     }
+
+//     return true;
+//   } catch (e) {
+//     console.error('Error modifying suggestion category:', e);
+//     return false;
+//   }
+// }
+
+export async function removeSuperCategoriesForCategory(
+  superCategories: string[],
+  category: string
+): Promise<boolean> {
+  try {
+    for (const superCat of superCategories) {
+      const categoryRef = doc(
+        db,
+        "suggestion-hierarchy",
+        superCat,
+        "2nd Level",
+        category
+      );
+      await deleteDoc(categoryRef);
+    }
+    return true;
+  } catch (e) {
+    console.error("Error removing super category:", e);
+    return false;
+  }
+}
+
+export async function modifyCategoryName(
+  superCategories: string[],
+  oldCategory: string,
+  newCategory: string
+): Promise<boolean> {
+  try {
+    for (const superCategory of superCategories) {
+      const oldCategoryRef = doc(
+        db,
+        "suggestion-hierarchy",
+        superCategory,
+        "2nd Level",
+        oldCategory
+      );
+
+      await deleteDoc(oldCategoryRef);
+
+      const newCategoryRef = doc(
+        db,
+        "suggestion-hierarchy",
+        superCategory,
+        "2nd Level",
+        newCategory
+      );
+
+      await setDoc(newCategoryRef, {
+        name: newCategory,
+        isVerified: false,
+      });
+    }
+
+    return true;
+  } catch (e) {
+    console.error("Error modifying suggestion category:", e);
+    return false;
+  }
+}
+
+export async function addSuperCategoriesForCategory(
+  superCategories: string[],
+  category: string
+): Promise<boolean> {
+  try {
+    for (const superCat of superCategories) {
+      const categoryRef = doc(
+        db,
+        "suggestion-hierarchy",
+        superCat,
+        "2nd Level",
+        category
+      );
+      await setDoc(categoryRef, { name: category, isVerified: false });
+    }
+    return true;
+  } catch (e) {
+    console.error("Error adding super category:", e);
+    return false;
+  }
+}
+
 export async function modifySuggestionCategory(
   isNameModified: boolean,
   newSuperCategories: string[],
@@ -519,6 +642,26 @@ export async function toggleIsVerifiedForSubjects(
     return true;
   } catch (e) {
     console.error("Error toggling sub-subject verification:", e);
+    return false;
+  }
+}
+
+export async function addNewSuperCategoryByAI(
+  superCategory: string,
+  category: string
+): Promise<boolean> {
+  try {
+    const categoryRef = doc(
+      db,
+      "suggestion-hierarchy",
+      superCategory,
+      "2nd Level",
+      category
+    );
+    await setDoc(categoryRef, { name: category, isVerified: false });
+    return true;
+  } catch (e) {
+    console.error("Error adding new super category by AI:", e);
     return false;
   }
 }
