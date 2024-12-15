@@ -1,11 +1,11 @@
-import Header from '../common/Header';
-import { useState } from 'react';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
-import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
-import AddedSuperCategorySuggestions from './AddedSuperCategoryMapping';
-import Drawer from '../suggestion/Drawer';
-import { ThemeColors } from '../../resources/colors';
-import { CircularProgress } from '@mui/material';
+import Header from "../common/Header";
+import { useState } from "react";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import AddedSuperCategorySuggestions from "./AddedSuperCategoryMapping";
+import Drawer from "../suggestion/Drawer";
+import { ThemeColors } from "../../resources/colors";
+import { CircularProgress } from "@mui/material";
 
 interface SuperCategoryMappingComponentProps {
   logout: () => void;
@@ -28,8 +28,11 @@ interface SuperCategoryMappingComponentProps {
     categoryName: string
   ) => void;
   handleModifySuperCategory: (
-    category: string,
-    superCategory: string
+    isNameModified: boolean,
+    newSuperCategories: string[],
+    oldSuperCategories: string[],
+    oldCategory: string,
+    newCategory: string
   ) => Promise<boolean>;
 }
 
@@ -75,8 +78,8 @@ function CategoriesToSuperCategoriesComponent({
                 sx={{
                   color: ThemeColors.authPrimary,
                   size: 50,
-                  animationDuration: '1s',
-                  animationTimingFunction: 'ease-in-out',
+                  animationDuration: "1s",
+                  animationTimingFunction: "ease-in-out",
                 }}
               />
             </div>

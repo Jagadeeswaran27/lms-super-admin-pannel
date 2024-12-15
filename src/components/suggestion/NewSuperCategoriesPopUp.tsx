@@ -6,8 +6,11 @@ interface NewSuperCategoriesPopUpProps {
   closePrompt: () => void;
   newSuperCategories: string[];
   modifySuperCategory: (
-    category: string,
-    superCategory: string
+    isNameModified: boolean,
+    newSuperCategories: string[],
+    oldSuperCategories: string[],
+    oldCategory: string,
+    newCategory: string
   ) => Promise<boolean>;
   category: string;
 }
@@ -59,8 +62,11 @@ function NewSuperCategoriesPopUp({
                     <button
                       onClick={async () => {
                         const response = await modifySuperCategory(
+                          true,
+                          [cat],
+                          [],
                           category,
-                          cat
+                          category
                         );
                         if (response) {
                           setCat((prev) => prev.filter((c) => c !== cat));

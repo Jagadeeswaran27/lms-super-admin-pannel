@@ -1,13 +1,10 @@
 import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
 import { ThemeColors } from "../../resources/colors";
-import { MouseEvent, useContext, useRef, useState } from "react";
+import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
-import {
-  modifySuggestionCategory,
-  toggleCategoryIsVerified,
-} from "../../core/services/SuggestionService";
+import { toggleCategoryIsVerified } from "../../core/services/SuggestionService";
 import IOSSwitch from "../common/IOSSwitch";
 import AIButton from "./AIButton";
 import NewSuperCategoriesPopUp from "./NewSuperCategoriesPopUp";
@@ -21,8 +18,11 @@ interface MappingCardProps {
   deleteCategory: (category: string, parentSuperCategory: string[]) => void;
   isVerified: boolean;
   modifySuperCategory: (
-    category: string,
-    superCategory: string
+    isNameModified: boolean,
+    newSuperCategories: string[],
+    oldSuperCategories: string[],
+    oldCategory: string,
+    newCategory: string
   ) => Promise<boolean>;
 }
 
@@ -55,10 +55,9 @@ function MappingCard({
     setAnchorEl(event.currentTarget as unknown as HTMLElement);
   };
 
-
-  // useEffect(() => {
-  //   setSuperCat(superCategory);
-  // }, [superCategory.length]);
+  useEffect(() => {
+    setSuperCat(superCategory);
+  }, [superCategory.length]);
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
@@ -82,7 +81,7 @@ function MappingCard({
       return;
     }
     if (isNameModified) {
-      const response = await modifySuggestionCategory(
+      const response = await modifySuperCategory(
         true,
         superCat,
         oldSuperCategories,
@@ -90,17 +89,12 @@ function MappingCard({
         nameRef.current!.value.trim()
       );
       if (response) {
-        showSnackBar({
-          dispatch,
-          color: ThemeColors.success,
-          message: "Category modified successfully",
-        });
         setCategoryName(nameRef.current!.value.trim());
         setIsEdit(false);
       }
     }
     if (!isNameModified && modifiedSuperCategories.length > 0) {
-      const response = await modifySuggestionCategory(
+      const response = await modifySuperCategory(
         false,
         modifiedSuperCategories,
         oldSuperCategories,
@@ -109,11 +103,6 @@ function MappingCard({
       );
       if (response) {
         setBackupSuperCat(superCat);
-        showSnackBar({
-          dispatch,
-          color: ThemeColors.success,
-          message: "Category modified successfully",
-        });
         setIsEdit(false);
       }
     }
