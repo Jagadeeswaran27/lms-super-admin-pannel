@@ -1,6 +1,6 @@
 import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
 import { ThemeColors } from "../../resources/colors";
-import { MouseEvent, useContext, useRef, useState } from "react";
+import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import { showSnackBar } from "../../utils/Snackbar";
 import { SnackBarContext } from "../../store/SnackBarContext";
@@ -54,6 +54,11 @@ function MappingCard({
   const handleOpenMenu = (event: MouseEvent<SVGSVGElement>) => {
     setAnchorEl(event.currentTarget as unknown as HTMLElement);
   };
+
+
+  // useEffect(() => {
+  //   setSuperCat(superCategory);
+  // }, [superCategory.length]);
 
   const handleCloseMenu = () => {
     setAnchorEl(null);

@@ -27,6 +27,10 @@ interface SuperCategoryMappingComponentProps {
     superCat: string[],
     categoryName: string
   ) => void;
+  handleModifySuperCategory: (
+    category: string,
+    superCategory: string
+  ) => Promise<boolean>;
 }
 
 function CategoriesToSuperCategoriesComponent({
@@ -41,6 +45,7 @@ function CategoriesToSuperCategoriesComponent({
   suggestionCategories,
   toggleIsVerified,
   isLoading,
+  handleModifySuperCategory,
 }: SuperCategoryMappingComponentProps) {
   const [showDrawer, setShowDrawer] = useState<boolean>(false);
 
@@ -89,6 +94,7 @@ function CategoriesToSuperCategoriesComponent({
               suggestions={suggestions.sort((a, b) =>
                 a.name.localeCompare(b.name)
               )}
+              handleModifySuperCategory={handleModifySuperCategory}
             />
           ) : (
             <p className="flex flex-1 text-brown font-semibold md:text-xl text-base h-full items-center justify-center">
