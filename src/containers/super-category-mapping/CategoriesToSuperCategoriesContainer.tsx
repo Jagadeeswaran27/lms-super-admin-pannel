@@ -16,6 +16,7 @@ import {
   getSuggestions,
   modifyCategoryName,
   modifySuggestion,
+  modifySuggestionTagField,
   removeSuperCategoriesForCategory,
   toggleCategoryIsVerified,
 } from "../../core/services/SuggestionService";
@@ -299,7 +300,18 @@ function CategoriesToSuperCategoriesContainer() {
       oldCategoryName,
       newCategoryName
     );
-    if (response) {
+    const suggestionIds = suggestions
+      .filter((sugg) => sugg.tag.includes(oldCategoryName))
+      .map((sugg) => sugg.id);
+    let response2 = false;
+    if (suggestionIds.length > 0) {
+      response2 = await modifySuggestionTagField(
+        suggestionIds,
+        oldCategoryName,
+        newCategoryName
+      );
+    }
+    if (response && response2) {
       return updatedCategories.map((cat) =>
         superCategories.includes(cat.superCategory.name)
           ? {
