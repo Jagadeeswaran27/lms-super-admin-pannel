@@ -1,12 +1,19 @@
-import { Checkbox, Menu, MenuItem } from '@mui/material';
-import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
-import { icons } from '../../resources/icons';
-import SuggestionCard from './SuggestionCard';
-import { MouseEvent, useEffect, useState } from 'react';
-import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
-import { Check } from '@mui/icons-material';
-import AISuggestions from './AISuggestions';
-import { ThemeColors } from '../../resources/colors';
+import {
+  Checkbox,
+  FormControlLabel,
+  Menu,
+  MenuItem,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
+import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
+import { icons } from "../../resources/icons";
+import SuggestionCard from "./SuggestionCard";
+import { MouseEvent, useEffect, useState } from "react";
+import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+import { Check } from "@mui/icons-material";
+import AISuggestions from "./AISuggestions";
+import { ThemeColors } from "../../resources/colors";
 
 interface AddedSuggestionsProps {
   suggestions: SuggestionModel[];
@@ -38,8 +45,8 @@ function AddedSuggestions({
 }: AddedSuggestionsProps) {
   const [anchorEl1, setAnchorEl1] = useState<null | HTMLElement>(null);
   const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
-  const [selectedTag1, setSelectedTag1] = useState<string>('All');
-  const [selectedTag2, setSelectedTag2] = useState<string[]>(['All']);
+  const [selectedTag1, setSelectedTag1] = useState<string>("All");
+  const [selectedTag2, setSelectedTag2] = useState<string[]>(["All"]);
 
   const [suggestionCat, setSuggestionCat] =
     useState<SuggestionCategoriesModel[]>(suggestionCategories);
@@ -49,19 +56,20 @@ function AddedSuggestions({
 
   const [checked, setChecked] = useState<boolean>(false);
   const [unverifiedChecked, setUnverifiedChecked] = useState<boolean>(false);
+  const [setOperation, setSetOperation] = useState<string>("union");
 
   useEffect(() => {
     if (showNormalSuggestions) {
       const scrollbarWidth = getScrollbarWidth();
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
-      document.body.style.overflow = 'auto';
-      document.body.style.paddingRight = '0px';
+      document.body.style.overflow = "auto";
+      document.body.style.paddingRight = "0px";
     }
     return () => {
-      document.body.style.overflow = 'auto';
-      document.body.style.paddingRight = '0px';
+      document.body.style.overflow = "auto";
+      document.body.style.paddingRight = "0px";
     };
   }, [showNormalSuggestions]);
 
@@ -69,7 +77,7 @@ function AddedSuggestions({
     // setRefactoredSuggestionCategories(
     //   refactorSuggestionCategories(suggestionCategories)
     // );
-    if (selectedTag1 === 'All') {
+    if (selectedTag1 === "All") {
       setSuggestionCat(suggestionCategories);
     }
   }, [suggestionCategories]);
@@ -108,8 +116,8 @@ function AddedSuggestions({
 
   const handleSetSelectedTag1 = (tag: string) => {
     setSelectedTag1(tag);
-    if (tag === 'All') {
-      setSelectedTag2(['All']);
+    if (tag === "All") {
+      setSelectedTag2(["All"]);
       setSuggestionCat(suggestionCategories);
     } else {
       setSuggestionCat(
@@ -121,43 +129,67 @@ function AddedSuggestions({
   };
 
   const handleSetSelectedTag2 = (tag: string) => {
-    if (tag === 'All') {
-      setSelectedTag2(['All']);
+    if (tag === "All") {
+      setSelectedTag2(["All"]);
     } else {
       setSelectedTag2((prevTags) => {
-        const newTags = prevTags.includes('All')
+        const newTags = prevTags.includes("All")
           ? [tag]
           : prevTags.includes(tag)
           ? prevTags.filter((t) => t !== tag)
           : [...prevTags, tag];
-        return newTags.length ? newTags : ['All'];
+        return newTags.length ? newTags : ["All"];
       });
     }
   };
 
   const getFilteredSuggestions = () => {
-    let filteredSuggestions: SuggestionModel[] = JSON.parse(
-      JSON.stringify(suggestions)
-    );
+    let filteredSuggestions: SuggestionModel[] = [...suggestions];
 
-    if (selectedTag1 !== 'All') {
+    // Filter by selectedTag1 (Super Category)
+    if (selectedTag1 !== "All") {
       const tempSelectedTag2 = suggestionCategories
         .filter((sugg) => sugg.superCategory.name === selectedTag1)
         .flatMap((sugg) =>
-          sugg.superCategory.secondLevelCategories.map((cat) => cat.name)
+          sugg.superCategory.secondLevelCategories.map((cat) => cat.name.trim())
         );
 
-      filteredSuggestions = suggestions.filter((sugg) =>
+      filteredSuggestions = filteredSuggestions.filter((sugg) =>
         sugg.tag.some((tag) => tempSelectedTag2.includes(tag))
       );
     }
 
-    if (!selectedTag2.includes('All')) {
-      filteredSuggestions = suggestions.filter((sugg) =>
-        sugg.tag.some((tag) => selectedTag2.includes(tag))
-      );
+    // Filter by selectedTag2 (Category)
+    if (!selectedTag2.includes("All")) {
+      filteredSuggestions = filteredSuggestions.filter((sugg) => {
+        const suggestionTagSet = new Set(sugg.tag);
+        const selectedTagSet = new Set(selectedTag2);
+
+        // Perform the chosen set operation
+        switch (setOperation) {
+          case "intersection":
+            // Check if all selected tags are in the suggestion's tags
+            return [...selectedTagSet].every((tag) =>
+              suggestionTagSet.has(tag)
+            );
+
+          case "union":
+            // Check if any selected tag is in the suggestion's tags
+            return [...selectedTagSet].some((tag) => suggestionTagSet.has(tag));
+
+          case "difference":
+            // Check if the suggestion's tags have elements not in selectedTagSet
+            return [...suggestionTagSet].some(
+              (tag) => !selectedTagSet.has(tag)
+            );
+
+          default:
+            return false; // Unknown operation
+        }
+      });
     }
 
+    // Filter by verified/unverified
     if (checked) {
       filteredSuggestions = filteredSuggestions.filter(
         (sugg) => sugg.isVerified
@@ -167,37 +199,6 @@ function AddedSuggestions({
         (sugg) => !sugg.isVerified
       );
     }
-    // eslint-disable-next-line prefer-const
-    let setOperation = 'union';
-    const filteredSuggestions2 = suggestions.filter((sugg) => {
-      const suggestionTagSet = new Set(sugg.tag);
-      const selectedTagSet = new Set(selectedTag2);
-
-      switch (setOperation) {
-        case 'intersection':
-          return selectedTag2.every((tag) => suggestionTagSet.has(tag));
-
-        case 'union':
-          console.log(selectedTag2.some((tag) => suggestionTagSet.has(tag)));
-          return selectedTag2.some((tag) => suggestionTagSet.has(tag));
-
-        case 'difference':
-          return sugg.tag.some((tag) => !selectedTagSet.has(tag));
-
-        case 'symmetricDifference':
-          const hasUniqueFromSuggestion = sugg.tag.some(
-            (tag) => !selectedTagSet.has(tag)
-          );
-          const hasUniqueFromSelected = selectedTag2.some(
-            (tag) => !suggestionTagSet.has(tag)
-          );
-          return hasUniqueFromSuggestion || hasUniqueFromSelected;
-
-        default:
-          return false;
-      }
-    });
-    console.log(filteredSuggestions2);
 
     return filteredSuggestions;
   };
@@ -218,10 +219,35 @@ function AddedSuggestions({
           closePrompt={() => setShowNormalSuggestions(false)}
         />
       )}
+      <section className="flex items-center justify-end px-10 my-4">
+        <div className="flex items-center gap-5">
+          <RadioGroup
+            row
+            value={setOperation}
+            onChange={(e) => setSetOperation(e.target.value)}
+          >
+            <FormControlLabel
+              value="difference"
+              control={<Radio style={{ color: ThemeColors.primary }} />}
+              label="Difference"
+            />
+            <FormControlLabel
+              value="intersection"
+              control={<Radio style={{ color: ThemeColors.primary }} />}
+              label="Intersection"
+            />
+            <FormControlLabel
+              value="union"
+              control={<Radio style={{ color: ThemeColors.primary }} />}
+              label="Union"
+            />
+          </RadioGroup>
+        </div>
+      </section>
       <section className="flex items-center justify-between px-10 my-4">
         <div className="flex items-center gap-4">
           <h1 className="text-textBrown md:text-3xl text-2xl max-sm:text-center font-medium">
-            Already Added{' '}
+            Already Added{" "}
             <span className="text-primary md:text-base text-sm">
               (Subjects)
             </span>
@@ -230,7 +256,7 @@ function AddedSuggestions({
         </div>
         <div className="flex items-center gap-5">
           <p className="md:text-xl flex text-textBrown gap-2 text-base lg:text-lg">
-            <span className="font-semibold">Sort by</span>Super Category:{' '}
+            <span className="font-semibold">Sort by</span>Super Category:{" "}
             <span className="font-medium gap-2 flex">
               {selectedTag1}
               <img
@@ -247,7 +273,7 @@ function AddedSuggestions({
               onClose={handleMouseLeave1}
               className="max-h-[600px]"
             >
-              <MenuItem onClick={() => handleSetSelectedTag1('All')}>
+              <MenuItem onClick={() => handleSetSelectedTag1("All")}>
                 All
               </MenuItem>
               {suggestionCategories.map((category) => (
@@ -267,7 +293,7 @@ function AddedSuggestions({
           <p className="md:text-xl text-textBrown flex gap-2 text-lg">
             Category:
             <span className="font-medium gap-2 flex">
-              {selectedTag2.includes('All') ? 'All' : 'Multiple'}
+              {selectedTag2.includes("All") ? "All" : "Multiple"}
               <img
                 onClick={handleMouseEnter2}
                 className="cursor-pointer"
@@ -282,7 +308,7 @@ function AddedSuggestions({
               onClose={handleMouseLeave2}
               className="max-h-[600px]"
             >
-              <MenuItem onClick={() => handleSetSelectedTag2('All')}>
+              <MenuItem onClick={() => handleSetSelectedTag2("All")}>
                 All
               </MenuItem>
               {Array.from(
@@ -346,7 +372,7 @@ function AddedSuggestions({
           ))}
         {filteredSuggestions.length === 0 && (
           <p className="text-brown text-center font-semibold text-lg">
-            No {selectedTag2.join(', ')} Suggestions Found
+            No {selectedTag2.join(", ")} Suggestions Found
           </p>
         )}
         <div className="fixed right-0 bottom-0 p-5">

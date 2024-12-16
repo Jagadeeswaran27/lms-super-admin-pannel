@@ -1,4 +1,11 @@
-import { Checkbox, Menu, MenuItem } from "@mui/material";
+import {
+  Checkbox,
+  FormControlLabel,
+  Menu,
+  MenuItem,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
 import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
 import { icons } from "../../resources/icons";
 import { MouseEvent, useEffect, useState } from "react";
@@ -10,6 +17,7 @@ import refactorSuggestionCategories from "../../utils/helper";
 import { ThemeColors } from "../../resources/colors";
 import { Link } from "react-router-dom";
 import { routes } from "../../utils/Routes";
+import { Check } from "@mui/icons-material";
 
 interface AddedSuperCategoryMapping {
   suggestions: SuggestionModel[];
@@ -59,7 +67,7 @@ function AddedSuperCategorySuggestions({
   handleAddNewSuperCategoryByAI,
 }: AddedSuperCategoryMapping) {
   const [anchorEl1, setAnchorEl1] = useState<null | HTMLElement>(null);
-  const [selectedTag1, setSelectedTag1] = useState<string>("All");
+  const [selectedTag1, setSelectedTag1] = useState<string[]>(["All"]);
 
   const [showNormalSuggestions, setShowNormalSuggestions] =
     useState<boolean>(false);
@@ -69,6 +77,7 @@ function AddedSuperCategorySuggestions({
   ] = useState<boolean>(false);
   const [checked, setChecked] = useState<boolean>(false);
   const [unverifiedChecked, setUnverifiedChecked] = useState<boolean>(false);
+  const [setOperation, setSetOperation] = useState<string>("union");
 
   useEffect(() => {
     if (showNormalSuggestions) {
@@ -110,7 +119,18 @@ function AddedSuperCategorySuggestions({
   };
 
   const handleSetSelectedTag1 = (tag: string) => {
-    setSelectedTag1(tag);
+    if (tag === "All") {
+      setSelectedTag1(["All"]);
+    } else {
+      setSelectedTag1((prevTags) => {
+        const newTags = prevTags.includes("All")
+          ? [tag]
+          : prevTags.includes(tag)
+          ? prevTags.filter((t) => t !== tag)
+          : [...prevTags, tag];
+        return newTags.length ? newTags : ["All"];
+      });
+    }
   };
 
   const getFilteredSuggestions = () => {
@@ -118,10 +138,39 @@ function AddedSuperCategorySuggestions({
       JSON.parse(JSON.stringify(suggestionCategories))
     );
 
-    if (selectedTag1 !== "All") {
-      filteredSuggCategories = filteredSuggCategories.filter((sugg) =>
-        sugg.superCategories.includes(selectedTag1)
-      );
+    // if (!selectedTag1.includes("All")) {
+    //   filteredSuggCategories = filteredSuggCategories.filter((sugg) =>
+    //     sugg.superCategories.some((tag) => selectedTag1.includes(tag))
+    //   );
+    // }
+
+    if (!selectedTag1.includes("All")) {
+      filteredSuggCategories = filteredSuggCategories.filter((sugg) => {
+        const suggestionTagSet = new Set(sugg.superCategories);
+        const selectedTagSet = new Set(selectedTag1);
+
+        // Perform the chosen set operation
+        switch (setOperation) {
+          case "intersection":
+            // Check if all selected tags are in the suggestion's tags
+            return [...selectedTagSet].every((tag) =>
+              suggestionTagSet.has(tag)
+            );
+
+          case "union":
+            // Check if any selected tag is in the suggestion's tags
+            return [...selectedTagSet].some((tag) => suggestionTagSet.has(tag));
+
+          case "difference":
+            // Check if the suggestion's tags have elements not in selectedTagSet
+            return [...suggestionTagSet].some(
+              (tag) => !selectedTagSet.has(tag)
+            );
+
+          default:
+            return false; // Unknown operation
+        }
+      });
     }
 
     if (checked) {
@@ -163,6 +212,31 @@ function AddedSuperCategorySuggestions({
           closePrompt={() => setShowSuperCategoryBasedSuggestions(false)}
         />
       )}
+      <section className="flex items-center justify-end px-10 my-4">
+        <div className="flex items-center gap-5">
+          <RadioGroup
+            row
+            value={setOperation}
+            onChange={(e) => setSetOperation(e.target.value)}
+          >
+            <FormControlLabel
+              value="difference"
+              control={<Radio style={{ color: ThemeColors.primary }} />}
+              label="Difference"
+            />
+            <FormControlLabel
+              value="intersection"
+              control={<Radio style={{ color: ThemeColors.primary }} />}
+              label="Intersection"
+            />
+            <FormControlLabel
+              value="union"
+              control={<Radio style={{ color: ThemeColors.primary }} />}
+              label="Union"
+            />
+          </RadioGroup>
+        </div>
+      </section>
       <section className="flex items-center justify-between px-10 my-4">
         <div className="flex items-center gap-4">
           <Link to={routes.subjectsToCategories}>
@@ -188,7 +262,7 @@ function AddedSuperCategorySuggestions({
           <p className="md:text-xl flex text-textBrown gap-2 text-base lg:text-lg">
             <span className="font-semibold">Sort by</span>Super Category:{" "}
             <span className="font-medium gap-2 flex">
-              {selectedTag1}
+              {selectedTag1.includes("All") ? "All" : "Multiple"}
               <img
                 onClick={handleMouseEnter1}
                 className="cursor-pointer"
@@ -211,11 +285,13 @@ function AddedSuperCategorySuggestions({
                   key={category.superCategory.name}
                   className="flex justify-between"
                   onClick={() => {
-                    handleMouseLeave1();
                     handleSetSelectedTag1(category.superCategory.name);
                   }}
                 >
                   <p>{category.superCategory.name}</p>
+                  {selectedTag1.includes(category.superCategory.name) && (
+                    <Check />
+                  )}
                 </MenuItem>
               ))}
             </Menu>
