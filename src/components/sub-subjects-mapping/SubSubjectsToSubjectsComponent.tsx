@@ -1,26 +1,24 @@
-import { useState, MouseEvent } from "react";
-import Drawer from "../suggestion/Drawer";
-import Header from "../common/Header";
+import { useState, MouseEvent } from 'react';
+import Drawer from '../suggestion/Drawer';
+import Header from '../common/Header';
 import {
   SuggestionModel,
   WithSubSubjectModel,
-} from "../../models/suggestion/SuggestionModel";
-import SubSubjectMappingCard from "./SubSubjectMappingCard";
-import { Link } from "react-router-dom";
-import { routes } from "../../utils/Routes";
-import { icons } from "../../resources/icons";
-import { ThemeColors } from "../../resources/colors";
+} from '../../models/suggestion/SuggestionModel';
+import SubSubjectMappingCard from './SubSubjectMappingCard';
+import { Link } from 'react-router-dom';
+import { routes } from '../../utils/Routes';
+import { icons } from '../../resources/icons';
+import { ThemeColors } from '../../resources/colors';
 import {
   Checkbox,
   CircularProgress,
   FormControlLabel,
   Menu,
   MenuItem,
-  Radio,
-  RadioGroup,
-} from "@mui/material";
-import { Check } from "@mui/icons-material";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
+} from '@mui/material';
+import { Check } from '@mui/icons-material';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
 
 interface SubSubjectsMappingComponentProps {
   logout: () => void;
@@ -59,10 +57,10 @@ function SubSubjectsMappingComponent({
   const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
   const [anchorEl3, setAnchorEl3] = useState<null | HTMLElement>(null);
   const [selectedSuperCategory, setSelectedSuperCategory] =
-    useState<string>("All");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [selectedSubject, setSelectedSubject] = useState<string[]>(["All"]);
-  const [setOperation, setSetOperation] = useState<string>("union");
+    useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedSubject, setSelectedSubject] = useState<string[]>(['All']);
+  const [setOperation, setSetOperation] = useState<string | null>(null);
 
   const handleMouseEnter1 = (event: MouseEvent<HTMLImageElement>) => {
     setAnchorEl1(event.currentTarget);
@@ -82,30 +80,26 @@ function SubSubjectsMappingComponent({
 
   const handleSetSelectedTag1 = (tag: string) => {
     setSelectedSuperCategory(tag);
-    if (tag === "All") {
-      setSelectedCategory("All");
-      setSelectedSubject(["All"]);
-    }
+    setSelectedCategory('All');
+    setSelectedSubject(['All']);
   };
 
   const handleSetSelectedTag2 = (tag: string) => {
     setSelectedCategory(tag);
-    if (tag === "All") {
-      setSelectedSubject(["All"]);
-    }
+    setSelectedSubject(['All']);
   };
 
   const handleSetSelectedTag3 = (tag: string) => {
-    if (tag === "All") {
-      setSelectedSubject(["All"]);
+    if (tag === 'All') {
+      setSelectedSubject(['All']);
     } else {
       setSelectedSubject((prevTags) => {
-        const newTags = prevTags.includes("All")
+        const newTags = prevTags.includes('All')
           ? [tag]
           : prevTags.includes(tag)
           ? prevTags.filter((t) => t !== tag)
           : [...prevTags, tag];
-        return newTags.length ? newTags : ["All"];
+        return newTags.length ? newTags : ['All'];
       });
     }
   };
@@ -147,7 +141,7 @@ function SubSubjectsMappingComponent({
       JSON.stringify(suggestions)
     );
 
-    if (selectedSuperCategory !== "All") {
+    if (selectedSuperCategory !== 'All') {
       const possibleCategories = suggestionCategories.find(
         (cat) => cat.superCategory.name === selectedSuperCategory
       )?.superCategory.secondLevelCategories;
@@ -160,46 +154,45 @@ function SubSubjectsMappingComponent({
       );
     }
 
-    if (selectedCategory !== "All") {
+    if (selectedCategory !== 'All') {
       filteredSuggestions = suggestions.filter((sugg) =>
         sugg.tag.includes(selectedCategory)
       );
     }
 
-    if (!selectedSubject.includes("All")) {
+    if (selectedSubject.length > 0 && !selectedSubject.includes('All')) {
+      filteredSuggestions = filteredSuggestions.filter((sugg) =>
+        selectedSubject.includes(sugg.name)
+      );
+    }
+    if (setOperation) {
+      const allSubjects = new Set(
+        suggestions
+          .filter((sugg) => sugg.tag.includes(selectedCategory))
+          .map((sugg) => sugg.name)
+      );
       filteredSuggestions = filteredSuggestions.filter((sugg) => {
-        const suggestionTagSet = new Set([sugg.name]); // Now using sugg.tag (array of tags)
-        const selectedTagSet = new Set(selectedSubject); // Using selectedSubject (array of selected tags)
+        const suggestionTagSet = new Set([sugg.name]);
+        const selectedTagSet = selectedSubject.includes('All')
+          ? allSubjects
+          : new Set(selectedSubject);
 
-        // Perform the chosen set operation
         switch (setOperation) {
-          case "intersection":
-            // Check if there is an intersection between selected tags and suggestion tags
+          case 'intersection':
             return [...selectedTagSet].every((tag) =>
               suggestionTagSet.has(tag)
             );
 
-          case "union":
-            // Check if there is any match between selected tags and suggestion tags
+          case 'union':
             return [...selectedTagSet].some((tag) => suggestionTagSet.has(tag));
 
-          case "difference":
-            // Check if there are tags in suggestionTagSet that are not in selectedTagSet
+          case 'difference':
             return [...suggestionTagSet].some(
               (tag) => !selectedTagSet.has(tag)
             );
 
-          // case "symmetricDifference":
-          //   const hasUniqueFromSuggestion = [...suggestionTagSet].some(
-          //     (tag) => !selectedTagSet.has(tag)
-          //   );
-          //   const hasUniqueFromSelected = [...selectedTagSet].some(
-          //     (tag) => !suggestionTagSet.has(tag)
-          //   );
-          //   return hasUniqueFromSuggestion || hasUniqueFromSelected;
-
           default:
-            return false; // Default case for unknown operation
+            return false;
         }
       });
     }
@@ -238,8 +231,8 @@ function SubSubjectsMappingComponent({
                 sx={{
                   color: ThemeColors.authPrimary,
                   size: 50,
-                  animationDuration: "1s",
-                  animationTimingFunction: "ease-in-out",
+                  animationDuration: '1s',
+                  animationTimingFunction: 'ease-in-out',
                 }}
               />
             </div>
@@ -248,27 +241,48 @@ function SubSubjectsMappingComponent({
           <>
             <section className="flex items-center justify-end px-10 my-4">
               <div className="flex items-center gap-5">
-                <RadioGroup
-                  row
-                  value={setOperation}
-                  onChange={(e) => setSetOperation(e.target.value)}
-                >
+                <div className="flex gap-2">
                   <FormControlLabel
-                    value="difference"
-                    control={<Radio style={{ color: ThemeColors.primary }} />}
+                    control={
+                      <Checkbox
+                        checked={setOperation === 'difference'}
+                        onChange={(e) =>
+                          setSetOperation(
+                            e.target.checked ? 'difference' : null
+                          )
+                        }
+                        style={{ color: ThemeColors.primary }}
+                      />
+                    }
                     label="Difference"
                   />
                   <FormControlLabel
-                    value="intersection"
-                    control={<Radio style={{ color: ThemeColors.primary }} />}
+                    control={
+                      <Checkbox
+                        checked={setOperation === 'intersection'}
+                        onChange={(e) =>
+                          setSetOperation(
+                            e.target.checked ? 'intersection' : null
+                          )
+                        }
+                        style={{ color: ThemeColors.primary }}
+                      />
+                    }
                     label="Intersection"
                   />
                   <FormControlLabel
-                    value="union"
-                    control={<Radio style={{ color: ThemeColors.primary }} />}
+                    control={
+                      <Checkbox
+                        checked={setOperation === 'union'}
+                        onChange={(e) =>
+                          setSetOperation(e.target.checked ? 'union' : null)
+                        }
+                        style={{ color: ThemeColors.primary }}
+                      />
+                    }
                     label="Union"
                   />
-                </RadioGroup>
+                </div>
               </div>
             </section>
             <section className="flex items-start justify-between px-10 my-4 mt-8">
@@ -283,7 +297,7 @@ function SubSubjectsMappingComponent({
                   />
                 </Link>
                 <h1 className="text-textBrown md:text-3xl text-2xl max-sm:text-center font-medium">
-                  Already Added{" "}
+                  Already Added{' '}
                   <span className="text-primary md:text-base text-sm">
                     (Sub Subject Mapping)
                   </span>
@@ -294,7 +308,7 @@ function SubSubjectsMappingComponent({
                 <div className="flex items-center gap-5">
                   <p className="md:text-xl flex text-textBrown gap-2 text-base lg:text-lg">
                     <span className="font-semibold">Sort by</span>Super
-                    Category:{" "}
+                    Category:{' '}
                     <span className="font-medium gap-2 flex">
                       {selectedSuperCategory}
                       <img
@@ -314,7 +328,7 @@ function SubSubjectsMappingComponent({
                       <MenuItem
                         onClick={() => {
                           handleMouseLeave1();
-                          handleSetSelectedTag1("All");
+                          handleSetSelectedTag1('All');
                         }}
                       >
                         All
@@ -354,7 +368,7 @@ function SubSubjectsMappingComponent({
                       <MenuItem
                         onClick={() => {
                           handleMouseLeave2();
-                          handleSetSelectedTag2("All");
+                          handleSetSelectedTag2('All');
                         }}
                       >
                         All
@@ -381,7 +395,7 @@ function SubSubjectsMappingComponent({
                   <p className="md:text-xl text-textBrown flex gap-2 text-lg">
                     Subject:
                     <span className="font-medium gap-2 flex">
-                      {selectedSubject.includes("All") ? "All" : "Multiple"}
+                      {selectedSubject.includes('All') ? 'All' : 'Multiple'}
                       <img
                         onClick={handleMouseEnter3}
                         className="cursor-pointer"
@@ -396,7 +410,7 @@ function SubSubjectsMappingComponent({
                       onClose={handleMouseLeave3}
                       className="max-h-[600px]"
                     >
-                      <MenuItem onClick={() => handleSetSelectedTag3("All")}>
+                      <MenuItem onClick={() => handleSetSelectedTag3('All')}>
                         All
                       </MenuItem>
                       {suggestions
