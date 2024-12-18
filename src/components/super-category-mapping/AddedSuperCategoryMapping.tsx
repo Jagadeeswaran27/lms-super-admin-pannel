@@ -1,15 +1,16 @@
-import { Checkbox, Menu, MenuItem } from "@mui/material";
-import { SuggestionModel } from "../../models/suggestion/SuggestionModel";
-import { icons } from "../../resources/icons";
-import { MouseEvent, useEffect, useState } from "react";
-import { SuggestionCategoriesModel } from "../../models/suggestion/SuggestionCategoriesModel";
-import MappingCard from "../suggestion/MappingCard";
-import AISuggestions from "../suggestion/AISuggestions";
-import AISuperCategorySuggestions from "../suggestion/AISuperCategorySuggestions";
-import refactorSuggestionCategories from "../../utils/helper";
-import { ThemeColors } from "../../resources/colors";
-import { Link } from "react-router-dom";
-import { routes } from "../../utils/Routes";
+import { Checkbox, FormControlLabel, Menu, MenuItem } from '@mui/material';
+import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
+import { icons } from '../../resources/icons';
+import { MouseEvent, useEffect, useState } from 'react';
+import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
+import MappingCard from '../suggestion/MappingCard';
+import AISuggestions from '../suggestion/AISuggestions';
+import AISuperCategorySuggestions from '../suggestion/AISuperCategorySuggestions';
+import refactorSuggestionCategories from '../../utils/helper';
+import { ThemeColors } from '../../resources/colors';
+import { Link } from 'react-router-dom';
+import { routes } from '../../utils/Routes';
+import { Check } from '@mui/icons-material';
 
 interface AddedSuperCategoryMapping {
   suggestions: SuggestionModel[];
@@ -59,7 +60,7 @@ function AddedSuperCategorySuggestions({
   handleAddNewSuperCategoryByAI,
 }: AddedSuperCategoryMapping) {
   const [anchorEl1, setAnchorEl1] = useState<null | HTMLElement>(null);
-  const [selectedTag1, setSelectedTag1] = useState<string>("All");
+  const [selectedTag1, setSelectedTag1] = useState<string[]>(['All']);
 
   const [showNormalSuggestions, setShowNormalSuggestions] =
     useState<boolean>(false);
@@ -69,19 +70,20 @@ function AddedSuperCategorySuggestions({
   ] = useState<boolean>(false);
   const [checked, setChecked] = useState<boolean>(false);
   const [unverifiedChecked, setUnverifiedChecked] = useState<boolean>(false);
+  const [setOperation, setSetOperation] = useState<string | null>(null);
 
   useEffect(() => {
     if (showNormalSuggestions) {
       const scrollbarWidth = getScrollbarWidth();
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
-      document.body.style.overflow = "auto";
-      document.body.style.paddingRight = "0px";
+      document.body.style.overflow = 'auto';
+      document.body.style.paddingRight = '0px';
     }
     return () => {
-      document.body.style.overflow = "auto";
-      document.body.style.paddingRight = "0px";
+      document.body.style.overflow = 'auto';
+      document.body.style.paddingRight = '0px';
     };
   }, [showNormalSuggestions]);
 
@@ -110,7 +112,18 @@ function AddedSuperCategorySuggestions({
   };
 
   const handleSetSelectedTag1 = (tag: string) => {
-    setSelectedTag1(tag);
+    if (tag === 'All') {
+      setSelectedTag1(['All']);
+    } else {
+      setSelectedTag1((prevTags) => {
+        const newTags = prevTags.includes('All')
+          ? [tag]
+          : prevTags.includes(tag)
+          ? prevTags.filter((t) => t !== tag)
+          : [...prevTags, tag];
+        return newTags.length ? newTags : ['All'];
+      });
+    }
   };
 
   const getFilteredSuggestions = () => {
@@ -118,9 +131,9 @@ function AddedSuperCategorySuggestions({
       JSON.parse(JSON.stringify(suggestionCategories))
     );
 
-    if (selectedTag1 !== "All") {
+    if (!selectedTag1.includes('All')) {
       filteredSuggCategories = filteredSuggCategories.filter((sugg) =>
-        sugg.superCategories.includes(selectedTag1)
+        sugg.superCategories.some((tag) => selectedTag1.includes(tag))
       );
     }
 
@@ -135,6 +148,38 @@ function AddedSuperCategorySuggestions({
         (sugg) => !sugg.isVerified
       );
     }
+
+    if (setOperation) {
+      const allSuperCategories = new Set(
+        suggestionCategories.flatMap((category) => category.superCategory.name)
+      );
+      filteredSuggCategories = filteredSuggCategories.filter((sugg) => {
+        const suggestionTagSet = new Set(sugg.superCategories);
+        const selectedTagSet = selectedTag1.includes('All')
+          ? allSuperCategories
+          : new Set(selectedTag1);
+
+        // Perform the chosen set operation
+        switch (setOperation) {
+          case 'intersection':
+            return [...selectedTagSet].every((tag) =>
+              suggestionTagSet.has(tag)
+            );
+
+          case 'union':
+            return [...selectedTagSet].some((tag) => suggestionTagSet.has(tag));
+
+          case 'difference':
+            return [...suggestionTagSet].some(
+              (tag) => !selectedTagSet.has(tag)
+            );
+
+          default:
+            return false;
+        }
+      });
+    }
+
     return filteredSuggCategories;
   };
 
@@ -163,6 +208,48 @@ function AddedSuperCategorySuggestions({
           closePrompt={() => setShowSuperCategoryBasedSuggestions(false)}
         />
       )}
+      <section className="flex items-center justify-end px-10 my-4">
+        <div className="flex items-center gap-5">
+          <div className="flex gap-2">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={setOperation === 'difference'}
+                  onChange={(e) =>
+                    setSetOperation(e.target.checked ? 'difference' : null)
+                  }
+                  style={{ color: ThemeColors.primary }}
+                />
+              }
+              label="Difference"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={setOperation === 'intersection'}
+                  onChange={(e) =>
+                    setSetOperation(e.target.checked ? 'intersection' : null)
+                  }
+                  style={{ color: ThemeColors.primary }}
+                />
+              }
+              label="Intersection"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={setOperation === 'union'}
+                  onChange={(e) =>
+                    setSetOperation(e.target.checked ? 'union' : null)
+                  }
+                  style={{ color: ThemeColors.primary }}
+                />
+              }
+              label="Union"
+            />
+          </div>
+        </div>
+      </section>
       <section className="flex items-center justify-between px-10 my-4">
         <div className="flex items-center gap-4">
           <Link to={routes.subjectsToCategories}>
@@ -175,7 +262,7 @@ function AddedSuperCategorySuggestions({
             />
           </Link>
           <h1 className="text-textBrown md:text-3xl text-2xl max-sm:text-center font-medium">
-            Already Added{" "}
+            Already Added{' '}
             <span className="text-primary md:text-base text-sm">
               (Super Category Mapping)
             </span>
@@ -186,9 +273,9 @@ function AddedSuperCategorySuggestions({
         <div className="flex items-center gap-5">
           {/* First Menu */}
           <p className="md:text-xl flex text-textBrown gap-2 text-base lg:text-lg">
-            <span className="font-semibold">Sort by</span>Super Category:{" "}
+            <span className="font-semibold">Sort by</span>Super Category:{' '}
             <span className="font-medium gap-2 flex">
-              {selectedTag1}
+              {selectedTag1.includes('All') ? 'All' : 'Multiple'}
               <img
                 onClick={handleMouseEnter1}
                 className="cursor-pointer"
@@ -203,7 +290,7 @@ function AddedSuperCategorySuggestions({
               onClose={handleMouseLeave1}
               className="max-h-[600px]"
             >
-              <MenuItem onClick={() => handleSetSelectedTag1("All")}>
+              <MenuItem onClick={() => handleSetSelectedTag1('All')}>
                 All
               </MenuItem>
               {suggestionCategories.map((category) => (
@@ -211,11 +298,13 @@ function AddedSuperCategorySuggestions({
                   key={category.superCategory.name}
                   className="flex justify-between"
                   onClick={() => {
-                    handleMouseLeave1();
                     handleSetSelectedTag1(category.superCategory.name);
                   }}
                 >
                   <p>{category.superCategory.name}</p>
+                  {selectedTag1.includes(category.superCategory.name) && (
+                    <Check />
+                  )}
                 </MenuItem>
               ))}
             </Menu>

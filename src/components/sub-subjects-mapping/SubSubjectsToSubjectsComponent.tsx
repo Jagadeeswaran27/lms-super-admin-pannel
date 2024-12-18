@@ -10,7 +10,13 @@ import { Link } from 'react-router-dom';
 import { routes } from '../../utils/Routes';
 import { icons } from '../../resources/icons';
 import { ThemeColors } from '../../resources/colors';
-import { Checkbox, CircularProgress, Menu, MenuItem } from '@mui/material';
+import {
+  Checkbox,
+  CircularProgress,
+  FormControlLabel,
+  Menu,
+  MenuItem,
+} from '@mui/material';
 import { Check } from '@mui/icons-material';
 import { SuggestionCategoriesModel } from '../../models/suggestion/SuggestionCategoriesModel';
 
@@ -54,6 +60,7 @@ function SubSubjectsMappingComponent({
     useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedSubject, setSelectedSubject] = useState<string[]>(['All']);
+  const [setOperation, setSetOperation] = useState<string | null>(null);
 
   const handleMouseEnter1 = (event: MouseEvent<HTMLImageElement>) => {
     setAnchorEl1(event.currentTarget);
@@ -73,17 +80,13 @@ function SubSubjectsMappingComponent({
 
   const handleSetSelectedTag1 = (tag: string) => {
     setSelectedSuperCategory(tag);
-    if (tag === 'All') {
-      setSelectedCategory('All');
-      setSelectedSubject(['All']);
-    }
+    setSelectedCategory('All');
+    setSelectedSubject(['All']);
   };
 
   const handleSetSelectedTag2 = (tag: string) => {
     setSelectedCategory(tag);
-    if (tag === 'All') {
-      setSelectedSubject(['All']);
-    }
+    setSelectedSubject(['All']);
   };
 
   const handleSetSelectedTag3 = (tag: string) => {
@@ -162,6 +165,37 @@ function SubSubjectsMappingComponent({
         selectedSubject.includes(sugg.name)
       );
     }
+    if (setOperation) {
+      const allSubjects = new Set(
+        suggestions
+          .filter((sugg) => sugg.tag.includes(selectedCategory))
+          .map((sugg) => sugg.name)
+      );
+      filteredSuggestions = filteredSuggestions.filter((sugg) => {
+        const suggestionTagSet = new Set([sugg.name]);
+        const selectedTagSet = selectedSubject.includes('All')
+          ? allSubjects
+          : new Set(selectedSubject);
+
+        switch (setOperation) {
+          case 'intersection':
+            return [...selectedTagSet].every((tag) =>
+              suggestionTagSet.has(tag)
+            );
+
+          case 'union':
+            return [...selectedTagSet].some((tag) => suggestionTagSet.has(tag));
+
+          case 'difference':
+            return [...suggestionTagSet].some(
+              (tag) => !selectedTagSet.has(tag)
+            );
+
+          default:
+            return false;
+        }
+      });
+    }
 
     return filteredSuggestions.flatMap((suggestion) => {
       const subSubjects = suggestion.subSubjects || [];
@@ -170,6 +204,7 @@ function SubSubjectsMappingComponent({
         : unverifiedChecked
         ? subSubjects.filter((sub) => !sub.isVerified)
         : subSubjects;
+
       return filteredSubSubjects.map((subSubject) => ({
         ...subSubject,
         subjectName: suggestion.name,
@@ -204,6 +239,52 @@ function SubSubjectsMappingComponent({
           </div>
         ) : (
           <>
+            <section className="flex items-center justify-end px-10 my-4">
+              <div className="flex items-center gap-5">
+                <div className="flex gap-2">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={setOperation === 'difference'}
+                        onChange={(e) =>
+                          setSetOperation(
+                            e.target.checked ? 'difference' : null
+                          )
+                        }
+                        style={{ color: ThemeColors.primary }}
+                      />
+                    }
+                    label="Difference"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={setOperation === 'intersection'}
+                        onChange={(e) =>
+                          setSetOperation(
+                            e.target.checked ? 'intersection' : null
+                          )
+                        }
+                        style={{ color: ThemeColors.primary }}
+                      />
+                    }
+                    label="Intersection"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={setOperation === 'union'}
+                        onChange={(e) =>
+                          setSetOperation(e.target.checked ? 'union' : null)
+                        }
+                        style={{ color: ThemeColors.primary }}
+                      />
+                    }
+                    label="Union"
+                  />
+                </div>
+              </div>
+            </section>
             <section className="flex items-start justify-between px-10 my-4 mt-8">
               <div className="flex items-center gap-4">
                 <Link to={routes.subjectsToCategories}>
