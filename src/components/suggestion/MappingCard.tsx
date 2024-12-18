@@ -1,13 +1,7 @@
 import { Add, Check, Close, Delete, Edit } from "@mui/icons-material";
 import { ThemeColors } from "../../resources/colors";
-import { MouseEvent, useContext, useRef, useState } from "react";
+import { MouseEvent, useState, useRef } from "react";
 import { Menu, MenuItem } from "@mui/material";
-import { showSnackBar } from "../../utils/Snackbar";
-import { SnackBarContext } from "../../store/SnackBarContext";
-import {
-  modifySuggestionCategory,
-  toggleCategoryIsVerified,
-} from "../../core/services/SuggestionService";
 import IOSSwitch from "../common/IOSSwitch";
 import AIButton from "./AIButton";
 import NewSuperCategoriesPopUp from "./NewSuperCategoriesPopUp";
@@ -21,9 +15,22 @@ interface MappingCardProps {
   deleteCategory: (category: string, parentSuperCategory: string[]) => void;
   isVerified: boolean;
   modifySuperCategory: (
-    category: string,
-    superCategory: string
+    isNameModified: boolean,
+    newName: string,
+    oldName: string,
+    addedSuperCategories: string[],
+    removedSuperCategories: string[],
+    oldSuperCategories: string[]
   ) => Promise<boolean>;
+  handleAddNewSuperCategoryByAI: (
+    superCategory: string,
+    category: string
+  ) => Promise<boolean>;
+  toggleIsVerified: (
+    newChecked: boolean,
+    superCat: string[],
+    categoryName: string
+  ) => void;
 }
 
 function MappingCard({
@@ -33,19 +40,17 @@ function MappingCard({
   deleteCategory,
   isVerified,
   modifySuperCategory,
+  handleAddNewSuperCategoryByAI,
+  toggleIsVerified,
 }: MappingCardProps) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [superCat, setSuperCat] = useState<string[]>(superCategory);
-  const [checked, setChecked] = useState<boolean>(isVerified);
-  const [categoryName, setCategoryName] = useState<string>(category);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [newSuperCategories, setNewSuperCategories] = useState<string[]>([]);
+  const [referenceSuperCategory, setReferenceSuperCategory] =
+    useState<string[]>(superCategory);
   const nameRef = useRef<HTMLInputElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, dispatch] = useContext(SnackBarContext);
-  const [backupSuperCat, setBackupSuperCat] = useState<string[]>(superCategory);
 
   const sortedSuperCategories = superCategories.sort((a, b) =>
     a.localeCompare(b)
@@ -59,74 +64,57 @@ function MappingCard({
     setAnchorEl(null);
   };
 
-  const handleModifyCategory = async () => {
-    const isNameModified = nameRef.current?.value.trim() !== categoryName;
-    const modifiedSuperCategories = [
-      ...superCat.filter((cat) => !backupSuperCat.includes(cat)),
-      ...backupSuperCat.filter((cat) => !superCat.includes(cat)),
-    ];
-    const oldSuperCategories = [
-      ...backupSuperCat.filter((cat) => !superCat.includes(cat)),
-    ];
-    if (!isNameModified && modifiedSuperCategories.length === 0) {
-      showSnackBar({
-        dispatch,
-        color: ThemeColors.error,
-        message: "No changes made",
-      });
-      return;
-    }
-    if (isNameModified) {
-      const response = await modifySuggestionCategory(
-        true,
-        superCat,
-        oldSuperCategories,
-        categoryName.trim(),
-        nameRef.current!.value.trim()
-      );
-      if (response) {
-        showSnackBar({
-          dispatch,
-          color: ThemeColors.success,
-          message: "Category modified successfully",
-        });
-        setCategoryName(nameRef.current!.value.trim());
-        setIsEdit(false);
-      }
-    }
-    if (!isNameModified && modifiedSuperCategories.length > 0) {
-      const response = await modifySuggestionCategory(
-        false,
-        modifiedSuperCategories,
-        oldSuperCategories,
-        categoryName.trim(),
-        categoryName.trim()
-      );
-      if (response) {
-        setBackupSuperCat(superCat);
-        showSnackBar({
-          dispatch,
-          color: ThemeColors.success,
-          message: "Category modified successfully",
-        });
-        setIsEdit(false);
-      }
-    }
-  };
+  // const handleModifyCategory = async () => {
+  //   const isNameModified = nameRef.current?.value.trim() !== categoryName;
+  //   const modifiedSuperCategories = [
+  //     ...superCat.filter((cat) => !backupSuperCat.includes(cat)),
+  //     ...backupSuperCat.filter((cat) => !superCat.includes(cat)),
+  //   ];
+  //   const oldSuperCategories = [
+  //     ...backupSuperCat.filter((cat) => !superCat.includes(cat)),
+  //   ];
+  //   if (!isNameModified && modifiedSuperCategories.length === 0) {
+  //     showSnackBar({
+  //       dispatch,
+  //       color: ThemeColors.error,
+  //       message: 'No changes made',
+  //     });
+  //     return;
+  //   }
+  //   if (isNameModified) {
+  //     const response = await modifySuperCategory(
+  //       true,
+  //       superCat,
+  //       oldSuperCategories,
+  //       categoryName.trim(),
+  //       nameRef.current!.value.trim()
+  //     );
+  //     if (response) {
+  //       setCategoryName(nameRef.current!.value.trim());
+  //       setIsEdit(false);
+  //     }
+  //   }
+  //   if (!isNameModified && modifiedSuperCategories.length > 0) {
+  //     const response = await modifySuperCategory(
+  //       false,
+  //       modifiedSuperCategories,
+  //       oldSuperCategories,
+  //       categoryName.trim(),
+  //       categoryName.trim()
+  //     );
+  //     if (response) {
+  //       setBackupSuperCat(superCat);
+  //       setIsEdit(false);
+  //     }
+  //   }
+  // };
 
   const handleToggleChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
     newChecked: boolean
   ) => {
     event.preventDefault();
-    const response = await toggleCategoryIsVerified(
-      newChecked,
-      superCat,
-      categoryName
-    );
-    if (response) {
-      setChecked(newChecked);
-    }
+    await toggleIsVerified(newChecked, superCategory, category);
   };
 
   const handleGetModifiedSuperCategories = async () => {
@@ -137,9 +125,9 @@ function MappingCard({
     );
     try {
       const response = await suggestSuperCategoryIndividual({
-        category: categoryName,
+        category: category,
         superCategories: superCategories.filter(
-          (cat) => !superCat.includes(cat)
+          (cat) => !superCategory.includes(cat)
         ),
       });
       const data = response.data as { suggestedSuperCategories: string[] };
@@ -153,6 +141,37 @@ function MappingCard({
       console.error("Error getting modified super categories:", e);
     }
     setIsLoading(false);
+  };
+
+  const handleAddSuperCategory = (superCategory: string) => {
+    setReferenceSuperCategory([...referenceSuperCategory, superCategory]);
+  };
+
+  const handleRemoveSuperCategory = (superCategory: string) => {
+    setReferenceSuperCategory(
+      referenceSuperCategory.filter((cat) => cat !== superCategory)
+    );
+  };
+
+  const handleModifyCategory = async () => {
+    const isNameModified = nameRef.current?.value.trim() !== category;
+    const addedSuperCategories = referenceSuperCategory.filter(
+      (cat) => !superCategory.includes(cat)
+    );
+    const removedSuperCategories = superCategory.filter(
+      (cat) => !referenceSuperCategory.includes(cat)
+    );
+    const response = await modifySuperCategory(
+      isNameModified,
+      nameRef.current?.value ?? "",
+      category,
+      addedSuperCategories,
+      removedSuperCategories,
+      referenceSuperCategory
+    );
+    if (response) {
+      setIsEdit(false);
+    }
   };
 
   return (
@@ -169,19 +188,19 @@ function MappingCard({
               className={`focus:border-none text-textBrown px-2 focus:outline-none text-lg 
                bg-cardColor
              rounded-sm`}
-              defaultValue={categoryName}
+              defaultValue={category}
             />
           </div>
         ) : (
           <div className="rounded-full overflow-hidden">
-            <p>{categoryName}</p>
+            <p>{category}</p>
           </div>
         )}
       </div>
       <div className="flex justify-between w-[60%] items-center gap-5">
         <div>
           <ul className="flex items-start flex-wrap gap-3">
-            {superCat.map((cat, _) => (
+            {referenceSuperCategory.map((cat) => (
               <li
                 key={cat}
                 className="bg-authPrimary text-sm text-center rounded-full px-2 py-[1px] text-white"
@@ -190,9 +209,9 @@ function MappingCard({
                 {isEdit && (
                   <Close
                     fontSize="small"
-                    onClick={() =>
-                      setSuperCat((pre) => pre.filter((p) => p !== cat))
-                    }
+                    onClick={() => {
+                      handleRemoveSuperCategory(cat);
+                    }}
                     className="cursor-pointer"
                   />
                 )}
@@ -208,29 +227,28 @@ function MappingCard({
               onClose={handleCloseMenu}
               className="max-h-[600px]"
             >
-              {sortedSuperCategories.map((category) => (
-                <MenuItem
-                  key={category}
-                  className="flex justify-between"
-                  onClick={() => {
-                    handleCloseMenu();
-                    setSuperCat((pre) => {
-                      if (pre.includes(category)) {
-                        return pre;
-                      }
-                      return [...pre, category];
-                    });
-                  }}
-                >
-                  <p>{category}</p>
-                </MenuItem>
-              ))}
+              {sortedSuperCategories
+                .filter(
+                  (category) => !referenceSuperCategory.includes(category)
+                )
+                .map((category) => (
+                  <MenuItem
+                    key={category}
+                    className="flex justify-between"
+                    onClick={() => {
+                      handleCloseMenu();
+                      handleAddSuperCategory(category);
+                    }}
+                  >
+                    <p>{category}</p>
+                  </MenuItem>
+                ))}
             </Menu>
           </ul>
           {showPopUp && (
             <NewSuperCategoriesPopUp
-              category={categoryName}
-              modifySuperCategory={modifySuperCategory}
+              category={category}
+              handleAddNewSuperCategoryByAI={handleAddNewSuperCategoryByAI}
               closePrompt={() => setShowPopUp(false)}
               newSuperCategories={newSuperCategories}
             />
@@ -238,7 +256,7 @@ function MappingCard({
           {!isEdit && (
             <div
               className={`${
-                checked ? "opacity-0 invisible" : ""
+                isVerified ? "opacity-0 invisible" : ""
               } w-[180px] mt-7`}
             >
               <AIButton
@@ -250,7 +268,7 @@ function MappingCard({
           )}
         </div>
         <div className="flex gap-2 items-center">
-          <IOSSwitch checked={checked} onChange={handleToggleChange} />
+          <IOSSwitch checked={isVerified} onChange={handleToggleChange} />
           {isEdit ? (
             <Check
               onClick={handleModifyCategory}
@@ -262,26 +280,28 @@ function MappingCard({
             />
           ) : (
             <Edit
-              onClick={checked ? () => {} : () => setIsEdit(true)}
+              onClick={isVerified ? () => {} : () => setIsEdit(true)}
               className={`${
-                checked && "opacity-0 invisible"
+                isVerified && "opacity-0 invisible"
               } mx-2 transition-all transform hover:scale-110`}
               sx={{
                 color: ThemeColors.brown,
-                cursor: checked ? "default" : "pointer",
+                cursor: isVerified ? "default" : "pointer",
               }}
             />
           )}
           <Delete
             onClick={
-              checked ? () => {} : () => deleteCategory(categoryName, superCat)
+              isVerified
+                ? () => {}
+                : () => deleteCategory(category, superCategory)
             }
             className={`${
-              checked && "opacity-0 invisible"
+              isVerified && "opacity-0 invisible"
             } transition-all transform hover:scale-110`}
             sx={{
               color: ThemeColors.brown,
-              cursor: checked ? "default" : "pointer",
+              cursor: isVerified ? "default" : "pointer",
             }}
           />
         </div>

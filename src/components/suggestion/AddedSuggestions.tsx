@@ -1,4 +1,4 @@
-import { Checkbox, Menu, MenuItem } from '@mui/material';
+import { Checkbox, FormControlLabel, Menu, MenuItem } from '@mui/material';
 import { SuggestionModel } from '../../models/suggestion/SuggestionModel';
 import { icons } from '../../resources/icons';
 import SuggestionCard from './SuggestionCard';
@@ -26,8 +26,6 @@ function getScrollbarWidth() {
   return window.innerWidth - document.documentElement.clientWidth;
 }
 
-let backupSuggestions: SuggestionModel[] = [];
-
 function AddedSuggestions({
   suggestions,
   deleteSuggestion,
@@ -42,8 +40,7 @@ function AddedSuggestions({
   const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
   const [selectedTag1, setSelectedTag1] = useState<string>('All');
   const [selectedTag2, setSelectedTag2] = useState<string[]>(['All']);
-  const [filteredSuggestions, setFilteredSuggestions] =
-    useState<SuggestionModel[]>(suggestions);
+
   const [suggestionCat, setSuggestionCat] =
     useState<SuggestionCategoriesModel[]>(suggestionCategories);
 
@@ -52,6 +49,7 @@ function AddedSuggestions({
 
   const [checked, setChecked] = useState<boolean>(false);
   const [unverifiedChecked, setUnverifiedChecked] = useState<boolean>(false);
+  const [setOperation, setSetOperation] = useState<string | null>(null);
 
   useEffect(() => {
     if (showNormalSuggestions) {
@@ -69,22 +67,6 @@ function AddedSuggestions({
   }, [showNormalSuggestions]);
 
   useEffect(() => {
-    if (checked) {
-      setFilteredSuggestions((pre) => {
-        backupSuggestions = pre;
-        return pre.filter((sugg) => sugg.isVerified);
-      });
-    } else if (unverifiedChecked) {
-      setFilteredSuggestions((pre) => {
-        backupSuggestions = pre;
-        return pre.filter((sugg) => !sugg.isVerified);
-      });
-    } else {
-      setFilteredSuggestions(suggestions);
-    }
-  }, [checked, unverifiedChecked]);
-
-  useEffect(() => {
     // setRefactoredSuggestionCategories(
     //   refactorSuggestionCategories(suggestionCategories)
     // );
@@ -92,21 +74,6 @@ function AddedSuggestions({
       setSuggestionCat(suggestionCategories);
     }
   }, [suggestionCategories]);
-
-  useEffect(() => {
-    if (selectedTag1 === 'All' && selectedTag2.includes('All')) {
-      setFilteredSuggestions(suggestions);
-      setSuggestionCat(suggestionCategories);
-    } else {
-      setFilteredSuggestions(
-        suggestions.filter(
-          (suggestion) =>
-            selectedTag2.includes('All') ||
-            selectedTag2.every((tag) => suggestion.tag.includes(tag))
-        )
-      );
-    }
-  }, [suggestions, selectedTag1, selectedTag2]);
 
   const handleMouseEnter1 = (event: MouseEvent<HTMLImageElement>) => {
     setAnchorEl1(event.currentTarget);
@@ -145,20 +112,12 @@ function AddedSuggestions({
     if (tag === 'All') {
       setSelectedTag2(['All']);
       setSuggestionCat(suggestionCategories);
-      // setRefactoredSuggestionCategories(
-      //   refactorSuggestionCategories(suggestionCategories)
-      // );
     } else {
       setSuggestionCat(
         suggestionCategories.filter(
           (cat) => cat.superCategory.name.trim() === tag.trim()
         )
       );
-      // setRefactoredSuggestionCategories(
-      //   refactorSuggestionCategories(suggestionCategories).filter((cat) =>
-      //     cat.superCategories.includes(tag)
-      //   )
-      // );
     }
   };
 
@@ -177,28 +136,79 @@ function AddedSuggestions({
     }
   };
 
-  // const handleDeleteCategory = async (
-  //   category: string,
-  //   superCategory: string[]
-  // ) => {
-  //   const response = await deleteCategory(category, superCategory);
-  //   if (response) {
-  //     showSnackBar({
-  //       dispatch,
-  //       color: ThemeColors.success,
-  //       message: "Category Deleted Successfully!",
-  //     });
-  //     setRefactoredSuggestionCategories((prevCategories) =>
-  //       prevCategories.filter((cat) => cat.category !== category)
-  //     );
-  //   } else {
-  //     showSnackBar({
-  //       dispatch,
-  //       color: ThemeColors.error,
-  //       message: "Failed to Delete Category",
-  //     });
-  //   }
-  // };
+  const getFilteredSuggestions = () => {
+    let filteredSuggestions: SuggestionModel[] = JSON.parse(
+      JSON.stringify(suggestions)
+    );
+
+    if (selectedTag1 !== 'All') {
+      const tempSelectedTag2 = suggestionCategories
+        .filter((sugg) => sugg.superCategory.name === selectedTag1)
+        .flatMap((sugg) =>
+          sugg.superCategory.secondLevelCategories.map((cat) => cat.name)
+        );
+
+      filteredSuggestions = suggestions.filter((sugg) =>
+        sugg.tag.some((tag) => tempSelectedTag2.includes(tag))
+      );
+    }
+
+    if (!selectedTag2.includes('All')) {
+      filteredSuggestions = suggestions.filter((sugg) =>
+        sugg.tag.some((tag) => selectedTag2.includes(tag))
+      );
+    }
+
+    if (checked) {
+      filteredSuggestions = filteredSuggestions.filter(
+        (sugg) => sugg.isVerified
+      );
+    } else if (unverifiedChecked) {
+      filteredSuggestions = filteredSuggestions.filter(
+        (sugg) => !sugg.isVerified
+      );
+    }
+
+    if (setOperation) {
+      const allCategories = new Set(
+        suggestionCat.flatMap((category) =>
+          category.superCategory.secondLevelCategories.map((cat) =>
+            cat.name.trim()
+          )
+        )
+      );
+      filteredSuggestions = filteredSuggestions.filter((sugg) => {
+        const suggestionTagSet = new Set(sugg.tag);
+        const selectedTagSet = selectedTag2.includes('All')
+          ? allCategories
+          : new Set(selectedTag2);
+
+        switch (setOperation) {
+          case 'intersection':
+            return [...selectedTagSet].every((tag) =>
+              suggestionTagSet.has(tag)
+            );
+
+          case 'union':
+            return [...selectedTagSet].some((tag) => suggestionTagSet.has(tag));
+
+          case 'difference':
+            return [...suggestionTagSet].some(
+              (tag) => !selectedTagSet.has(tag)
+            );
+
+          default:
+            return false;
+        }
+      });
+      console.log(allCategories);
+      console.log('--------------------------------');
+    }
+
+    return filteredSuggestions;
+  };
+
+  const filteredSuggestions = getFilteredSuggestions();
 
   return (
     <div className="shadow-custom py-3">
@@ -214,6 +224,48 @@ function AddedSuggestions({
           closePrompt={() => setShowNormalSuggestions(false)}
         />
       )}
+      <section className="flex items-center justify-end px-10 my-4">
+        <div className="flex items-center gap-5">
+          <div className="flex gap-2">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={setOperation === 'difference'}
+                  onChange={(e) =>
+                    setSetOperation(e.target.checked ? 'difference' : null)
+                  }
+                  style={{ color: ThemeColors.primary }}
+                />
+              }
+              label="Difference"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={setOperation === 'intersection'}
+                  onChange={(e) =>
+                    setSetOperation(e.target.checked ? 'intersection' : null)
+                  }
+                  style={{ color: ThemeColors.primary }}
+                />
+              }
+              label="Intersection"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={setOperation === 'union'}
+                  onChange={(e) =>
+                    setSetOperation(e.target.checked ? 'union' : null)
+                  }
+                  style={{ color: ThemeColors.primary }}
+                />
+              }
+              label="Union"
+            />
+          </div>
+        </div>
+      </section>
       <section className="flex items-center justify-between px-10 my-4">
         <div className="flex items-center gap-4">
           <h1 className="text-textBrown md:text-3xl text-2xl max-sm:text-center font-medium">
